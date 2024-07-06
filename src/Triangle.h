@@ -9,27 +9,39 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <glew.h>
+#include <random>
 
 #include "CoreGlobals.h"
+#include "Window.h"
 
 class Triangle {
     private:
         // GL bindings
         unsigned int vertexArrayObject {};
         unsigned int vertexBufferObject {};
-        unsigned int textureObject {};
 
         // Vertex Data
         GLint numAttribs{};
         std::vector<float> vertexArray {};
 
         // Display
+        unsigned int textureObject {};
+        unsigned int colorBufferObject {};
+        std::vector<float> vertexColorArray {};
 
+        // Movement
+        std::pair<float, float> vel {0.005f, 0.008f};
 
     public:
+        // Constructors
         Triangle();
         ~Triangle();
         void ConstructTriangle(GLint _numAttribs, const std::vector<float>& _vertexArray);
+
+        // Movement
+        void Move();
+
+        // Display
         void Display() const;
 };
 

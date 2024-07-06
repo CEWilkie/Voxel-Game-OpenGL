@@ -24,17 +24,16 @@ class Window {
     public:
         // Setup
         Window();
+        ~Window();
         bool CreateGLContext();
         unsigned int CreateShaders();
-
-        // Closure
-        void EndWindow();
 
         // Setters
         void SetWindowSize(int _w, int _h);
 
         // Getters
         SDL_Window* WindowPtr();
+        void GetWindowSize(int& _w, int& _h) const;
 };
 
 #endif //UNTITLED7_WINDOW_H

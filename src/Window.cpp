@@ -26,6 +26,11 @@ Window::Window() {
     SDL_SetWindowPosition(window, winRect.x, winRect.y);
 }
 
+Window::~Window() {
+    glDeleteProgram(shader);
+    SDL_DestroyWindow(window);
+}
+
 bool Window::CreateGLContext() {
     // set openGL attributes
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
@@ -66,7 +71,7 @@ SDL_Window* Window::WindowPtr() {
     return window;
 }
 
-void Window::EndWindow() {
-    glDeleteProgram(shader);
-    SDL_DestroyWindow(window);
+void Window::GetWindowSize(int& _w, int& _h) const {
+    _w = winRect.w;
+    _h = winRect.h;
 }

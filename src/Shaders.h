@@ -49,10 +49,10 @@ static unsigned int CompileShader(unsigned int type, const std::string &source) 
     return id;
 }
 
-static unsigned int CreateShader(const std::string &vertexShader, const std::string &fragmentShader) {
+static unsigned int CreateShader(const std::string &_vertexShader, const std::string &_fragmentShader) {
     unsigned int program = glCreateProgram();
-    unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShader);
-    unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
+    unsigned int vs = CompileShader(GL_VERTEX_SHADER, _vertexShader);
+    unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, _fragmentShader);
 
     glAttachShader(program, vs);
     glAttachShader(program, fs);

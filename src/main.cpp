@@ -42,47 +42,24 @@ int main(int argc, char** argv){
     if ((shaderID = window.CreateShaders()) == 0) return 0;
     glUseProgram(shaderID);
 
-
-
     std::random_device rd;
     std::mt19937 mt(rd());
-
-    std::vector<TriangleObject> tov;
 
     std::vector<std::unique_ptr<Triangle>> triangles;
 
     for (int t = 0; t < 2; t++) {
+        // Random vertex vector
         std::vector<float> v {};
-        tov.emplace_back();
-        triangles.push_back(std::make_unique<Triangle>());
         for (int i = 0; i < 9; i++) {
-            auto x = float((int(mt()) % 100) / 100.0);
-            tov.back().vertexArray.push_back(x);
+            auto x = float((int(mt()) % 75) / 100.0);
             v.push_back(x);
         }
+
+        // Create Triangle
+        triangles.push_back(std::make_unique<Triangle>());
         triangles[t]->ConstructTriangle(3, v);
     }
-
     printf("TRIANGLES: %zu\n", triangles.size());
-
-    for (auto& to : tov) {
-        // bind object id
-        glGenVertexArrays(1, &to.vertexArrayObject);
-        glBindVertexArray(to.vertexArrayObject);
-        printf("VAO: %u", to.vertexArrayObject);
-
-        // bind vertexArray array
-        glGenBuffers(1, &to.vertexBufferObject);
-        glBindBuffer(GL_ARRAY_BUFFER, to.vertexBufferObject);
-        glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(to.vertexArray.size() * sizeof(float)), to.vertexArray.data(), GL_DYNAMIC_DRAW);
-        printf(" VBO: %u\n", to.vertexBufferObject);
-
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-    }
-
-    glBindVertexArray(0);
-    glDisableVertexAttribArray(0);
 
     // Render Loop
     bool running = true;
@@ -97,23 +74,15 @@ int main(int argc, char** argv){
         glClear(GL_COLOR_BUFFER_BIT);
 
         // DRAW
-//        for (const auto& to : tov) {
-//            glBindVertexArray(to.vertexArrayObject);
-//            glBindBuffer(GL_ARRAY_BUFFER, to.vertexBufferObject);
-//            glDrawArrays(GL_TRIANGLES, 0, 3);
-//        }
 
         for (const auto& t : triangles) {
             t->Display();
         }
+
         // MOVE
 
-        for (auto& to : tov) {
-            glBindBuffer(GL_ARRAY_BUFFER, to.vertexBufferObject);
-            for (auto& vertex : to.vertexArray) {
-                vertex += 0.005f;
-            }
-            glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(to.vertexArray.size() * sizeof(float)), to.vertexArray.data(), GL_DYNAMIC_DRAW);
+        for (const auto& to : triangles) {
+            to->Move();
         }
 
         // INPUTS
@@ -135,7 +104,6 @@ int main(int argc, char** argv){
     }
 
     // end handling
-    window.EndWindow();
     SDL_Quit();
 
     return 0;
