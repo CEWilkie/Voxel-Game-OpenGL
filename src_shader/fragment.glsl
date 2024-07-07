@@ -1,7 +1,9 @@
 #version 410 core
 
+// PIPE IN
 in vec3 v_vertexColours;
 
+// PIPE OUT
 out vec4 color;
 
 void main() {

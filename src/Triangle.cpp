@@ -4,10 +4,6 @@
 
 #include "Triangle.h"
 
-#include <cmath>
-#include <random>
-#include <algorithm>
-
 Triangle::Triangle() {
     // Generate objectIDs
     glGenVertexArrays(1, &vertexArrayObject);

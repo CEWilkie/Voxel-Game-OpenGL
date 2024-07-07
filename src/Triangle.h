@@ -2,10 +2,13 @@
 // Created by cew05 on 16/04/2024.
 //
 
-#ifndef UNTITLED7_CUBE_H
-#define UNTITLED7_CUBE_H
+#ifndef UNTITLED7_TRIANGLE_H
+#define UNTITLED7_TRIANGLE_H
 
 #include <vector>
+#include <cmath>
+#include <random>
+#include <algorithm>
 #include <SDL.h>
 #include <SDL_image.h>
 #include <glew.h>
@@ -45,4 +48,4 @@ class Triangle {
 };
 
 
-#endif //UNTITLED7_CUBE_H
+#endif //UNTITLED7_TRIANGLE_H

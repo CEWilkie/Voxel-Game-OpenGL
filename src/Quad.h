@@ -6,6 +6,7 @@
 #define UNTITLED7_QUAD_H
 
 #include <vector>
+#include <random>
 #include <glew.h>
 
 #include "CoreGlobals.h"
@@ -20,6 +21,7 @@ class Quad {
         unsigned int indexBufferObject {};
 
         // Vertex Data
+        bool dataBound = false;
         GLint numAttribs{};
         std::vector<float> vertexArray {};
         std::vector<GLuint> indexBufferData {};
@@ -35,6 +37,8 @@ class Quad {
         Quad();
         ~Quad();
         void ConstructQuad();
+
+        void SetVertexArray(const std::vector<float>& _vertexArray);
 
         // Movement
         void Move();

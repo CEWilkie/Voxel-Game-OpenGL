@@ -4,8 +4,6 @@
 
 #include "Quad.h"
 
-#include <random>
-
 Quad::Quad() {
     // Generate objectIDs
     glGenVertexArrays(1, &vertexArrayObject);
@@ -81,6 +79,18 @@ void Quad::ConstructQuad() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
+
+    dataBound = true;
+}
+
+void Quad::SetVertexArray(const std::vector<float> &_vertexArray) {
+    vertexArray = _vertexArray;
+
+    if (dataBound) {
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+        glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(vertexArray.size() * sizeof(float)), vertexArray.data(), GL_STREAM_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
 }
 
 

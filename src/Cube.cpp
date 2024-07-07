@@ -1,0 +1,117 @@
+//
+// Created by cew05 on 07/07/2024.
+//
+
+#include "Cube.h"
+
+Cube::Cube() {
+    // Generate objectIDs
+    glGenVertexArrays(1, &vertexArrayObject);
+    glGenBuffers(1, &vertexBufferObject);
+    glGenBuffers(1, &colorBufferObject);
+    glGenBuffers(1, &indexBufferObject);
+
+    // Create vertex array for cube
+    vertexArray = {
+            // Top level
+            0.0f, 0.0f, 0.0f,               // BOTTOMLEFT VERTEX
+            0.5f, 0.0f, 0.0f,               // BOTTOMRIGHT VERTEX
+            0.2f, 0.2f, 0.5f,               // TOPLEFT VERTEX
+            0.7f, 0.2f, 0.5f,               // TOPRIGHT VERTEX
+            // Bottom level
+            0.0f, -0.5f, 0.0f,               // BOTTOMLEFT VERTEX
+            0.5f, -0.5f, 0.0f,               // BOTTOMRIGHT VERTEX
+            0.2f, -0.3f, 0.5f,               // TOPLEFT VERTEX
+            0.7f, -0.3f, 0.5f,               // TOPRIGHT VERTEX
+    };
+
+    // Create index buffer for traversal order to produce each cube face
+    indexArray = {
+            // TOPFACE
+            0, 1, 2,
+            1, 3, 2,
+            // FRONTFACE
+            4, 5, 0,
+            5, 1, 0,
+            // RIGHTSIDEFACE
+            5, 7, 1,
+            7, 3, 1,
+            // LEFTSIDEFACE
+            6, 4, 2,
+            4, 0, 2,
+            // BOTTOMFACE
+            4, 5, 6,
+            5, 7, 6,
+            // BACKFACE
+            7, 2, 3,
+            7, 6, 2,
+    };
+
+    // Create colour array
+    vertexColorArray = {
+            1.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 1.0f,
+            1.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 1.0f,
+            1.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f,
+    };
+
+    BindCube();
+}
+
+Cube::~Cube() {
+    glDeleteBuffers(1, &vertexBufferObject);
+    glDeleteBuffers(1, &colorBufferObject);
+    glDeleteVertexArrays(1, &vertexArrayObject);
+}
+
+
+void Cube::BindCube() {
+    glBindVertexArray(vertexArrayObject);
+
+    // bind vertex buffer array
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+    glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(vertexArray.size() * sizeof(float)), vertexArray.data(), GL_STREAM_DRAW);
+
+    // Vertex Position Attributes
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, (GLsizei)sizeof(float)*3, nullptr);
+
+    // Bind index buffer
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(indexArray.size()*sizeof(GLuint)), indexArray.data(), GL_STREAM_DRAW);
+
+    // Bind colour buffer
+    glBindBuffer(GL_ARRAY_BUFFER, colorBufferObject);
+    glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(vertexColorArray.size() * sizeof(float)), vertexColorArray.data(), GL_STATIC_DRAW);
+
+    // Vertex Colour Attributes
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, (GLsizei)sizeof(float)*3, nullptr);
+
+    // Unbind arrays / buffers
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+}
+
+
+void Cube::Display() const {
+    // Bind object
+    glBindVertexArray(vertexArrayObject);
+
+    // Enable Attributes
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+
+    // unbind
+    glBindVertexArray(0);
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+}

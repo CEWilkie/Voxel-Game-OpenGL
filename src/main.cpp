@@ -10,8 +10,7 @@
 #include "Window.h"
 #include "Triangle.h"
 #include "Quad.h"
-#include "Shape.h"
-
+#include "Cube.h"
 
 int main(int argc, char** argv){
     // Init SDL
@@ -36,6 +35,10 @@ int main(int argc, char** argv){
     if ((shaderID = window.CreateShaders()) == 0) return 0;
     glUseProgram(shaderID);
 
+    // Uniform var local declaration
+    float uoffset = 0.0f;
+
+
     std::random_device rd;
     std::mt19937 mt(rd());
 
@@ -51,34 +54,10 @@ int main(int argc, char** argv){
     std::unique_ptr<Quad> quad = std::make_unique<Quad>();
     quad->ConstructQuad();
 
-    auto vertexArray = {
-            // bottom Left Triangle
-            -0.5f, -0.5f, 0.0f,
-            0.5f, -0.5f, 0.0f,
-            -0.5f, 0.5f, 0.0f,
-            // Top Right Triangle
-            0.5f, -0.5f, 0.0f,
-            0.5f, 0.5f, 0.0f,
-            -0.5f, 0.5f, 0.0f,
-    };
-
-    auto vertexArrayB = {
-            // bottom Left Triangle
-            -0.5f, -0.5f, 0.0f,
-            0.5f, -0.5f, 0.0f,
-            -0.5f, 0.5f, 0.0f,
-    };
-
-
-    auto* quadShape = new Shape();
-    quadShape->SetVertexArray(vertexArray);
-    auto* triShape = new Shape();
-    triShape->SetVertexArray(vertexArrayB);
-
+    Cube cube;
 
     // Render Loop
     bool running = true;
-
     Uint64 frameStart;
     while (running) {
         frameStart = SDL_GetTicks64();
@@ -89,14 +68,13 @@ int main(int argc, char** argv){
         glClear(GL_COLOR_BUFFER_BIT);
 
         // DRAW
-        quad->Display();
+//        quad->Display();
+//
+//        for (const auto& t : triangles) {
+//            t->Display();
+//        }
 
-        for (const auto& t : triangles) {
-            t->Display();
-        }
-
-        //quadShape->Display();
-        //triShape->Display();
+        cube.Display();
 
         // MOVE
 
@@ -112,6 +90,19 @@ int main(int argc, char** argv){
                 running = false;
             }
         }
+
+        // Keyboard state
+        const std::uint8_t* state = SDL_GetKeyboardState(nullptr);
+        if (state[SDL_SCANCODE_UP]) uoffset += 0.01f;
+        if (state[SDL_SCANCODE_DOWN]) uoffset -= 0.01f;
+
+        // Uniform Vars linking
+        GLint location = glGetUniformLocation(shaderID, "uOffset");
+        if (location < 0) printf("location not found [uOffset]");
+        else {
+            glUniform1f(location, uoffset);
+        }
+
 
         // update display
         SDL_GL_SwapWindow(window.WindowPtr());
