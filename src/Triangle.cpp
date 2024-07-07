@@ -4,6 +4,10 @@
 
 #include "Triangle.h"
 
+#include <cmath>
+#include <random>
+#include <algorithm>
+
 Triangle::Triangle() {
     // Generate objectIDs
     glGenVertexArrays(1, &vertexArrayObject);
@@ -16,18 +20,44 @@ Triangle::Triangle() {
     vel.first = float((int(mt()) % 10) / 1000.0);
     vel.second = float((int(mt()) % 10) / 1000.0);
 
-    // Now create a set of colours for the verticies
-    for (int i = 0; i < 9; i++) {
-        auto x = float((int(mt()) % 100) / 100.0);
-        x = std::max(x, -x);
-        vertexColorArray.push_back(x);
-        printf("C: %f\n", x);
+    // Triangle position, min distance from centre
+    auto cx = float((int(mt()) % 10) / 20.0);
+    auto cy = float((int(mt()) % 10) / 20.0);
+    float r = 0.5;
+    numAttribs = 3;
+
+    // Create random vertex positions at set distance from centre
+    // x = rsin(theta), y = rcos(theta)   [radians]
+    std::vector<double> usedThetas {};
+    for (int i = 0; i < 3; i++) {
+        // Fetch angle
+        double theta;
+        while (true) {
+            theta = ((int(mt()) % 200) / 100.0) * M_PI;
+            if (!std::any_of(usedThetas.begin(), usedThetas.end(), [&](double prevTheta){
+                return (theta < (prevTheta + 0.25*M_PI)) && (theta > (prevTheta - 0.25*M_PI));
+            })) {
+                usedThetas.push_back(theta);
+                break;
+            }
+        }
+        auto x = r * (float)sin(theta);
+        auto y = r * (float)cos(theta);
+        auto z = float((int(mt()) % 100) / 100.0);
+
+        printf("V: %f %f %f\n", cx+x, cy+y, z);
+
+        vertexArray.push_back(cx + x);
+        vertexArray.push_back(cy + y);
+        vertexArray.push_back(z);
     }
 
-    // Set buffer data for colour object
-    glBindBuffer(GL_ARRAY_BUFFER, colorBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(vertexColorArray.size() * sizeof(float)), vertexColorArray.data(), GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // Now create a set of colours for the verticies
+    vertexColorArray = {
+            1.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 1.0f,
+    };
 
 //    // Create RGB surface from image
 //    SDL_Surface* surface;
@@ -72,23 +102,25 @@ Triangle::~Triangle() {
     glDeleteVertexArrays(1, &vertexArrayObject);
 }
 
-void Triangle::ConstructTriangle(GLint _numAttribs, const std::vector<float>& _vertexArray) {
-    // Set verticies
-    vertexArray = _vertexArray;
-    numAttribs = _numAttribs;
-
+void Triangle::ConstructTriangle() {
     // bind object id
     glBindVertexArray(vertexArrayObject);
 
-    // bind vertexArray array
+    // bind vertex buffer array
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
     glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(vertexArray.size() * sizeof(float)), vertexArray.data(), GL_STREAM_DRAW);
 
+    // Vertex Position Attributes
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, numAttribs, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glVertexAttribPointer(0, numAttribs, GL_FLOAT, GL_FALSE, (GLsizei)sizeof(float)*numAttribs, nullptr);
 
+    // Bind colour buffer
+    glBindBuffer(GL_ARRAY_BUFFER, colorBufferObject);
+    glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(vertexColorArray.size() * sizeof(float)), vertexColorArray.data(), GL_STATIC_DRAW);
+
+    // Vertex Colour Attributes
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, (GLsizei)sizeof(float)*3, nullptr);
 
     // Unbind arrays / buffers
     glBindVertexArray(0);
@@ -125,7 +157,6 @@ void Triangle::Display() const {
 //    glBindTexture(GL_TEXTURE_2D, textureObject);
 //    glEnable(GL_TEXTURE_2D);
     glBindVertexArray(vertexArrayObject);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
 
     // Enable Attributes
     glEnableVertexAttribArray(0);
@@ -145,7 +176,6 @@ void Triangle::Display() const {
 
     // Unbind
     glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     // Disable Attributes
     glDisableVertexAttribArray(0);

@@ -10,15 +10,6 @@
 #include "Window.h"
 #include "Triangle.h"
 
-struct TriangleObject {
-    unsigned int vertexArrayObject {};
-    unsigned int vertexBufferObject {};
-    std::vector<float> vertexArray {};
-};
-
-
-
-
 int main(int argc, char** argv){
     // Init SDL
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -48,18 +39,15 @@ int main(int argc, char** argv){
     std::vector<std::unique_ptr<Triangle>> triangles;
 
     for (int t = 0; t < 2; t++) {
-        // Random vertex vector
-        std::vector<float> v {};
-        for (int i = 0; i < 9; i++) {
-            auto x = float((int(mt()) % 75) / 100.0);
-            v.push_back(x);
-        }
-
         // Create Triangle
         triangles.push_back(std::make_unique<Triangle>());
-        triangles[t]->ConstructTriangle(3, v);
+        triangles[t]->ConstructTriangle();
     }
     printf("TRIANGLES: %zu\n", triangles.size());
+
+
+    std::unique_ptr<Triangle> stillTriangle = std::make_unique<Triangle>();
+    stillTriangle->ConstructTriangle();
 
     // Render Loop
     bool running = true;
@@ -78,6 +66,7 @@ int main(int argc, char** argv){
         for (const auto& t : triangles) {
             t->Display();
         }
+        stillTriangle->Display();
 
         // MOVE
 

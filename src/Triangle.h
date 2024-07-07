@@ -9,7 +9,6 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <glew.h>
-#include <random>
 
 #include "CoreGlobals.h"
 #include "Window.h"
@@ -36,7 +35,7 @@ class Triangle {
         // Constructors
         Triangle();
         ~Triangle();
-        void ConstructTriangle(GLint _numAttribs, const std::vector<float>& _vertexArray);
+        void ConstructTriangle();
 
         // Movement
         void Move();
