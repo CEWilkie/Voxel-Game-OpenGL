@@ -4,21 +4,14 @@
 
 #include "Quad.h"
 
-//
-// Created by cew05 on 16/04/2024.
-//
-
-#include "Triangle.h"
-
-#include <cmath>
 #include <random>
-#include <algorithm>
 
 Quad::Quad() {
     // Generate objectIDs
     glGenVertexArrays(1, &vertexArrayObject);
     glGenBuffers(1, &vertexBufferObject);
     glGenBuffers(1, &colorBufferObject);
+    glGenBuffers(1, &indexBufferObject);
 
     // Set random speeds
     std::random_device rd;
@@ -27,39 +20,33 @@ Quad::Quad() {
     vel.second = float((int(mt()) % 10) / 1000.0);
 
     // Triangle position, min distance from centre
-    auto cx = float((int(mt()) % 10) / 20.0);
-    auto cy = float((int(mt()) % 10) / 20.0);
-    float r = 0.5;
     numAttribs = 3;
 
     // Create vertex positions (two triangles
     vertexArray = {
-            // bottom Left Triangle
             -0.5f, -0.5f, 0.0f,
             0.5f, -0.5f, 0.0f,
             -0.5f, 0.5f, 0.0f,
-            // Top Right Triangle
-            0.5f, -0.5f, 0.0f,
             0.5f, 0.5f, 0.0f,
-            -0.5f, 0.5f, 0.0f,
     };
 
-    // Now create a set of colours for the verticies
+    // index array to determine order verticies are traversed when drawing
+    indexBufferData = {
+        0, 1, 2,
+        1, 3, 2,
+    };
+
+
+    // create a set of colours for the verticies
     vertexColorArray = {
-            // Bottom left triangle
             1.0f, 0.0f, 0.0f,
             0.0f, 1.0f, 0.0f,
             0.0f, 0.0f, 1.0f,
-            // Top right triangle
-            0.0f, 1.0f, 0.0f,
             1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f,
     };
 }
 
 Quad::~Quad() {
-    // Deallocate texture
-    glDeleteTextures(1, &textureObject);
     glDeleteBuffers(1, &vertexBufferObject);
     glDeleteBuffers(1, &colorBufferObject);
     glDeleteVertexArrays(1, &vertexArrayObject);
@@ -76,6 +63,10 @@ void Quad::ConstructQuad() {
     // Vertex Position Attributes
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, numAttribs, GL_FLOAT, GL_FALSE, (GLsizei)sizeof(float)*numAttribs, nullptr);
+
+    // Bind index buffer
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(indexBufferData.size()*sizeof(GLuint)), indexBufferData.data(), GL_STREAM_DRAW);
 
     // Bind colour buffer
     glBindBuffer(GL_ARRAY_BUFFER, colorBufferObject);
@@ -134,7 +125,8 @@ void Quad::Display() const {
 //    glVertex3f(vertexArray[6], vertexArray[7], vertexArray[8]);
 //    glEnd();
 
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+    //glDrawArrays(GL_TRIANGLES, 0, 6);
 
     // Unbind
     glBindVertexArray(0);

@@ -10,6 +10,8 @@
 #include "Window.h"
 #include "Triangle.h"
 #include "Quad.h"
+#include "Shape.h"
+
 
 int main(int argc, char** argv){
     // Init SDL
@@ -49,6 +51,31 @@ int main(int argc, char** argv){
     std::unique_ptr<Quad> quad = std::make_unique<Quad>();
     quad->ConstructQuad();
 
+    auto vertexArray = {
+            // bottom Left Triangle
+            -0.5f, -0.5f, 0.0f,
+            0.5f, -0.5f, 0.0f,
+            -0.5f, 0.5f, 0.0f,
+            // Top Right Triangle
+            0.5f, -0.5f, 0.0f,
+            0.5f, 0.5f, 0.0f,
+            -0.5f, 0.5f, 0.0f,
+    };
+
+    auto vertexArrayB = {
+            // bottom Left Triangle
+            -0.5f, -0.5f, 0.0f,
+            0.5f, -0.5f, 0.0f,
+            -0.5f, 0.5f, 0.0f,
+    };
+
+
+    auto* quadShape = new Shape();
+    quadShape->SetVertexArray(vertexArray);
+    auto* triShape = new Shape();
+    triShape->SetVertexArray(vertexArrayB);
+
+
     // Render Loop
     bool running = true;
 
@@ -62,11 +89,14 @@ int main(int argc, char** argv){
         glClear(GL_COLOR_BUFFER_BIT);
 
         // DRAW
+        quad->Display();
 
         for (const auto& t : triangles) {
             t->Display();
         }
-        quad->Display();
+
+        //quadShape->Display();
+        //triShape->Display();
 
         // MOVE
 

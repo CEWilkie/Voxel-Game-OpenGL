@@ -2,29 +2,30 @@
 // Created by cew05 on 07/07/2024.
 //
 
-#ifndef UNTITLED7_QUAD_H
-#define UNTITLED7_QUAD_H
+#ifndef UNTITLED7_SHAPE_H
+#define UNTITLED7_SHAPE_H
 
 #include <vector>
+
+#include <SDL.h>
 #include <glew.h>
 
-#include "CoreGlobals.h"
-#include "Window.h"
+class Shape {
+    protected:
+        // Position data
+        SDL_Rect shapeRect {};
 
-class Quad {
-    private:
         // GL bindings
         unsigned int vertexArrayObject {};
         unsigned int vertexBufferObject {};
         unsigned int colorBufferObject {};
-        unsigned int indexBufferObject {};
 
         // Vertex Data
-        GLint numAttribs{};
+        GLint vertexPositionAttribs = 3;
         std::vector<float> vertexArray {};
-        std::vector<GLuint> indexBufferData {};
 
         // Display
+        GLint vertexColorAttribs = 3;
         std::vector<float> vertexColorArray {};
 
         // Movement
@@ -32,16 +33,14 @@ class Quad {
 
     public:
         // Constructors
-        Quad();
-        ~Quad();
-        void ConstructQuad();
+        Shape();
+        ~Shape();
+        void SetVertexArray(const std::vector<float>& _vertexArray);
 
-        // Movement
-        void Move();
 
         // Display
         void Display() const;
 };
 
 
-#endif //UNTITLED7_QUAD_H
+#endif //UNTITLED7_SHAPE_H
