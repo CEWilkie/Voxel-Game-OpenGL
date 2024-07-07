@@ -7,10 +7,15 @@ layout(location = 1) in vec3 vertexColours;
 // PIPE OUT
 out vec3 v_vertexColours;
 
-uniform float uOffset;
+uniform mat4 uTranslationMatrix;
+
+uniform mat4 uRotationMatrix;
 
 void main() {
-    gl_Position = vec4(position.x, position.y+uOffset, position.z, 1.0f);
+    gl_Position = vec4(position.x, position.y, position.z, 1.0f);
+
+    //gl_Position = uTranslationMatrix * gl_Position;
+    gl_Position = uRotationMatrix * gl_Position;
 
     v_vertexColours = vertexColours;
 }

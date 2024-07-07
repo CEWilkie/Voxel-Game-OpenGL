@@ -8,6 +8,8 @@
 #include <memory>
 #include <vector>
 
+#include <glm/matrix.hpp>
+
 #include "Quad.h"
 
 class Cube {
@@ -21,6 +23,7 @@ class Cube {
         // Vertex Data
         std::vector<float> vertexArray {};
         std::vector<GLuint> indexArray {};
+        glm::vec3 centre {};
 
         // Display Data
         std::vector<float> vertexColorArray {};
@@ -31,7 +34,11 @@ class Cube {
 
         void BindCube();
 
+        // Display
         void Display() const;
+
+        // Positioning
+        void Rotate(float _theta);
 };
 
 #endif //UNTITLED7_CUBE_H

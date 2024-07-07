@@ -5,7 +5,10 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+
 #include <glew.h>
+#include <glm/matrix.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "Window.h"
 #include "Triangle.h"
@@ -19,8 +22,7 @@ int main(int argc, char** argv){
         return 0;
     }
 
-    // Construct Window Object
-    Window window;
+    // Construct Window
     if (window.WindowPtr() == nullptr) return 0;        // Create SDL_Window
     if (!window.CreateGLContext()) return 0;            // Create openGL context in SDL_Window
 
@@ -56,6 +58,8 @@ int main(int argc, char** argv){
 
     Cube cube;
 
+    glEnable(GL_DEPTH_TEST);
+
     // Render Loop
     bool running = true;
     Uint64 frameStart;
@@ -65,7 +69,7 @@ int main(int argc, char** argv){
         // CLEAR
 
         glClearColor(0.1f, 1.0f, 0.6f, 1.0f); //background colour
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // DRAW
 //        quad->Display();
@@ -97,11 +101,9 @@ int main(int argc, char** argv){
         if (state[SDL_SCANCODE_DOWN]) uoffset -= 0.01f;
 
         // Uniform Vars linking
-        GLint location = glGetUniformLocation(shaderID, "uOffset");
-        if (location < 0) printf("location not found [uOffset]");
-        else {
-            glUniform1f(location, uoffset);
-        }
+
+
+        cube.Rotate(float(uoffset*M_PI));
 
 
         // update display

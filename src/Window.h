@@ -34,6 +34,9 @@ class Window {
         // Getters
         SDL_Window* WindowPtr();
         void GetWindowSize(int& _w, int& _h) const;
+        [[nodiscard]] unsigned int GetShader() const { return shader; };
 };
+
+inline Window window;
 
 #endif //UNTITLED7_WINDOW_H

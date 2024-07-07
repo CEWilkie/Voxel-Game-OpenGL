@@ -4,6 +4,9 @@
 
 #include "Cube.h"
 
+#include "Window.h"
+#include <glm/gtc/matrix_transform.hpp>
+
 Cube::Cube() {
     // Generate objectIDs
     glGenVertexArrays(1, &vertexArrayObject);
@@ -11,31 +14,25 @@ Cube::Cube() {
     glGenBuffers(1, &colorBufferObject);
     glGenBuffers(1, &indexBufferObject);
 
+    // Centre of cube
+    centre = glm::vec3(0.25f , -0.25f, 0.25f);
+
     // Create vertex array for cube
     vertexArray = {
             // Top level
             0.0f, 0.0f, 0.0f,               // BOTTOMLEFT VERTEX
             0.5f, 0.0f, 0.0f,               // BOTTOMRIGHT VERTEX
-            0.2f, 0.2f, 0.5f,               // TOPLEFT VERTEX
-            0.7f, 0.2f, 0.5f,               // TOPRIGHT VERTEX
+            0.0f, 0.0f, 0.5f,               // TOPLEFT VERTEX
+            0.5f, 0.0f, 0.5f,               // TOPRIGHT VERTEX
             // Bottom level
             0.0f, -0.5f, 0.0f,               // BOTTOMLEFT VERTEX
             0.5f, -0.5f, 0.0f,               // BOTTOMRIGHT VERTEX
-            0.2f, -0.3f, 0.5f,               // TOPLEFT VERTEX
-            0.7f, -0.3f, 0.5f,               // TOPRIGHT VERTEX
+            0.0f, -0.5f, 0.5f,               // TOPLEFT VERTEX
+            0.5f, -0.5f, 0.5f,               // TOPRIGHT VERTEX
     };
 
     // Create index buffer for traversal order to produce each cube face
     indexArray = {
-            // TOPFACE
-            0, 1, 2,
-            1, 3, 2,
-            // FRONTFACE
-            4, 5, 0,
-            5, 1, 0,
-            // RIGHTSIDEFACE
-            5, 7, 1,
-            7, 3, 1,
             // LEFTSIDEFACE
             6, 4, 2,
             4, 0, 2,
@@ -45,6 +42,15 @@ Cube::Cube() {
             // BACKFACE
             7, 2, 3,
             7, 6, 2,
+            // TOPFACE
+            0, 1, 2,
+            1, 3, 2,
+            // FRONTFACE
+            4, 5, 0,
+            5, 1, 0,
+            // RIGHTSIDEFACE
+            5, 7, 1,
+            7, 3, 1,
     };
 
     // Create colour array
@@ -114,4 +120,18 @@ void Cube::Display() const {
     glBindVertexArray(0);
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
+}
+
+void Cube::Rotate(float _theta) {
+    // Get rotation axis of y
+    glm::vec3 yNorm = glm::cross(glm::vec3(0.5f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.5f));
+
+    // Get rotation matrix
+    glm::mat4 rot = glm::rotate(glm::mat4(1.0f), _theta, yNorm);
+
+    GLint rmLocation = glGetUniformLocation(window.GetShader(), "uRotationMatrix");
+    if (rmLocation < 0) printf("location not found [uRotationMatrix]");
+    else {
+        glUniformMatrix4fv(rmLocation, 1, GL_FALSE, &rot[0][0]);
+    }
 }
