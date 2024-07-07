@@ -9,6 +9,7 @@
 
 #include "Window.h"
 #include "Triangle.h"
+#include "Quad.h"
 
 int main(int argc, char** argv){
     // Init SDL
@@ -45,9 +46,8 @@ int main(int argc, char** argv){
     }
     printf("TRIANGLES: %zu\n", triangles.size());
 
-
-    std::unique_ptr<Triangle> stillTriangle = std::make_unique<Triangle>();
-    stillTriangle->ConstructTriangle();
+    std::unique_ptr<Quad> quad = std::make_unique<Quad>();
+    quad->ConstructQuad();
 
     // Render Loop
     bool running = true;
@@ -66,7 +66,7 @@ int main(int argc, char** argv){
         for (const auto& t : triangles) {
             t->Display();
         }
-        stillTriangle->Display();
+        quad->Display();
 
         // MOVE
 

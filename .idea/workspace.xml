@@ -20,12 +20,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="Makes 2 random coloured triangles move around the screen.">
+    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="fixed colour binding">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Triangle.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Triangle.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Triangle.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Triangle.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src_shader/fragment.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/src_shader/fragment.glsl" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -126,7 +124,7 @@
       <workItem from="1713960624957" duration="294000" />
       <workItem from="1713962617192" duration="23000" />
       <workItem from="1720201503254" duration="17483000" />
-      <workItem from="1720283095542" duration="20037000" />
+      <workItem from="1720283095542" duration="21758000" />
     </task>
     <task id="LOCAL-00001" summary="gitignore">
       <option name="closed" value="true" />
@@ -168,7 +166,15 @@
       <option name="project" value="LOCAL" />
       <updated>1720305123026</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="fixed colour binding">
+      <option name="closed" value="true" />
+      <created>1720353800466</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1720353800466</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -183,7 +189,8 @@
     <MESSAGE value="gitignore" />
     <MESSAGE value="." />
     <MESSAGE value="Makes 2 random coloured triangles move around the screen." />
-    <option name="LAST_COMMIT_MESSAGE" value="Makes 2 random coloured triangles move around the screen." />
+    <MESSAGE value="fixed colour binding" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed colour binding" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

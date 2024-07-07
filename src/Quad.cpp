@@ -1,4 +1,10 @@
 //
+// Created by cew05 on 07/07/2024.
+//
+
+#include "Quad.h"
+
+//
 // Created by cew05 on 16/04/2024.
 //
 
@@ -8,7 +14,7 @@
 #include <random>
 #include <algorithm>
 
-Triangle::Triangle() {
+Quad::Quad() {
     // Generate objectIDs
     glGenVertexArrays(1, &vertexArrayObject);
     glGenBuffers(1, &vertexBufferObject);
@@ -26,41 +32,32 @@ Triangle::Triangle() {
     float r = 0.5;
     numAttribs = 3;
 
-    // Create random vertex positions at set distance from centre
-    // x = rsin(theta), y = rcos(theta)   [theta in radians]
-    std::vector<double> usedThetas {};
-    for (int i = 0; i < 3; i++) {
-        // Fetch angle
-        double theta;
-        while (true) {
-            theta = ((int(mt()) % 200) / 100.0) * M_PI;
-            if (!std::any_of(usedThetas.begin(), usedThetas.end(), [&](double prevTheta){
-                return (theta < (prevTheta + 0.25*M_PI)) && (theta > (prevTheta - 0.25*M_PI));
-            })) {
-                usedThetas.push_back(theta);
-                break;
-            }
-        }
-        auto x = r * (float)sin(theta);
-        auto y = r * (float)cos(theta);
-        auto z = float((int(mt()) % 100) / 100.0);
-
-        // printf("V: %f %f %f\n", cx+x, cy+y, z);
-
-        vertexArray.push_back(cx + x);
-        vertexArray.push_back(cy + y);
-        vertexArray.push_back(z);
-    }
+    // Create vertex positions (two triangles
+    vertexArray = {
+            // bottom Left Triangle
+            -0.5f, -0.5f, 0.0f,
+            0.5f, -0.5f, 0.0f,
+            -0.5f, 0.5f, 0.0f,
+            // Top Right Triangle
+            0.5f, -0.5f, 0.0f,
+            0.5f, 0.5f, 0.0f,
+            -0.5f, 0.5f, 0.0f,
+    };
 
     // Now create a set of colours for the verticies
     vertexColorArray = {
+            // Bottom left triangle
             1.0f, 0.0f, 0.0f,
             0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 1.0f,
+            // Top right triangle
+            0.0f, 1.0f, 0.0f,
+            1.0f, 0.0f, 0.0f,
             0.0f, 0.0f, 1.0f,
     };
 }
 
-Triangle::~Triangle() {
+Quad::~Quad() {
     // Deallocate texture
     glDeleteTextures(1, &textureObject);
     glDeleteBuffers(1, &vertexBufferObject);
@@ -68,7 +65,7 @@ Triangle::~Triangle() {
     glDeleteVertexArrays(1, &vertexArrayObject);
 }
 
-void Triangle::ConstructTriangle() {
+void Quad::ConstructQuad() {
     // bind object id
     glBindVertexArray(vertexArrayObject);
 
@@ -96,7 +93,7 @@ void Triangle::ConstructTriangle() {
 }
 
 
-void Triangle::Move() {
+void Quad::Move() {
     // bind the vertex buffer as data will be changed
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
 
@@ -117,7 +114,7 @@ void Triangle::Move() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void Triangle::Display() const {
+void Quad::Display() const {
     // Bind
 //    glBindTexture(GL_TEXTURE_2D, textureObject);
 //    glEnable(GL_TEXTURE_2D);
@@ -137,7 +134,7 @@ void Triangle::Display() const {
 //    glVertex3f(vertexArray[6], vertexArray[7], vertexArray[8]);
 //    glEnd();
 
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 
     // Unbind
     glBindVertexArray(0);
