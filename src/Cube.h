@@ -23,7 +23,11 @@ class Cube {
         // Vertex Data
         std::vector<float> vertexArray {};
         std::vector<GLuint> indexArray {};
-        glm::vec3 centre {};
+
+        // Normal Vector Data
+        glm::vec3 xNorm {};
+        glm::vec3 yNorm {};
+        glm::vec3 zNorm {};
 
         // Display Data
         std::vector<float> vertexColorArray {};
@@ -38,7 +42,8 @@ class Cube {
         void Display() const;
 
         // Positioning
-        void Rotate(float _theta);
+        void Rotate(const int _dimension, float _theta);
+        void Move(const std::vector<float>& _dist);
 };
 
 #endif //UNTITLED7_CUBE_H

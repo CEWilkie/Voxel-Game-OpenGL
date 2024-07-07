@@ -37,28 +37,19 @@ int main(int argc, char** argv){
     if ((shaderID = window.CreateShaders()) == 0) return 0;
     glUseProgram(shaderID);
 
-    // Uniform var local declaration
-    float uoffset = 0.0f;
-
-
-    std::random_device rd;
-    std::mt19937 mt(rd());
-
-    std::vector<std::unique_ptr<Triangle>> triangles;
-
-    for (int t = 0; t < 2; t++) {
-        // Create Triangle
-        triangles.push_back(std::make_unique<Triangle>());
-        triangles[t]->ConstructTriangle();
-    }
-    printf("TRIANGLES: %zu\n", triangles.size());
-
-    std::unique_ptr<Quad> quad = std::make_unique<Quad>();
-    quad->ConstructQuad();
-
     Cube cube;
 
-    glEnable(GL_DEPTH_TEST);
+    // Projection matrix
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), 500.0f/500.0f, 0.1f, 10.0f);
+
+    GLint rmLocation = glGetUniformLocation(window.GetShader(), "uProjectionMatrix");
+    if (rmLocation < 0) printf("location not found [uProjectionMatrix]");
+    else {
+        glUniformMatrix4fv(rmLocation, 1, GL_FALSE, &proj[0][0]);
+    }
+
+
+    float yoffset, xoffset, ztranslate, xtranslate;
 
     // Render Loop
     bool running = true;
@@ -72,19 +63,8 @@ int main(int argc, char** argv){
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // DRAW
-//        quad->Display();
-//
-//        for (const auto& t : triangles) {
-//            t->Display();
-//        }
 
         cube.Display();
-
-        // MOVE
-
-        for (const auto& to : triangles) {
-            to->Move();
-        }
 
         // INPUTS
 
@@ -97,14 +77,20 @@ int main(int argc, char** argv){
 
         // Keyboard state
         const std::uint8_t* state = SDL_GetKeyboardState(nullptr);
-        if (state[SDL_SCANCODE_UP]) uoffset += 0.01f;
-        if (state[SDL_SCANCODE_DOWN]) uoffset -= 0.01f;
+        if (state[SDL_SCANCODE_UP]) xoffset += 0.01f;
+        if (state[SDL_SCANCODE_DOWN]) xoffset -= 0.01f;
+        if (state[SDL_SCANCODE_LEFT]) yoffset += 0.01f;
+        if (state[SDL_SCANCODE_RIGHT]) yoffset -= 0.01f;
 
-        // Uniform Vars linking
+        if (state[SDL_SCANCODE_W]) ztranslate += 0.05f;
+        if (state[SDL_SCANCODE_S]) ztranslate -= 0.05f;
+        if (state[SDL_SCANCODE_A]) xtranslate += 0.05f;
+        if (state[SDL_SCANCODE_D]) xtranslate -= 0.05f;
 
+        // MOVE
 
-        cube.Rotate(float(uoffset*M_PI));
-
+        cube.Rotate(0, float(yoffset*M_PI));
+        cube.Move({xtranslate, 0, ztranslate});
 
         // update display
         SDL_GL_SwapWindow(window.WindowPtr());

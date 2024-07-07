@@ -14,9 +14,6 @@ Cube::Cube() {
     glGenBuffers(1, &colorBufferObject);
     glGenBuffers(1, &indexBufferObject);
 
-    // Centre of cube
-    centre = glm::vec3(0.25f , -0.25f, 0.25f);
-
     // Create vertex array for cube
     vertexArray = {
             // Top level
@@ -30,6 +27,11 @@ Cube::Cube() {
             0.0f, -0.5f, 0.5f,               // TOPLEFT VERTEX
             0.5f, -0.5f, 0.5f,               // TOPRIGHT VERTEX
     };
+
+    // Create normals to x, y, z planes
+    yNorm = glm::cross(glm::vec3(0.5f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.5f));
+
+
 
     // Create index buffer for traversal order to produce each cube face
     indexArray = {
@@ -111,6 +113,7 @@ void Cube::Display() const {
     glBindVertexArray(vertexArrayObject);
 
     // Enable Attributes
+    glEnable(GL_DEPTH_TEST);
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
 
@@ -118,14 +121,12 @@ void Cube::Display() const {
 
     // unbind
     glBindVertexArray(0);
+    glDisable(GL_DEPTH_TEST);
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
 }
 
-void Cube::Rotate(float _theta) {
-    // Get rotation axis of y
-    glm::vec3 yNorm = glm::cross(glm::vec3(0.5f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.5f));
-
+void Cube::Rotate(const int _dimension, float _theta) {
     // Get rotation matrix
     glm::mat4 rot = glm::rotate(glm::mat4(1.0f), _theta, yNorm);
 
@@ -133,5 +134,16 @@ void Cube::Rotate(float _theta) {
     if (rmLocation < 0) printf("location not found [uRotationMatrix]");
     else {
         glUniformMatrix4fv(rmLocation, 1, GL_FALSE, &rot[0][0]);
+    }
+}
+
+void Cube::Move(const std::vector<float>& _dist) {
+    glm::vec3 vec(_dist[0], _dist[1], _dist[2]);
+    glm::mat4 move = glm::translate(glm::mat4(1.0f), vec);
+
+    GLint rmLocation = glGetUniformLocation(window.GetShader(), "uTranslationMatrix");
+    if (rmLocation < 0) printf("location not found [uTranslationMatrix]");
+    else {
+        glUniformMatrix4fv(rmLocation, 1, GL_FALSE, &move[0][0]);
     }
 }
