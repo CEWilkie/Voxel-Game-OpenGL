@@ -29,8 +29,9 @@ Cube::Cube() {
     };
 
     // Create normals to x, y, z planes
+    xNorm = glm::cross(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(0.0f, 0.0f, 0.5f));
     yNorm = glm::cross(glm::vec3(0.5f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.5f));
-
+    zNorm = glm::cross(glm::vec3(0.5f, 0.0f, 0.0f), glm::vec3(0.0f, 0.5f, 0.0f));
 
 
     // Create index buffer for traversal order to produce each cube face
@@ -71,6 +72,8 @@ Cube::Cube() {
 }
 
 Cube::~Cube() {
+    printf("Cube Destroyed\n");
+
     glDeleteBuffers(1, &vertexBufferObject);
     glDeleteBuffers(1, &colorBufferObject);
     glDeleteVertexArrays(1, &vertexArrayObject);
@@ -101,10 +104,15 @@ void Cube::BindCube() {
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, (GLsizei)sizeof(float)*3, nullptr);
 
     // Unbind arrays / buffers
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    GLenum e;
+    while ((e = glGetError()) != GL_NO_ERROR) {
+        printf("GL ERROR CODE %u STRING : %s\n", e, glewGetErrorString(e));
+    }
 }
 
 
@@ -120,15 +128,36 @@ void Cube::Display() const {
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
 
     // unbind
-    glBindVertexArray(0);
     glDisable(GL_DEPTH_TEST);
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
+    glBindVertexArray(0);
 }
 
-void Cube::Rotate(const int _dimension, float _theta) {
+void Cube::SetPosition(const std::vector<float> &_originVertex) {
+    vertexArray = {
+            // Top level
+            _originVertex[0]        , _originVertex[1]          , _originVertex[2]          ,               // BOTTOMLEFT VERTEX
+            _originVertex[0] + 0.5f , _originVertex[1]          , _originVertex[2]          ,               // BOTTOMRIGHT VERTEX
+            _originVertex[0]        , _originVertex[1]          , _originVertex[2] + 0.5f   ,               // TOPLEFT VERTEX
+            _originVertex[0] + 0.5f , _originVertex[1]          , _originVertex[2] + 0.5f   ,               // TOPRIGHT VERTEX
+            // Bottom level
+            _originVertex[0]        , _originVertex[1] - 0.5f   , _originVertex[2]          ,               // BOTTOMLEFT VERTEX
+            _originVertex[0] + 0.5f , _originVertex[1] - 0.5f   , _originVertex[2]          ,               // BOTTOMRIGHT VERTEX
+            _originVertex[0]        , _originVertex[1] - 0.5f   , _originVertex[2] + 0.5f   ,               // TOPLEFT VERTEX
+            _originVertex[0] + 0.5f , _originVertex[1] - 0.5f   , _originVertex[2] + 0.5f   ,               // TOPRIGHT VERTEX
+    };
+
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+    glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(vertexArray.size() * sizeof(float)), vertexArray.data(), GL_STREAM_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void Cube::Rotate(const std::vector<float>& _theta) {
     // Get rotation matrix
-    glm::mat4 rot = glm::rotate(glm::mat4(1.0f), _theta, yNorm);
+    glm::mat4 rot = glm::rotate(glm::mat4(1.0f), _theta[0], xNorm);
+    rot = glm::rotate(rot, _theta[1], yNorm);
+    rot = glm::rotate(rot, _theta[2], zNorm);
 
     GLint rmLocation = glGetUniformLocation(window.GetShader(), "uRotationMatrix");
     if (rmLocation < 0) printf("location not found [uRotationMatrix]");

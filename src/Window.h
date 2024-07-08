@@ -14,11 +14,15 @@
 
 class Window {
     private:
+        // Window info vars
         SDL_Rect winRect {};
+        float aspectRatio {};
+
+        // Window object and contex
         SDL_Window* window {};
-        SDL_Renderer* renderer {};
         SDL_GLContext glContext {};
 
+        // Shader programs
         unsigned int shader = 0;
 
     public:
@@ -35,6 +39,7 @@ class Window {
         SDL_Window* WindowPtr();
         void GetWindowSize(int& _w, int& _h) const;
         [[nodiscard]] unsigned int GetShader() const { return shader; };
+        [[nodiscard]] float GetAspectRatio() const { return aspectRatio; };
 };
 
 inline Window window;

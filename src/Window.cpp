@@ -5,11 +5,12 @@
 #include "Window.h"
 
 Window::Window() {
-    winRect = {0, 0, 500, 500};
+    winRect = {0, 0, 700, 500};
+    aspectRatio = (float)winRect.w / (float)winRect.h;
     int b_top, b_left, b_right, b_bottom;
 
     // Create SDL window object
-    window = SDL_CreateWindow("openGlWindow", 0, 0, 500, 500, SDL_WINDOW_OPENGL);
+    window = SDL_CreateWindow("openGlWindow", winRect.x, winRect.y, winRect.w, winRect.h, SDL_WINDOW_OPENGL);
     if (!window) {
         LogError("Failed to create window", SDL_GetError(), true);
         return;
@@ -40,8 +41,8 @@ bool Window::CreateGLContext() {
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
     // openGl context
-    SDL_GLContext openGlContext = SDL_GL_CreateContext(window);
-    if (!openGlContext) {
+    glContext = SDL_GL_CreateContext(window);
+    if (!glContext) {
         LogError("Failed to create openGL context for window", SDL_GetError(), true);
         return false;
     }

@@ -42,7 +42,8 @@ class Cube {
         void Display() const;
 
         // Positioning
-        void Rotate(const int _dimension, float _theta);
+        void SetPosition(const std::vector<float>& _originVertex);
+        void Rotate(const std::vector<float>& _theta);
         void Move(const std::vector<float>& _dist);
 };
 

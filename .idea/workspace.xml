@@ -20,12 +20,14 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="Cube rotates properly around yaxis of 0,0,0">
+    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="perspective shifting, more cube rotations">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CoreGlobals.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/CoreGlobals.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Cube.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Cube.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Cube.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Cube.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Window.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Window.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Window.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Window.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src_shader/vertex.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/src_shader/vertex.glsl" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -130,7 +132,7 @@
       <workItem from="1720283095542" duration="22712000" />
       <workItem from="1720357277830" duration="5847000" />
       <workItem from="1720368267882" duration="5431000" />
-      <workItem from="1720373944748" duration="10447000" />
+      <workItem from="1720373944748" duration="21216000" />
     </task>
     <task id="LOCAL-00001" summary="gitignore">
       <option name="closed" value="true" />
@@ -212,7 +214,15 @@
       <option name="project" value="LOCAL" />
       <updated>1720383898852</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="perspective shifting, more cube rotations">
+      <option name="closed" value="true" />
+      <created>1720388276272</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1720388276272</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -232,7 +242,8 @@
     <MESSAGE value="Making a rectangle object with index buffer" />
     <MESSAGE value="Made a &quot;Cube&quot; although depth doesnt truly work. however all triangles should be being drawn correctly. Can move up/down with uniform vars" />
     <MESSAGE value="Cube rotates properly around yaxis of 0,0,0" />
-    <option name="LAST_COMMIT_MESSAGE" value="Cube rotates properly around yaxis of 0,0,0" />
+    <MESSAGE value="perspective shifting, more cube rotations" />
+    <option name="LAST_COMMIT_MESSAGE" value="perspective shifting, more cube rotations" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

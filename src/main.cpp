@@ -37,10 +37,31 @@ int main(int argc, char** argv){
     if ((shaderID = window.CreateShaders()) == 0) return 0;
     glUseProgram(shaderID);
 
-    Cube cube;
+    std::vector<std::unique_ptr<Cube>> cubes;
+
+    // Line of cubes in x
+    for (int c = -10; c < 10; c++) {
+        std::unique_ptr<Cube> cube = std::make_unique<Cube>();
+        cube->SetPosition({float(1+c), 0.f, 0.f});
+        cubes.push_back(std::move(cube));
+    }
+
+    // Line of cubes in y
+    for (int c = -10; c < 10; c++) {
+        std::unique_ptr<Cube> cube = std::make_unique<Cube>();
+        cube->SetPosition({1.f, float(1+c), 0.f});
+        cubes.push_back(std::move(cube));
+    }
+
+    // Line of cubes in z
+    for (int c = -10; c < 10; c++) {
+        std::unique_ptr<Cube> cube = std::make_unique<Cube>();
+        cube->SetPosition({1.f, 0.f, float(1+c)});
+        cubes.push_back(std::move(cube));
+    }
 
     // Projection matrix
-    glm::mat4 proj = glm::perspective(glm::radians(45.0f), 500.0f/500.0f, 0.1f, 10.0f);
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), window.GetAspectRatio(), 0.1f, 10.0f);
 
     GLint rmLocation = glGetUniformLocation(window.GetShader(), "uProjectionMatrix");
     if (rmLocation < 0) printf("location not found [uProjectionMatrix]");
@@ -49,7 +70,12 @@ int main(int argc, char** argv){
     }
 
 
-    float yoffset, xoffset, ztranslate, xtranslate;
+    double yrotate, xrotate;
+    float ztranslate, xtranslate;
+
+    // Get mouse position to use for looking direction input
+    int mousex, mousey, lastmousex, lastmousey;
+    SDL_GetMouseState(&lastmousex, &lastmousey);
 
     // Render Loop
     bool running = true;
@@ -59,12 +85,14 @@ int main(int argc, char** argv){
 
         // CLEAR
 
-        glClearColor(0.1f, 1.0f, 0.6f, 1.0f); //background colour
+        glClearColor(0.0f, 0.2f, 0.2f, 1.0f); //background colour
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // DRAW
 
-        cube.Display();
+        for (const auto& cube : cubes) {
+            cube->Display();
+        }
 
         // INPUTS
 
@@ -75,22 +103,63 @@ int main(int argc, char** argv){
             }
         }
 
+        // Mouse position -> Looking direction
+        int maxx, maxy;
+        window.GetWindowSize(maxx, maxy);
+        SDL_GetMouseState(&mousex, &mousey);
+
+        if (mousex <= maxx && mousex >= 0 && mousey <= maxy && mousey >= 0){
+            if (lastmousex != mousex || lastmousey != mousey) {
+                yrotate += ((lastmousex - mousex) / (maxx/2.0)) * M_PI * 0.5f;
+                xrotate -= ((lastmousey - mousey) / (maxy/2.0)) * M_PI * 0.5f;
+                lastmousex = mousex;
+                lastmousey = mousey;
+            }
+        }
+
+        // Ensure min/max lookup/down
+        xrotate = std::max(-1.0, xrotate);
+        xrotate = std::min(1.0, xrotate);
+
         // Keyboard state
         const std::uint8_t* state = SDL_GetKeyboardState(nullptr);
-        if (state[SDL_SCANCODE_UP]) xoffset += 0.01f;
-        if (state[SDL_SCANCODE_DOWN]) xoffset -= 0.01f;
-        if (state[SDL_SCANCODE_LEFT]) yoffset += 0.01f;
-        if (state[SDL_SCANCODE_RIGHT]) yoffset -= 0.01f;
+        if (state[SDL_SCANCODE_UP]) xrotate -= 0.01f * M_PI;
+        if (state[SDL_SCANCODE_DOWN]) xrotate += 0.01f * M_PI;
+        if (state[SDL_SCANCODE_LEFT]) yrotate += 0.02f * M_PI;
+        if (state[SDL_SCANCODE_RIGHT]) yrotate -= 0.02f * M_PI;
 
-        if (state[SDL_SCANCODE_W]) ztranslate += 0.05f;
-        if (state[SDL_SCANCODE_S]) ztranslate -= 0.05f;
-        if (state[SDL_SCANCODE_A]) xtranslate += 0.05f;
-        if (state[SDL_SCANCODE_D]) xtranslate -= 0.05f;
+        if (state[SDL_SCANCODE_W]) {
+            ztranslate += 0.05f * (float)cos(yrotate);
+            xtranslate += 0.05f * (float)sin(yrotate);
+        }
+        if (state[SDL_SCANCODE_S]) {
+            ztranslate -= 0.05f * (float)cos(yrotate);
+            xtranslate -= 0.05f * (float)sin(yrotate);
+        }
+        if (state[SDL_SCANCODE_A]) {
+            ztranslate -= 0.05f * (float)sin(yrotate);
+            xtranslate += 0.05f * (float)cos(yrotate);
+        }
+        if (state[SDL_SCANCODE_D]) {
+            ztranslate += 0.05f * (float)sin(yrotate);
+            xtranslate -= 0.05f * (float)cos(yrotate);
+        }
+
+        // modify translation according to facing direction;
+        printf("FACING ANGLE %f %f\n", (float)yrotate, (float)xrotate);
+
+        // Error check
+        GLenum e;
+        while ((e = glGetError()) != GL_NO_ERROR) {
+            printf("GL ERROR CODE %u STRING : %s\n", e, glewGetErrorString(e));
+        }
 
         // MOVE
 
-        cube.Rotate(0, float(yoffset*M_PI));
-        cube.Move({xtranslate, 0, ztranslate});
+        for (const auto& cube : cubes) {
+            cube->Rotate({float(xrotate), float(yrotate), 0});
+            cube->Move({xtranslate, 0, ztranslate});
+        }
 
         // update display
         SDL_GL_SwapWindow(window.WindowPtr());
