@@ -8,6 +8,8 @@
 #include <SDL.h>
 #include <vector>
 #include <glew.h>
+#include <glm/matrix.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "CoreGlobals.h"
 #include "Shaders.h"

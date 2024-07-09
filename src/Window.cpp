@@ -5,8 +5,9 @@
 #include "Window.h"
 
 Window::Window() {
-    winRect = {0, 0, 700, 500};
+    winRect = {0, 0, 1000, 700};
     aspectRatio = (float)winRect.w / (float)winRect.h;
+    printf("ASPECT RATIO: %f\n", aspectRatio);
     int b_top, b_left, b_right, b_bottom;
 
     // Create SDL window object
@@ -63,9 +64,13 @@ void Window::SetWindowSize(int _w, int _h) {
     _w = std::max(500, _w);
     _h = std::max(500, _h);
 
+    // Update window size
     winRect.w = _w;
     winRect.h = _h;
     SDL_SetWindowSize(window, winRect.w, winRect.h);
+
+    // Update aspect ratio
+    aspectRatio = float(winRect.w) / float(winRect.h);
 }
 
 SDL_Window* Window::WindowPtr() {

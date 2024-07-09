@@ -125,7 +125,7 @@ void Cube::Display() const {
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
 
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+    GLCHECK(glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr));
 
     // unbind
     glDisable(GL_DEPTH_TEST);

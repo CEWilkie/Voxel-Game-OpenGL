@@ -1,5 +1,4 @@
 #define SDL_MAIN_HANDLED
-#include <iostream>
 #include <random>
 #include <memory>
 
@@ -7,13 +6,10 @@
 #include <SDL_image.h>
 
 #include <glew.h>
-#include <glm/matrix.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include "Window.h"
-#include "Triangle.h"
-#include "Quad.h"
 #include "Cube.h"
+#include "Camera.h"
 
 int main(int argc, char** argv){
     // Init SDL
@@ -42,59 +38,72 @@ int main(int argc, char** argv){
     // Line of cubes in x
     for (int c = -10; c < 10; c++) {
         std::unique_ptr<Cube> cube = std::make_unique<Cube>();
-        cube->SetPosition({float(1+c), 0.f, 0.f});
+        cube->SetPosition({float(c / 2.0), 0.f, 0.0f});
         cubes.push_back(std::move(cube));
     }
+
 
     // Line of cubes in y
     for (int c = -10; c < 10; c++) {
         std::unique_ptr<Cube> cube = std::make_unique<Cube>();
-        cube->SetPosition({1.f, float(1+c), 0.f});
+        cube->SetPosition({0.0f, float(c / 2.0), 0.0f});
         cubes.push_back(std::move(cube));
     }
+
 
     // Line of cubes in z
     for (int c = -10; c < 10; c++) {
         std::unique_ptr<Cube> cube = std::make_unique<Cube>();
-        cube->SetPosition({1.f, 0.f, float(1+c)});
+        cube->SetPosition({0.0f, 0.f, float(c / 2.0)});
         cubes.push_back(std::move(cube));
     }
 
-    // Projection matrix
-    glm::mat4 proj = glm::perspective(glm::radians(45.0f), window.GetAspectRatio(), 0.1f, 10.0f);
 
-    GLint rmLocation = glGetUniformLocation(window.GetShader(), "uProjectionMatrix");
-    if (rmLocation < 0) printf("location not found [uProjectionMatrix]");
-    else {
-        glUniformMatrix4fv(rmLocation, 1, GL_FALSE, &proj[0][0]);
-    }
+    // CAMERA OBJECT
+    Camera camera;
 
 
-    double yrotate, xrotate;
-    float ztranslate, xtranslate;
+    double yrotate = 0, xrotate = 0;
+    float ztranslate = 0, xtranslate = 0;
 
-    // Get mouse position to use for looking direction input
-    int mousex, mousey, lastmousex, lastmousey;
-    SDL_GetMouseState(&lastmousex, &lastmousey);
+    // Trap mouse to screen and hide it
+    SDL_SetWindowGrab(window.WindowPtr(), SDL_TRUE);
+    SDL_ShowCursor(SDL_DISABLE);
 
     // Render Loop
     bool running = true;
-    Uint64 frameStart;
+    bool escToggled = false;
+    SDL_bool grabMouse = SDL_TRUE;
+    Uint64 deltaFrames, lastFrame;
     while (running) {
-        frameStart = SDL_GetTicks64();
+        /*
+         * START OF FRAME
+         */
 
-        // CLEAR
+        Uint64 frameStart = SDL_GetTicks64();
+        deltaFrames = frameStart - lastFrame;
+        lastFrame = frameStart;
 
-        glClearColor(0.0f, 0.2f, 0.2f, 1.0f); //background colour
+        /*
+         *  CLEAR SCREEN
+         */
+
+        glClearColor(159/255.0f, 219/255.0f, 245/255.0f, 1.0f); //background colour
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // DRAW
+        /*
+         * DRAW TO SCREEN
+         */
 
         for (const auto& cube : cubes) {
             cube->Display();
         }
 
-        // INPUTS
+        /*
+         * INPUT MANAGEMENT
+         */
+
+        // SDL EVENTS
 
         SDL_Event event;
         while (SDL_PollEvent(&event) != 0) {
@@ -103,74 +112,70 @@ int main(int argc, char** argv){
             }
         }
 
-        // Mouse position -> Looking direction
-        int maxx, maxy;
-        window.GetWindowSize(maxx, maxy);
-        SDL_GetMouseState(&mousex, &mousey);
+        // KEYBOARD INPUTS
 
-        if (mousex <= maxx && mousex >= 0 && mousey <= maxy && mousey >= 0){
-            if (lastmousex != mousex || lastmousey != mousey) {
-                yrotate += ((lastmousex - mousex) / (maxx/2.0)) * M_PI * 0.5f;
-                xrotate -= ((lastmousey - mousey) / (maxy/2.0)) * M_PI * 0.5f;
-                lastmousex = mousex;
-                lastmousey = mousey;
-            }
-        }
-
-        // Ensure min/max lookup/down
-        xrotate = std::max(-1.0, xrotate);
-        xrotate = std::min(1.0, xrotate);
-
-        // Keyboard state
+        // Mouse position -> Looking target
         const std::uint8_t* state = SDL_GetKeyboardState(nullptr);
-        if (state[SDL_SCANCODE_UP]) xrotate -= 0.01f * M_PI;
-        if (state[SDL_SCANCODE_DOWN]) xrotate += 0.01f * M_PI;
-        if (state[SDL_SCANCODE_LEFT]) yrotate += 0.02f * M_PI;
-        if (state[SDL_SCANCODE_RIGHT]) yrotate -= 0.02f * M_PI;
+        if (state[SDL_SCANCODE_ESCAPE]) {
+            // Guard against escape being set to false after 2 frame press
+            if (escToggled) continue;
+            escToggled = true;
 
-        if (state[SDL_SCANCODE_W]) {
-            ztranslate += 0.05f * (float)cos(yrotate);
-            xtranslate += 0.05f * (float)sin(yrotate);
+            // Set mouse pos to centre to prevent change in looking target on resume
+            int maxx, maxy;
+            window.GetWindowSize(maxx, maxy);
+            SDL_WarpMouseInWindow(window.WindowPtr(), maxx/2, maxy/2);
+
+            // lock mouse to window
+            grabMouse = (grabMouse == SDL_TRUE) ? SDL_FALSE : SDL_TRUE;
+            SDL_SetWindowGrab(window.WindowPtr(), grabMouse);
+            SDL_ShowCursor((grabMouse == SDL_TRUE) ? SDL_DISABLE : SDL_ENABLE);
         }
-        if (state[SDL_SCANCODE_S]) {
-            ztranslate -= 0.05f * (float)cos(yrotate);
-            xtranslate -= 0.05f * (float)sin(yrotate);
-        }
-        if (state[SDL_SCANCODE_A]) {
-            ztranslate -= 0.05f * (float)sin(yrotate);
-            xtranslate += 0.05f * (float)cos(yrotate);
-        }
-        if (state[SDL_SCANCODE_D]) {
-            ztranslate += 0.05f * (float)sin(yrotate);
-            xtranslate -= 0.05f * (float)cos(yrotate);
+        if (!state[SDL_SCANCODE_ESCAPE]) escToggled = false;
+
+        // CAMERA
+        if (grabMouse == SDL_TRUE) {
+            camera.Move(deltaFrames);
+            camera.MouseLook(grabMouse);
         }
 
-        // modify translation according to facing direction;
-        printf("FACING ANGLE %f %f\n", (float)yrotate, (float)xrotate);
+        /*
+         * ERROR CHECKING
+         */
 
-        // Error check
         GLenum e;
         while ((e = glGetError()) != GL_NO_ERROR) {
             printf("GL ERROR CODE %u STRING : %s\n", e, glewGetErrorString(e));
         }
 
-        // MOVE
+        /*
+         *  APPLY INPUTS
+         */
 
-        for (const auto& cube : cubes) {
-            cube->Rotate({float(xrotate), float(yrotate), 0});
-            cube->Move({xtranslate, 0, ztranslate});
-        }
 
-        // update display
+
+        /*
+         * UPDATE DISPLAY
+         */
+
+        camera.UpdateUniform();
         SDL_GL_SwapWindow(window.WindowPtr());
 
-        Uint64 frametime = SDL_GetTicks64() - frameStart;
-        if (frametime < 1000/60) {
-            SDL_Delay(1000/60 - frametime);
-        }
+        /*
+         *  END OF FRAME
+         */
+
+//        Uint64 frametime = SDL_GetTicks64() - frameStart;
+//        if (frametime < 1000/60) {
+//            SDL_Delay(1000/60 - frametime);
+//        }
+
     }
 
-    // end handling
+    /*
+     * HANDLE END OF PROGRAM
+     */
+
     SDL_Quit();
 
     return 0;
