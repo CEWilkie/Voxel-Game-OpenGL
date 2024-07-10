@@ -36,28 +36,29 @@ int main(int argc, char** argv){
     std::vector<std::unique_ptr<Cube>> cubes;
 
     // Line of cubes in x
-    for (int c = -10; c < 10; c++) {
+    for (int c = 0; c < 20; c++) {
         std::unique_ptr<Cube> cube = std::make_unique<Cube>();
-        cube->SetPosition({float(c / 2.0), 0.f, 0.0f});
+        cube->SetPositionOrigin({float(c / 2.0), 0.f, 0.0f});
         cubes.push_back(std::move(cube));
     }
 
 
     // Line of cubes in y
-    for (int c = -10; c < 10; c++) {
+    for (int c = 0; c < 20; c++) {
         std::unique_ptr<Cube> cube = std::make_unique<Cube>();
-        cube->SetPosition({0.0f, float(c / 2.0), 0.0f});
+        cube->SetPositionOrigin({0.0f, float(c / 2.0), 0.0f});
         cubes.push_back(std::move(cube));
     }
 
 
     // Line of cubes in z
-    for (int c = -10; c < 10; c++) {
+    for (int c = 0; c < 10; c++) {
         std::unique_ptr<Cube> cube = std::make_unique<Cube>();
-        cube->SetPosition({0.0f, 0.f, float(c / 2.0)});
+        cube->SetPositionOrigin({0.0f, 0.f, float(c / 2.0)});
         cubes.push_back(std::move(cube));
     }
 
+//    return 0;
 
     // CAMERA OBJECT
     Camera camera;
@@ -95,9 +96,13 @@ int main(int argc, char** argv){
          * DRAW TO SCREEN
          */
 
+        glClearErrors();
+
         for (const auto& cube : cubes) {
             cube->Display();
         }
+
+        camera.DisplayDirectionVertexes();
 
         /*
          * INPUT MANAGEMENT

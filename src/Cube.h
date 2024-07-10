@@ -14,8 +14,13 @@
 
 struct Vertex {
     glm::vec3 position {};
+    glm::vec2 texture {};
     glm::vec3 color {};
-    glm::vec3 textureCoord {};
+};
+
+struct VertexOffsets {
+    glm::vec3 positionOffset {};
+    glm::vec2 textureOffset {};
 };
 
 class Cube {
@@ -23,30 +28,37 @@ class Cube {
         // Buffer objects
         unsigned int vertexArrayObject {};
         unsigned int vertexBufferObject {};
-        unsigned int colorBufferObject {};
         unsigned int indexBufferObject {};
         unsigned int textureBufferObject {};
 
         // Vertex Data
-        std::vector<float> vertexArray {};
+        Vertex origin {};
         std::vector<GLuint> indexArray {};
+        std::unique_ptr<std::vector<Vertex>> vertexArray {};
+        std::unique_ptr<std::vector<VertexOffsets>> vertexOffsetArray {};
 
         // Display Data
-        std::vector<float> vertexColorArray {};
-        std::vector<float> vertexTextureArray {};
+        std::pair<int, int> textureSheetSize {256, 256};
+        std::pair<int, int> textureSheetGrid {4, 4};
+
+        // Bind Data to openGL
+        void BindCube() const;
+
+        void UpdateVertexPositions() const;
+        void UpdateColorBuffer() const;
+        void UpdateVertexTextureCoords() const;
 
     public:
         Cube();
         ~Cube();
 
-        void BindCube();
-
         // Display
         void Display() const;
         void CreateTextures() const;
 
-        // Positioning
-        void SetPosition(const std::vector<float>& _originVertex);
+        // Set Relative Position Origins
+        void SetPositionOrigin(glm::vec3 _origin);
+        void SetTextureOrigin(glm::vec2 _origin);
 };
 
 #endif //UNTITLED7_CUBE_H

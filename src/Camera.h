@@ -8,6 +8,7 @@
 #include <glm/matrix.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <SDL.h>
+#include <memory>
 
 class Camera {
     private:
@@ -24,11 +25,25 @@ class Camera {
         double angleHoriz = 0;
         double sensitivity = 0.1;
 
+        // XYZ Vertex Direction Display
+        unsigned int vertexArrayObject {};
+        unsigned int vertexBufferObject {};
+        unsigned int indexBufferObject {};
 
+        // Direction Vertex Info
+        std::vector<float> vertexArray {};
+
+        void BindDirectionVertexes() const;
+
+        float maxy = 0.5f;
 
     public:
         Camera();
 
+        // Direction Vertexes
+        void DisplayDirectionVertexes() const;
+
+        // Camera Movement
         void MoveTo(const glm::vec3& _position);
         void Move(Uint64 _deltaFrames);
         void MouseLook(SDL_bool _mouseGrabbed);
