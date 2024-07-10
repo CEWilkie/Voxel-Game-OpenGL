@@ -31,9 +31,9 @@ void Camera::MoveTo(const glm::vec3 &_position) {
 }
 
 void Camera::Move(Uint64 _deltaFrames) {
-    printf("POS: %f %f %f\n", position.x, position.y, position.z);
-    printf("FACING DIRECTION: %f %f %f\n", direction.x, direction.y, direction.z);
-    printf("ANGLES: %f %f\n\n", angleVert, angleHoriz);
+//    printf("POS: %f %f %f\n", position.x, position.y, position.z);
+//    printf("FACING DIRECTION: %f %f %f\n", direction.x, direction.y, direction.z);
+//    printf("ANGLES: %f %f\n\n", angleVert, angleHoriz);
 
     float spd = float(_deltaFrames)/120.0f;
 

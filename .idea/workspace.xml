@@ -20,14 +20,13 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="multiple cubes on display, looking with mouse, movement">
-      <change afterPath="$PROJECT_DIR$/src/Camera.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Camera.h" afterDir="false" />
+    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="camera system implemented">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Camera.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Camera.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Cube.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Cube.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Window.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Window.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Window.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Window.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Cube.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Cube.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src_shader/fragment.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/src_shader/fragment.glsl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src_shader/vertex.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/src_shader/vertex.glsl" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -129,7 +128,8 @@
       <workItem from="1720357277830" duration="5847000" />
       <workItem from="1720368267882" duration="5431000" />
       <workItem from="1720373944748" duration="45537000" />
-      <workItem from="1720523654561" duration="11921000" />
+      <workItem from="1720523654561" duration="22777000" />
+      <workItem from="1720601325776" duration="9871000" />
     </task>
     <task id="LOCAL-00001" summary="gitignore">
       <option name="closed" value="true" />
@@ -227,7 +227,15 @@
       <option name="project" value="LOCAL" />
       <updated>1720440769371</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="camera system implemented">
+      <option name="closed" value="true" />
+      <created>1720547967170</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1720547967170</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -249,7 +257,8 @@
     <MESSAGE value="Cube rotates properly around yaxis of 0,0,0" />
     <MESSAGE value="perspective shifting, more cube rotations" />
     <MESSAGE value="multiple cubes on display, looking with mouse, movement" />
-    <option name="LAST_COMMIT_MESSAGE" value="multiple cubes on display, looking with mouse, movement" />
+    <MESSAGE value="camera system implemented" />
+    <option name="LAST_COMMIT_MESSAGE" value="camera system implemented" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

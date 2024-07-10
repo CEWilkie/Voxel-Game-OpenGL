@@ -12,6 +12,12 @@
 
 #include "Quad.h"
 
+struct Vertex {
+    glm::vec3 position {};
+    glm::vec3 color {};
+    glm::vec3 textureCoord {};
+};
+
 class Cube {
     private:
         // Buffer objects
@@ -19,18 +25,15 @@ class Cube {
         unsigned int vertexBufferObject {};
         unsigned int colorBufferObject {};
         unsigned int indexBufferObject {};
+        unsigned int textureBufferObject {};
 
         // Vertex Data
         std::vector<float> vertexArray {};
         std::vector<GLuint> indexArray {};
 
-        // Normal Vector Data
-        glm::vec3 xNorm {};
-        glm::vec3 yNorm {};
-        glm::vec3 zNorm {};
-
         // Display Data
         std::vector<float> vertexColorArray {};
+        std::vector<float> vertexTextureArray {};
 
     public:
         Cube();
@@ -40,11 +43,10 @@ class Cube {
 
         // Display
         void Display() const;
+        void CreateTextures() const;
 
         // Positioning
         void SetPosition(const std::vector<float>& _originVertex);
-        void Rotate(const std::vector<float>& _theta);
-        void Move(const std::vector<float>& _dist);
 };
 
 #endif //UNTITLED7_CUBE_H

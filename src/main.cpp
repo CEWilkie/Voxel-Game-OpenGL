@@ -143,11 +143,6 @@ int main(int argc, char** argv){
          * ERROR CHECKING
          */
 
-        GLenum e;
-        while ((e = glGetError()) != GL_NO_ERROR) {
-            printf("GL ERROR CODE %u STRING : %s\n", e, glewGetErrorString(e));
-        }
-
         /*
          *  APPLY INPUTS
          */

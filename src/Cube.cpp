@@ -5,7 +5,8 @@
 #include "Cube.h"
 
 #include "Window.h"
-#include <glm/gtc/matrix_transform.hpp>
+#include <SDL.h>
+#include <SDL_image.h>
 
 Cube::Cube() {
     // Generate objectIDs
@@ -13,6 +14,7 @@ Cube::Cube() {
     glGenBuffers(1, &vertexBufferObject);
     glGenBuffers(1, &colorBufferObject);
     glGenBuffers(1, &indexBufferObject);
+    glGenBuffers(1, &textureBufferObject);
 
     // Create vertex array for cube
     vertexArray = {
@@ -28,23 +30,8 @@ Cube::Cube() {
             0.5f, -0.5f, 0.5f,               // TOPRIGHT VERTEX
     };
 
-    // Create normals to x, y, z planes
-    xNorm = glm::cross(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(0.0f, 0.0f, 0.5f));
-    yNorm = glm::cross(glm::vec3(0.5f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.5f));
-    zNorm = glm::cross(glm::vec3(0.5f, 0.0f, 0.0f), glm::vec3(0.0f, 0.5f, 0.0f));
-
-
     // Create index buffer for traversal order to produce each cube face
     indexArray = {
-            // LEFTSIDEFACE
-            6, 4, 2,
-            4, 0, 2,
-            // BOTTOMFACE
-            4, 5, 6,
-            5, 7, 6,
-            // BACKFACE
-            7, 2, 3,
-            7, 6, 2,
             // TOPFACE
             0, 1, 2,
             1, 3, 2,
@@ -54,6 +41,15 @@ Cube::Cube() {
             // RIGHTSIDEFACE
             5, 7, 1,
             7, 3, 1,
+            // LEFTSIDEFACE
+            6, 4, 2,
+            4, 0, 2,
+            // BOTTOMFACE
+            4, 5, 6,
+            5, 7, 6,
+            // BACKFACE
+            7, 2, 3,
+            7, 6, 2,
     };
 
     // Create colour array
@@ -67,6 +63,20 @@ Cube::Cube() {
             1.0f, 0.0f, 0.0f,
             0.0f, 1.0f, 0.0f,
     };
+
+    // Create vertex texture points
+    vertexTextureArray = {
+        0.0f, 0.0f,
+        1.0f, 0.0f,
+        0.0f, 1.0f,
+        1.0f, 1.0f,
+        0.0f, 0.0f,
+        1.0f, 0.0f,
+        0.0f, 1.0f,
+        1.0f, 1.0f,
+    };
+
+    CreateTextures();
 
     BindCube();
 }
@@ -85,7 +95,7 @@ void Cube::BindCube() {
 
     // bind vertex buffer array
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(vertexArray.size() * sizeof(float)), vertexArray.data(), GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(vertexArray.size() * sizeof(float)), vertexArray.data(), GL_STATIC_DRAW);
 
     // Vertex Position Attributes
     glEnableVertexAttribArray(0);
@@ -93,7 +103,7 @@ void Cube::BindCube() {
 
     // Bind index buffer
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(indexArray.size()*sizeof(GLuint)), indexArray.data(), GL_STREAM_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(indexArray.size()*sizeof(GLuint)), indexArray.data(), GL_STATIC_DRAW);
 
     // Bind colour buffer
     glBindBuffer(GL_ARRAY_BUFFER, colorBufferObject);
@@ -103,11 +113,24 @@ void Cube::BindCube() {
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, (GLsizei)sizeof(float)*3, nullptr);
 
+    // Bind texture buffer
+    glBindBuffer(GL_TEXTURE_2D, textureBufferObject);
+    glBufferData(GL_TEXTURE_2D, GLsizeiptr(vertexTextureArray.size() * sizeof(float)), vertexTextureArray.data(), GL_STATIC_DRAW);
+
+    // Vertex Texture attributes
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, (GLsizei)sizeof(float)*2, nullptr);
+
+    GLint tex0Location = glGetUniformLocation(window.GetShader(), "tex0");
+    glUniform1i(tex0Location, 0);
+
     // Unbind arrays / buffers
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_TEXTURE_2D, 0);
 
     GLenum e;
     while ((e = glGetError()) != GL_NO_ERROR) {
@@ -124,15 +147,75 @@ void Cube::Display() const {
     glEnable(GL_DEPTH_TEST);
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
 
-    GLCHECK(glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr));
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
 
     // unbind
     glDisable(GL_DEPTH_TEST);
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
     glBindVertexArray(0);
 }
+
+void Cube::CreateTextures() const {
+    // Load image to surface
+    SDL_Surface* surface = IMG_Load("../resources/testcube64x.png");
+    if (surface == nullptr) {
+        LogError("Failed to load texture", SDL_GetError());
+        return;
+    }
+
+    // Format RGBA
+    Uint8 nColours = surface->format->BytesPerPixel;
+    GLenum textureFormat;
+    GLint internalFormat;
+    if (nColours == 4) { // Contains alpha
+        if (surface->format->Rmask == 0x000000ff) textureFormat = GL_RGBA;
+        else textureFormat = GL_BGRA;
+        internalFormat = GL_RGBA8;
+    }
+    else if (nColours == 3) { // No alpha
+        if (surface->format->Rmask == 0x000000ff) textureFormat = GL_RGB;
+        else textureFormat = GL_BGR;
+        internalFormat = GL_RGB8;
+    }
+    else {
+        printf("Image potentially unsuitable, only %d colour channels.\n Ending texture assignment\n", nColours);
+        return;
+    }
+
+    // Pixel Alignment Info
+    int alignment = 8;
+    while (surface->pitch%alignment) alignment>>=1; // x%1==0 for any x
+    glPixelStorei(GL_UNPACK_ALIGNMENT,alignment);
+
+    // bind to the texture object
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textureBufferObject);
+
+    // Set texture stretch properties
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    // Texture wrapping
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+
+    // Texture environment interactions
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+    // Edit the texture object's image data using the information SDL_Surface gives us
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, surface->w, surface->h, 0,
+                 textureFormat, GL_UNSIGNED_BYTE, surface->pixels);
+
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    // Unbind
+    glBindTexture(GL_TEXTURE_2D, 0);
+    SDL_FreeSurface(surface);
+}
+
 
 void Cube::SetPosition(const std::vector<float> &_originVertex) {
     vertexArray = {
@@ -153,26 +236,3 @@ void Cube::SetPosition(const std::vector<float> &_originVertex) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void Cube::Rotate(const std::vector<float>& _theta) {
-    // Get rotation matrix
-    glm::mat4 rot = glm::rotate(glm::mat4(1.0f), _theta[0], xNorm);
-    rot = glm::rotate(rot, _theta[1], yNorm);
-    rot = glm::rotate(rot, _theta[2], zNorm);
-
-    GLint rmLocation = glGetUniformLocation(window.GetShader(), "uRotationMatrix");
-    if (rmLocation < 0) printf("location not found [uRotationMatrix]");
-    else {
-        glUniformMatrix4fv(rmLocation, 1, GL_FALSE, &rot[0][0]);
-    }
-}
-
-void Cube::Move(const std::vector<float>& _dist) {
-    glm::vec3 vec(_dist[0], _dist[1], _dist[2]);
-    glm::mat4 move = glm::translate(glm::mat4(1.0f), vec);
-
-    GLint rmLocation = glGetUniformLocation(window.GetShader(), "uTranslationMatrix");
-    if (rmLocation < 0) printf("location not found [uTranslationMatrix]");
-    else {
-        glUniformMatrix4fv(rmLocation, 1, GL_FALSE, &move[0][0]);
-    }
-}

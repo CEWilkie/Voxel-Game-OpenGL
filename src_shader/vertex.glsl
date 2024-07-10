@@ -2,10 +2,12 @@
 
 // PIPE IN
 layout(location = 0) in vec3 position;
-layout(location = 1) in vec3 vertexColours;
+layout(location = 1) in vec3 vertexColour;
+layout(location = 2) in vec2 vertexTextureCoord;
 
 // PIPE OUT
-out vec3 v_vertexColours;
+out vec3 v_vertexColour;
+out vec2 v_vertexTextureCoord;
 
 // UNIFORMS
 uniform mat4 uViewMatrix;
@@ -22,5 +24,8 @@ void main() {
     gl_Position = uProjectionMatrix * gl_Position;
 
     // Colour
-    v_vertexColours = vertexColours;
+    v_vertexColour = vertexColour;
+
+    // Texture
+    v_vertexTextureCoord = vertexTextureCoord;
 }
