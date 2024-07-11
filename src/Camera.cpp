@@ -13,7 +13,8 @@ Camera::Camera() {
     glGenBuffers(1, &vertexBufferObject);
 
     // Set the perspective of the camera and update the uniform matrix in the shader
-    perspective = glm::perspective(glm::radians(45.0f), window.GetAspectRatio(), 0.1f, 10.0f);
+    perspective = glm::perspective(glm::radians(45.0f), window.GetAspectRatio(),
+                                   minDistance, maxDistance);
     GLint uLocation = glGetUniformLocation(window.GetShader(), "uProjectionMatrix");
     if (uLocation < 0) printf("location not found [uProjectionMatrix]");
     else {
@@ -93,7 +94,7 @@ void Camera::MoveTo(const glm::vec3 &_position) {
 }
 
 void Camera::Move(Uint64 _deltaFrames) {
-    printf("POS: %f %f %f\n", position.x, position.y, position.z);
+//    printf("POS: %f %f %f\n", position.x, position.y, position.z);
 //    printf("FACING DIRECTION: %f %f %f\n", direction.x, direction.y, direction.z);
 //    printf("ANGLES: %f %f\n\n", angleVert, angleHoriz);
 
@@ -174,7 +175,7 @@ void Camera::MouseLook(SDL_bool _mouseGrabbed) {
     direction = glm::normalize(rotation * glm::vec4(dirDefault, 1.0f));
     SDL_WarpMouseInWindow(window.WindowPtr(), maxx/2, maxy/2);
 
-    printf("FACING DIRECTION: %f %f %f\n", direction.x, direction.y, direction.z);
+//    printf("FACING DIRECTION: %f %f %f\n", direction.x, direction.y, direction.z);
 }
 
 void Camera::UpdateUniform() const {

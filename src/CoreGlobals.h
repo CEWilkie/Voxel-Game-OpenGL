@@ -14,8 +14,6 @@ inline void LogError(const std::string& errorMsgDecorative = "", const T& errorM
            errorMsgDecorative.c_str(), errorMsg, fatal);
 }
 
-
-
 static void glClearErrors() {
     while (glGetError() != GL_NO_ERROR);
 }

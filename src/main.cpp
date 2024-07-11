@@ -10,6 +10,7 @@
 #include "Window.h"
 #include "Cube.h"
 #include "Camera.h"
+#include "World.h"
 
 int main(int argc, char** argv){
     // Init SDL
@@ -33,12 +34,35 @@ int main(int argc, char** argv){
     if ((shaderID = window.CreateShaders()) == 0) return 0;
     glUseProgram(shaderID);
 
+
+    /*
+     * TEXTURE CREATION
+     */
+
+    Texture texture("../resources/testcube64x.png");
+    texture.SetTextureSheetGrid({4, 4});
+
+    /*
+     *  WORLD OBJECT CREATION
+     */
+
+// CAMERA OBJECT
+    Camera camera;
+
+    // WORLD OBJECT
+    World world;
+    world.SetSkyboxProperties(&camera);
+
+//    Texture textureB("../resources/testcube64x.png");
+//    texture.SetTextureSheetGrid({4, 4});
+
     std::vector<std::unique_ptr<Cube>> cubes;
 
     // Line of cubes in x
     for (int c = 0; c < 20; c++) {
         std::unique_ptr<Cube> cube = std::make_unique<Cube>();
-        cube->SetPositionOrigin({float(c / 2.0), 0.f, 0.0f});
+        cube->SetPositionOrigin({float(c), 0.f, 0.0f});
+        cube->SetTexture(&texture, {0,0});
         cubes.push_back(std::move(cube));
     }
 
@@ -46,7 +70,8 @@ int main(int argc, char** argv){
     // Line of cubes in y
     for (int c = 0; c < 20; c++) {
         std::unique_ptr<Cube> cube = std::make_unique<Cube>();
-        cube->SetPositionOrigin({0.0f, float(c / 2.0), 0.0f});
+        cube->SetPositionOrigin({0.0f, float(c), 0.0f});
+        cube->SetTexture(&texture, {0,0});
         cubes.push_back(std::move(cube));
     }
 
@@ -54,18 +79,10 @@ int main(int argc, char** argv){
     // Line of cubes in z
     for (int c = 0; c < 10; c++) {
         std::unique_ptr<Cube> cube = std::make_unique<Cube>();
-        cube->SetPositionOrigin({0.0f, 0.f, float(c / 2.0)});
+        cube->SetPositionOrigin({0.0f, 0.f, float(c)});
+        cube->SetTexture(&texture, {0,0});
         cubes.push_back(std::move(cube));
     }
-
-//    return 0;
-
-    // CAMERA OBJECT
-    Camera camera;
-
-
-    double yrotate = 0, xrotate = 0;
-    float ztranslate = 0, xtranslate = 0;
 
     // Trap mouse to screen and hide it
     SDL_SetWindowGrab(window.WindowPtr(), SDL_TRUE);
@@ -103,6 +120,8 @@ int main(int argc, char** argv){
         }
 
         camera.DisplayDirectionVertexes();
+        world.SetSkyboxPosition(camera.GetPosition());
+        world.Display();
 
         /*
          * INPUT MANAGEMENT

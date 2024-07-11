@@ -7,10 +7,12 @@
 
 #include <memory>
 #include <vector>
+#include <string>
 
+#include <glew.h>
 #include <glm/matrix.hpp>
 
-#include "Quad.h"
+#include "Texture.h"
 
 struct Vertex {
     glm::vec3 position {};
@@ -29,17 +31,16 @@ class Cube {
         unsigned int vertexArrayObject {};
         unsigned int vertexBufferObject {};
         unsigned int indexBufferObject {};
-        unsigned int textureBufferObject {};
 
         // Vertex Data
-        Vertex origin {};
+        std::unique_ptr<Vertex> origin {};
         std::vector<GLuint> indexArray {};
         std::unique_ptr<std::vector<Vertex>> vertexArray {};
         std::unique_ptr<std::vector<VertexOffsets>> vertexOffsetArray {};
+        glm::vec3 dimensions {1.0f, 1.0f, 1.0f};
 
         // Display Data
-        std::pair<int, int> textureSheetSize {256, 256};
-        std::pair<int, int> textureSheetGrid {4, 4};
+        Texture* texture {};
 
         // Bind Data to openGL
         void BindCube() const;
@@ -54,11 +55,16 @@ class Cube {
 
         // Display
         void Display() const;
-        void CreateTextures() const;
+        void SetTexture(Texture* _texture, glm::vec2 _sheetPosition);
 
-        // Set Relative Position Origins
+        // Positioning
         void SetPositionOrigin(glm::vec3 _origin);
+        void SetPositionCentre(glm::vec3 _centre);
         void SetTextureOrigin(glm::vec2 _origin);
+        void SetDimensions(glm::vec3 _dimensions);
+
+        // Getters
+        [[nodiscard]] glm::vec3 GetDimensions() { return dimensions; }
 };
 
 #endif //UNTITLED7_CUBE_H

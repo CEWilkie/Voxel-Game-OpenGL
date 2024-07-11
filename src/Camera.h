@@ -14,6 +14,8 @@ class Camera {
     private:
         // Global perspective
         glm::mat4 perspective {};
+        float minDistance = 1.0f;
+        float maxDistance = 16*4.0f;
 
         // Camera info
         glm::vec3 position {};
@@ -53,10 +55,9 @@ class Camera {
         [[nodiscard]] glm::mat4 GetViewMatrix() const {
             return glm::lookAt(position, position+direction, normalUp);
         }
-
-        [[nodiscard]] glm::vec3 GetFacing() const {
-            return direction;
-        }
+        [[nodiscard]] glm::vec3 GetFacing() const { return direction; }
+        [[nodiscard]] std::pair<float, float> GetMinMaxDistance() const { return {minDistance, maxDistance}; }
+        [[nodiscard]] glm::vec3 GetPosition() const { return position; }
 };
 
 #endif //UNTITLED7_CAMERA_H

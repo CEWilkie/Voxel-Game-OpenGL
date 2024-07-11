@@ -13,35 +13,34 @@ Cube::Cube() {
     glGenVertexArrays(1, &vertexArrayObject);
     glGenBuffers(1, &vertexBufferObject);
     glGenBuffers(1, &indexBufferObject);
-    glGenBuffers(1, &textureBufferObject);
 
     // [POSITION], [TEXCOORD], both values are relative to the set origin points
     std::vector<VertexOffsets> vertexVectors = {
             // Front
-            { glm::vec3(0.0f, 0.0f, 0.0f),  glm::vec2(0.25f, 0.25f) },            // TOPLEFT VERTEX
-            { glm::vec3(0.0f, 0.0f, 0.5f),  glm::vec2(0.5f, 0.25f) },            // TOPRIGHT VERTEX
-            { glm::vec3(0.0f, -0.5f, 0.0f), glm::vec2(0.25f, 0.5f) },            // BOTTOMLEFT VERTEX
-            { glm::vec3(0.0f, -0.5f, 0.5f), glm::vec2(0.5f, 0.5f) },            // BOTTOMRIGHT VERTEX
+            { glm::vec3(0.0f, 0.0f, 0.0f),  glm::vec2(1.0f, 1.0f) },            // TOPLEFT VERTEX
+            { glm::vec3(0.0f, 0.0f, 1.0f),  glm::vec2(2.0f, 1.0f) },            // TOPRIGHT VERTEX
+            { glm::vec3(0.0f, -1.0f, 0.0f), glm::vec2(1.0f, 2.0f) },            // BOTTOMLEFT VERTEX
+            { glm::vec3(0.0f, -1.0f, 1.0f), glm::vec2(2.0f, 2.0f) },            // BOTTOMRIGHT VERTEX
 
             // Left
-            { glm::vec3(0.5f, 0.0f, 0.0f), glm::vec2(0.0f, 0.25f) },            // TOPLEFT VERTEX
-            { glm::vec3(0.5f, -0.5f, 0.0f),glm::vec2(0.0f, 0.5f) },            // BOTTOMLEFT VERTEX
+            { glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f) },            // TOPLEFT VERTEX
+            { glm::vec3(1.0f, -1.0f, 0.0f),glm::vec2(0.0f, 2.0f) },            // BOTTOMLEFT VERTEX
 
             // Right
-            { glm::vec3(0.5f, 0.0f, 0.5f),  glm::vec2(0.75f, 0.25f) },            // TOPRIGHT VERTEX
-            { glm::vec3(0.5f, -0.5f, 0.5f), glm::vec2(0.75f, 0.5f) },            // BOTTOMRIGHT VERTEX
+            { glm::vec3(1.0f, 0.0f, 1.0f),  glm::vec2(3.0f, 1.0f) },            // TOPRIGHT VERTEX
+            { glm::vec3(1.0f, -1.0f, 1.0f), glm::vec2(3.0f, 2.0f) },            // BOTTOMRIGHT VERTEX
 
             // Back
-            { glm::vec3(0.5f, 0.0f, 0.0f),  glm::vec2(1.0f, 0.25f) },             // TOPRIGHT VERTEX
-            { glm::vec3(0.5f, -0.5f, 0.0f),  glm::vec2(1.0f, 0.5f) },             // BOTTOMRIGHT VERTEX
+            { glm::vec3(1.0f, 0.0f, 0.0f),  glm::vec2(4.0f, 1.0f) },             // TOPRIGHT VERTEX
+            { glm::vec3(1.0f, -1.0f, 0.0f),  glm::vec2(4.0f, 2.0f) },             // BOTTOMRIGHT VERTEX
 
             // Top
-            { glm::vec3(0.5f, 0.0f, 0.0f), glm::vec2(0.25f, 0.0f) },            // TOPLEFT VERTEX
-            { glm::vec3(0.5f, 0.0f, 0.5f), glm::vec2(0.5f, 0.0f) },            // TOPRIGHT VERTEX
+            { glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f) },            // TOPLEFT VERTEX
+            { glm::vec3(1.0f, 0.0f, 1.0f), glm::vec2(2.0f, 0.0f) },            // TOPRIGHT VERTEX
 
             // Bottom
-            { glm::vec3(0.5f, -0.5f, 0.0f),glm::vec2(0.25f, 0.75f) },            // BACKLEFT VERTEX
-            { glm::vec3(0.5f, -0.5f, 0.5f),glm::vec2(0.5f, 0.75f) },            // BACKRIGHT VERTEX
+            { glm::vec3(1.0f, -1.0f, 0.0f),glm::vec2(1.0f, 3.0f) },            // BACKLEFT VERTEX
+            { glm::vec3(1.0f, -1.0f, 1.0f),glm::vec2(2.0f, 3.0f) },            // BACKRIGHT VERTEX
 
     };
 
@@ -49,8 +48,9 @@ Cube::Cube() {
     vertexOffsetArray = std::make_unique<std::vector<VertexOffsets>>(vertexVectors);
 
     // Set default origin position
-    origin = {glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f),
-              glm::vec3(1.0f, 1.0f, 1.0f)};
+    origin = std::make_unique<Vertex>(Vertex{glm::vec3(0.0f, 0.0f, 0.0f),
+                                             glm::vec2(0.0f, 0.0f),
+                                             glm::vec3(1.0f, 1.0f, 1.0f)});
 
     // Create vertexArray of default Vertex Positions
     vertexArray = std::make_unique<std::vector<Vertex>>();
@@ -71,19 +71,11 @@ Cube::Cube() {
             2, 12, 3, 13, 3, 12
     };
 
-    CreateTextures();
-
     BindCube();
 }
 
 Cube::~Cube() {
-    Vertex v;
-    glGetBufferSubData(GL_ARRAY_BUFFER, vertexBufferObject, GLsizeiptr(sizeof(struct Vertex)), &v);
-    printf("Cube Destroyed at %f %f %f\n",
-           v.position.x, v.position.y, v.position.z);
-
     glDeleteBuffers(1, &vertexBufferObject);
-    glDeleteBuffers(1, &textureBufferObject);
     glDeleteBuffers(1, &indexBufferObject);
     glDeleteVertexArrays(1, &vertexArrayObject);
 }
@@ -126,107 +118,16 @@ void Cube::BindCube() const {
     }
 }
 
-
-void Cube::Display() const {
-    // Bind object
-    glBindVertexArray(vertexArrayObject);
-
-    // Enable Attributes
-    glEnable(GL_DEPTH_TEST);
-
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
-
-    // unbind
-    glDisable(GL_DEPTH_TEST);
-    glBindVertexArray(0);
-}
-
-void Cube::CreateTextures() const {
-    // Load image to surface
-    SDL_Surface* surface = IMG_Load("../resources/testcube64x.png");
-    if (surface == nullptr) {
-        LogError("Failed to load texture", SDL_GetError());
-        return;
-    }
-
-    // Format RGBA
-    Uint8 nColours = surface->format->BytesPerPixel;
-    GLenum textureFormat;
-    GLint internalFormat;
-    if (nColours == 4) { // Contains alpha
-        if (surface->format->Rmask == 0x000000ff) textureFormat = GL_RGBA;
-        else textureFormat = GL_BGRA;
-        internalFormat = GL_RGBA8;
-    }
-    else if (nColours == 3) { // No alpha
-        if (surface->format->Rmask == 0x000000ff) textureFormat = GL_RGB;
-        else textureFormat = GL_BGR;
-        internalFormat = GL_RGB8;
-    }
-    else {
-        printf("Image potentially unsuitable, only %d colour channels.\n Ending texture assignment\n", nColours);
-        return;
-    }
-
-    // Pixel Alignment Info
-    int alignment = 8;
-    while (surface->pitch%alignment) alignment>>=1; // x%1==0 for any x
-    glPixelStorei(GL_UNPACK_ALIGNMENT,alignment);
-
-    // bind to the texture object
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, textureBufferObject);
-
-    // Set texture stretch properties
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    // Texture wrapping
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-
-    // Texture environment interactions
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
-    // Edit the texture object's image data using the information SDL_Surface gives us
-    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, surface->w, surface->h, 0,
-                 textureFormat, GL_UNSIGNED_BYTE, surface->pixels);
-
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    // Unbind
-    glBindTexture(GL_TEXTURE_2D, 0);
-    SDL_FreeSurface(surface);
-}
-
-
-void Cube::SetPositionOrigin(glm::vec3 _origin) {
-    origin.position =_origin;
-
-    // Update the vertex positions
-    UpdateVertexPositions();
-}
-
-void Cube::SetTextureOrigin(glm::vec2 _origin) {
-    origin.texture = _origin;
-
-    // Update the texture positions
-    UpdateVertexTextureCoords();
-}
-
 void Cube::UpdateVertexPositions() const {
     // Update vertex position data
     for (int v = 0; v < vertexArray->size(); v++) {
-        vertexArray->at(v).position = origin.position + vertexOffsetArray->at(v).positionOffset;
-
-        if (vertexArray->at(v).position == glm::vec3(0.0f, 0.0f, 0.0f))
-            vertexArray->at(v).color = glm::vec3(1.0f, 1.0f, 1.0f);
-
-        if (origin.position.z > 0) vertexArray->at(v).color = glm::vec3(0.0f, 1.0f, 0.0f);
-        if (origin.position.x > 0) vertexArray->at(v).color = glm::vec3(0.0f, 0.0f, 1.0f);
-        if (origin.position.y > 0) vertexArray->at(v).color = glm::vec3(1.0f, 0.0f, 0.0f);
+        glm::vec3 offset = vertexOffsetArray->at(v).positionOffset;
+        vertexArray->at(v).position.x = origin->position.x + (offset.x * dimensions[0]);
+        vertexArray->at(v).position.y = origin->position.y + (offset.y * dimensions[1]);
+        vertexArray->at(v).position.z = origin->position.z + (offset.z * dimensions[2]);
     }
 
-    // Bind data to buffer. Vector can now be dropped as it is stored in buffer.
+    // Bind data to buffer
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
     glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(vertexArray->size() * sizeof(struct Vertex)), vertexArray->data());
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -236,22 +137,86 @@ void Cube::UpdateColorBuffer() const {
     // Set vertex with new colours
     // ...
 
-    // Bind data to buffer. Vector can now be dropped as it is stored in buffer.
-    glBindBuffer(GL_TEXTURE_2D, textureBufferObject);
+}
+
+void Cube::UpdateVertexTextureCoords() const {
+    if (texture == nullptr) return;
+
+    // Update vector texture coordinates with new correct value
+    for (int v = 0; v < vertexArray->size(); v++) {
+        std::pair<float, float> texturePos = texture->GetTextureSheetTile(origin->texture + vertexOffsetArray->at(v).textureOffset);
+
+        vertexArray->at(v).texture = {texturePos.first, texturePos.second};
+    }
+
+    // Bind data to buffer
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
     glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(vertexArray->size() * sizeof(struct Vertex)), vertexArray->data());
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void Cube::UpdateVertexTextureCoords() const {
-    std::vector<float> data {};
 
-    // Update vector texture coordinates with new correct value
-    for (int v = 0; v < vertexArray->size(); v++) {
-        vertexArray->at(v).texture = origin.texture + vertexOffsetArray->at(v).textureOffset;
+
+
+
+void Cube::Display() const {
+    // Bind object
+    glBindVertexArray(vertexArrayObject);
+
+    // Enable Attributes
+    glEnable(GL_DEPTH_TEST);
+
+    // Activate texture
+    if (texture != nullptr) texture->EnableTexture();
+
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+
+    // unbind
+    if (texture != nullptr) texture->DisableTexture();
+    glDisable(GL_DEPTH_TEST);
+    glBindVertexArray(0);
+}
+
+void Cube::SetTexture(Texture* _texture, glm::vec2 _sheetPosition) {
+    if (_texture == nullptr) {
+        printf("Texture cannot be assigned to null\n");
+        return;
     }
 
-    // Bind data to buffer. Vector can now be dropped as it is stored in buffer.
-    glBindBuffer(GL_TEXTURE_2D, textureBufferObject);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(vertexArray->size() * sizeof(struct Vertex)), vertexArray->data());
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // WARNING ENSURE CHECK FOR NULL TEXTURE BEFORE USING IN DISPLAY
+    texture = _texture;
+
+    // Set offset of texture position in texturesheet. non-sheets will use (0.0f, 0.0f).
+    origin->texture = _sheetPosition;
+    UpdateVertexTextureCoords();
+}
+
+
+void Cube::SetPositionOrigin(glm::vec3 _origin) {
+    origin->position =_origin;
+
+    // Update the vertex positions
+    UpdateVertexPositions();
+}
+
+void Cube::SetPositionCentre(glm::vec3 _centre) {
+    origin->position = _centre - (dimensions/2.0f);
+    origin->position.y += dimensions.y;
+
+    // Update the vertex positions
+    UpdateVertexPositions();
+}
+
+void Cube::SetTextureOrigin(glm::vec2 _origin) {
+    origin->texture = _origin;
+
+    // Update the texture positions
+    UpdateVertexTextureCoords();
+}
+
+void Cube::SetDimensions(glm::vec3 _dimensions) {
+    dimensions = _dimensions;
+
+    // Update vertex positions
+    UpdateVertexPositions();
 }
