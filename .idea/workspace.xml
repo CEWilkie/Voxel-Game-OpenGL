@@ -20,25 +20,19 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="Textures map correctly from file. Optimisations for texture loading/management are required. Optimisations for rendering geometry required (culling unseen objects and overlapping faces).">
-      <change afterPath="$PROJECT_DIR$/src/Texture.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Texture.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/World.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/World.h" afterDir="false" />
+    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="Texture objects implemented, creates texture data which a cube can map to.">
+      <change afterPath="$PROJECT_DIR$/src/Chunk.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/Chunk.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/ModelStructs.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/coin64x.aseprite" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/coin64x.png" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Camera.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Camera.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Camera.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Camera.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CoreGlobals.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/CoreGlobals.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CoreGlobals.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/ErrorLogging.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Cube.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Cube.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Cube.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Cube.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Quad.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Quad.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Shape.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Shape.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Triangle.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Triangle.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Shaders.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Shaders.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Texture.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Texture.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Window.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Window.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -70,28 +64,28 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;CMake Application.untitled7.executor&quot;: &quot;Run&quot;,
-    &quot;OCFindUsagesOptions.isSearchForTextOccurrences&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Github/openGl First Program&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "CMake Application.untitled7.executor": "Run",
+    "OCFindUsagesOptions.isSearchForTextOccurrences": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "C:/Github/openGl First Program",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "structure.view.defaults.are.configured": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\cew05\CLionProjects\untitled7\cmake-build-debug" />
@@ -103,6 +97,11 @@
     </key>
   </component>
   <component name="RunManager">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="untitled7" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="untitled7" TARGET_NAME="untitled7" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="untitled7" RUN_TARGET_NAME="untitled7">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -144,7 +143,8 @@
       <workItem from="1720601325776" duration="45573000" />
       <workItem from="1720704173861" duration="4303000" />
       <workItem from="1720712225700" duration="249000" />
-      <workItem from="1720712553537" duration="1462000" />
+      <workItem from="1720712553537" duration="10714000" />
+      <workItem from="1720779360318" duration="32132000" />
     </task>
     <task id="LOCAL-00001" summary="gitignore">
       <option name="closed" value="true" />
@@ -266,7 +266,15 @@
       <option name="project" value="LOCAL" />
       <updated>1720640286371</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="Texture objects implemented, creates texture data which a cube can map to.">
+      <option name="closed" value="true" />
+      <created>1720714051094</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1720714051094</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -291,7 +299,8 @@
     <MESSAGE value="camera system implemented" />
     <MESSAGE value="Rudimentary mapping of texture onto cube faces. Now to map properly" />
     <MESSAGE value="Textures map correctly from file. Optimisations for texture loading/management are required. Optimisations for rendering geometry required (culling unseen objects and overlapping faces)." />
-    <option name="LAST_COMMIT_MESSAGE" value="Textures map correctly from file. Optimisations for texture loading/management are required. Optimisations for rendering geometry required (culling unseen objects and overlapping faces)." />
+    <MESSAGE value="Texture objects implemented, creates texture data which a cube can map to." />
+    <option name="LAST_COMMIT_MESSAGE" value="Texture objects implemented, creates texture data which a cube can map to." />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

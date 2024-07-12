@@ -14,8 +14,8 @@ Cube::Cube() {
     glGenBuffers(1, &vertexBufferObject);
     glGenBuffers(1, &indexBufferObject);
 
-    // [POSITION], [TEXCOORD], both values are relative to the set origin points
-    std::vector<VertexOffsets> vertexVectors = {
+    // [POSITION], [TEXCOORD], both values are offsets relative to the set origin points
+    std::vector<Vertex> vertexVectors = {
             // Front
             { glm::vec3(0.0f, 0.0f, 0.0f),  glm::vec2(1.0f, 1.0f) },            // TOPLEFT VERTEX
             { glm::vec3(0.0f, 0.0f, 1.0f),  glm::vec2(2.0f, 1.0f) },            // TOPRIGHT VERTEX
@@ -45,31 +45,41 @@ Cube::Cube() {
     };
 
     // Populate vertexOffsetArray with data
-    vertexOffsetArray = std::make_unique<std::vector<VertexOffsets>>(vertexVectors);
+    vertexOffsetArray = std::make_unique<std::vector<Vertex>>(vertexVectors);
 
     // Set default origin position
     origin = std::make_unique<Vertex>(Vertex{glm::vec3(0.0f, 0.0f, 0.0f),
                                              glm::vec2(0.0f, 0.0f),
                                              glm::vec3(1.0f, 1.0f, 1.0f)});
 
+    // set default dimensions
+    dimensions = {1.0f, 1.0f, 1.0f};
+
     // Create vertexArray of default Vertex Positions
     vertexArray = std::make_unique<std::vector<Vertex>>();
     for (const auto& vertexVector : vertexVectors) {
         Vertex v;
-        v.position = vertexVector.positionOffset;
-        v.texture = vertexVector.textureOffset;
+        v.position = vertexVector.position;
+        v.texture = vertexVector.texture;
         vertexArray->push_back(v);
     }
 
     // Create index buffer for traversal order to produce each cube face
     indexArray = {
-            10, 11, 0, 1, 0, 11,
-            0, 1, 3, 2, 0, 3,
-            1, 6, 3, 7, 3, 6,
+            11, 10, 0, 1, 11, 0,
+            1, 0, 3, 2, 3, 0,
+            1, 3, 7, 6, 1, 7,
             7, 9, 6, 8, 6, 9,
             5, 2, 4, 0, 4, 2,
             2, 12, 3, 13, 3, 12
     };
+
+
+    // Create bounding models for object culling
+    sphereBounds = new SphereBounds;
+    sphereBounds->centre = GetCentre();
+    sphereBounds->radius = glm::length(dimensions/2.0f);
+    boxBounds = new BoxBounds(GetCentre(), dimensions);
 
     BindCube();
 }
@@ -121,7 +131,7 @@ void Cube::BindCube() const {
 void Cube::UpdateVertexPositions() const {
     // Update vertex position data
     for (int v = 0; v < vertexArray->size(); v++) {
-        glm::vec3 offset = vertexOffsetArray->at(v).positionOffset;
+        glm::vec3 offset = vertexOffsetArray->at(v).position;
         vertexArray->at(v).position.x = origin->position.x + (offset.x * dimensions[0]);
         vertexArray->at(v).position.y = origin->position.y + (offset.y * dimensions[1]);
         vertexArray->at(v).position.z = origin->position.z + (offset.z * dimensions[2]);
@@ -144,7 +154,7 @@ void Cube::UpdateVertexTextureCoords() const {
 
     // Update vector texture coordinates with new correct value
     for (int v = 0; v < vertexArray->size(); v++) {
-        std::pair<float, float> texturePos = texture->GetTextureSheetTile(origin->texture + vertexOffsetArray->at(v).textureOffset);
+        std::pair<float, float> texturePos = texture->GetTextureSheetTile(origin->texture + vertexOffsetArray->at(v).texture);
 
         vertexArray->at(v).texture = {texturePos.first, texturePos.second};
     }
@@ -160,11 +170,11 @@ void Cube::UpdateVertexTextureCoords() const {
 
 
 void Cube::Display() const {
+    // Can display?
+    if (!canDisplay) return;
+
     // Bind object
     glBindVertexArray(vertexArrayObject);
-
-    // Enable Attributes
-    glEnable(GL_DEPTH_TEST);
 
     // Activate texture
     if (texture != nullptr) texture->EnableTexture();
@@ -173,8 +183,16 @@ void Cube::Display() const {
 
     // unbind
     if (texture != nullptr) texture->DisableTexture();
-    glDisable(GL_DEPTH_TEST);
     glBindVertexArray(0);
+}
+
+bool Cube::CheckCulling(const Camera& _camera) {
+    // Check sphere, then box
+//    canDisplay = _camera.ObjectInView(*sphereBounds);
+//    if (canDisplay) canDisplay = _camera.ObjectInView(*boxBounds);
+
+    canDisplay = true;
+    return canDisplay;
 }
 
 void Cube::SetTexture(Texture* _texture, glm::vec2 _sheetPosition) {
@@ -197,6 +215,10 @@ void Cube::SetPositionOrigin(glm::vec3 _origin) {
 
     // Update the vertex positions
     UpdateVertexPositions();
+
+    // Update bounding boxes
+    sphereBounds->centre = GetCentre();
+    boxBounds->CreateVertexArray(GetCentre(), dimensions);
 }
 
 void Cube::SetPositionCentre(glm::vec3 _centre) {
@@ -205,6 +227,10 @@ void Cube::SetPositionCentre(glm::vec3 _centre) {
 
     // Update the vertex positions
     UpdateVertexPositions();
+
+    // Update bounding boxes
+    sphereBounds->centre = GetCentre();
+    boxBounds->CreateVertexArray(GetCentre(), dimensions);
 }
 
 void Cube::SetTextureOrigin(glm::vec2 _origin) {
@@ -219,4 +245,8 @@ void Cube::SetDimensions(glm::vec3 _dimensions) {
 
     // Update vertex positions
     UpdateVertexPositions();
+
+    // Update bounding boxes
+    sphereBounds->radius = glm::length(dimensions);
+    boxBounds->CreateVertexArray(GetCentre(), dimensions);
 }

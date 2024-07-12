@@ -4,8 +4,8 @@
 
 #include "Camera.h"
 
+#include <glm/gtc/matrix_access.hpp>
 #include "Window.h"
-#include <glew.h>
 
 Camera::Camera() {
     // Generate normal direction display buffers
@@ -13,7 +13,7 @@ Camera::Camera() {
     glGenBuffers(1, &vertexBufferObject);
 
     // Set the perspective of the camera and update the uniform matrix in the shader
-    perspective = glm::perspective(glm::radians(45.0f), window.GetAspectRatio(),
+    perspective = glm::perspective(glm::radians(fovAngleY), window.GetAspectRatio(),
                                    minDistance, maxDistance);
     GLint uLocation = glGetUniformLocation(window.GetShader(), "uProjectionMatrix");
     if (uLocation < 0) printf("location not found [uProjectionMatrix]");
@@ -21,25 +21,14 @@ Camera::Camera() {
         glUniformMatrix4fv(uLocation, 1, GL_FALSE, &perspective[0][0]);
     }
 
-
     // Set camera info
     position = glm::vec3(1.7f, 0.0f, 4.8f);
     direction = glm::vec3(0.0f, 0.0f, 1.0f);
     normalUp = glm::vec3(0.0f, 1.0f, 0.0f);
+    normalRight = glm::vec3(1.0f, 0.0f, 0.0f);
 
-
-    // Create vertexes for direction lines
-    vertexArray = {
-            // POSITION
-            0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-
-            0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-
-            0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-            0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-    };
+    // Set the view frustrum
+    UpdateViewFrustrum();
 
     BindDirectionVertexes();
 }
@@ -49,24 +38,24 @@ void Camera::BindDirectionVertexes() const {
     printf("BIND CAMERA\n");
     glBindVertexArray(vertexArrayObject);
 
-    glBindBuffer(GL_VERTEX_ARRAY, vertexBufferObject);
-    glBufferData(GL_VERTEX_ARRAY, GLsizeiptr(vertexArray.size() * sizeof(float)), vertexArray.data(), GL_DYNAMIC_DRAW);
+    (glBindBuffer(GL_VERTEX_ARRAY, vertexBufferObject));
+    (glBufferData(GL_VERTEX_ARRAY, GLsizeiptr(vertexArray.size() * sizeof(float)), vertexArray.data(), GL_STATIC_DRAW));
 
     // Vertex Position Attributes
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, nullptr);
+    (glEnableVertexAttribArray(0));
+    (glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, nullptr));
 
     // Vertex Colour Attributes
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (GLvoid*)(sizeof(float)*3));
+    (glEnableVertexAttribArray(1));
+    (glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (GLvoid*)(sizeof(float)*3)));
 
     // Unbind
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    GLenum e;
-    while ((e = glGetError()) != GL_NO_ERROR) {
-        printf("GL ERROR WHILST BINDING CAMERA OBJECT %u STRING : %s\n", e, glewGetErrorString(e));
+    GLenum error;
+    while ((error = glGetError()) != GL_NO_ERROR) {
+        printf("GL ERROR WHILST BINDING CAMERA OBJECT %u STRING : %s\n", error, glewGetErrorString(error));
     }
 }
 
@@ -86,11 +75,8 @@ void Camera::DisplayDirectionVertexes() const {
 
 
 
-
 void Camera::MoveTo(const glm::vec3 &_position) {
-    // set new position
     position = _position;
-//    printf("POS: %f %f %f\n", position.x, position.y, position.z);
 }
 
 void Camera::Move(Uint64 _deltaFrames) {
@@ -101,6 +87,7 @@ void Camera::Move(Uint64 _deltaFrames) {
     float spd = float(_deltaFrames)/120.0f;
 
     glm::vec3 horizDirection(direction.x, 0.0f, direction.z);
+    normalRight = glm::normalize(glm::cross(horizDirection, normalUp));
 
     const std::uint8_t* state = SDL_GetKeyboardState(nullptr);
     if (state[SDL_SCANCODE_W]) {
@@ -112,22 +99,18 @@ void Camera::Move(Uint64 _deltaFrames) {
         position.x += spd * float(sin(glm::radians(angleHoriz)));
     }
     if (state[SDL_SCANCODE_A]) {
-        position -= spd * glm::normalize(glm::cross(horizDirection, normalUp));
+        position -= spd * normalRight;
     }
     if (state[SDL_SCANCODE_D]) {
-        position += spd * glm::normalize(glm::cross(horizDirection, normalUp));
+        position += spd * normalRight;
     }
 
     if (state[SDL_SCANCODE_SPACE]) {
-        maxy += spd;
+        position.y += spd;
     }
     if (state[SDL_SCANCODE_LSHIFT]) {
-        maxy -= spd;
+        position.y -= spd;
     }
-
-    position.y = maxy;
-
-
 }
 
 void Camera::MouseLook(SDL_bool _mouseGrabbed) {
@@ -149,7 +132,7 @@ void Camera::MouseLook(SDL_bool _mouseGrabbed) {
     xOffset *= sensitivity;
     yOffset *= sensitivity;
 
-    // Add to camera angle and apply bounds to Vertical angle
+    // Add to camera fovAngleY and apply bounds to Vertical fovAngleY
     angleHoriz += xOffset;
     if (angleHoriz > 360) angleHoriz -= 360;
     if (angleHoriz < -360) angleHoriz += 360;
@@ -186,4 +169,24 @@ void Camera::UpdateUniform() const {
     else {
         glUniformMatrix4fv(uLocation, 1, GL_FALSE, &GetViewMatrix()[0][0]);
     }
+}
+
+
+void Camera::UpdateViewFrustrum() {
+    // Get rows from projection matrix
+    const float halfVertFarSide = maxDistance * tanf(fovAngleY * .5f);
+    const float halfHoriFarSide = halfVertFarSide * window.GetAspectRatio();
+    const glm::vec3 farDistance = maxDistance * -direction;
+
+    // INDEX SIDE : |0 LEFT | 1 RIGHT | 2 BOTTOM | 3 TOP | 4 NEAR | 5 FAR
+    vf.planes[0].SetPlane(position, glm::cross(normalUp, farDistance + normalRight*halfHoriFarSide));
+    vf.planes[1].SetPlane(position, glm::cross(farDistance - normalRight * halfHoriFarSide, normalUp));
+    vf.planes[2].SetPlane(position, glm::cross(farDistance + normalUp * halfVertFarSide, normalRight));
+    vf.planes[3].SetPlane(position, glm::cross(normalRight, farDistance - normalUp * halfVertFarSide));
+    vf.planes[4].SetPlane(position+minDistance*direction, -direction);
+    vf.planes[5].SetPlane(position+farDistance, direction);
+}
+
+bool Camera::ObjectInView(const BoundingVolume &_volume) const {
+    return _volume.InFrustrum(vf, perspective * GetViewMatrix());
 }

@@ -11,7 +11,7 @@
 #include <glm/matrix.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "CoreGlobals.h"
+#include "ErrorLogging.h"
 #include "Shaders.h"
 
 class Window {

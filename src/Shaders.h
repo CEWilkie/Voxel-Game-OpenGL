@@ -8,7 +8,7 @@
 #include <fstream>
 #include <glew.h>
 
-#include "CoreGlobals.h"
+#include "ErrorLogging.h"
 
 static std::string LoadShaderSourceFromFile(const std::string& _path) {
     // Shader program is loaded into a single string (source)

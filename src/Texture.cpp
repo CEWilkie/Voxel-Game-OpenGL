@@ -7,7 +7,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 
-#include "CoreGlobals.h"
+#include "ErrorLogging.h"
 
 Texture::Texture(const std::string& _texturePath) {
     // store path

@@ -13,17 +13,8 @@
 #include <glm/matrix.hpp>
 
 #include "Texture.h"
-
-struct Vertex {
-    glm::vec3 position {};
-    glm::vec2 texture {};
-    glm::vec3 color {};
-};
-
-struct VertexOffsets {
-    glm::vec3 positionOffset {};
-    glm::vec2 textureOffset {};
-};
+#include "ModelStructs.h"
+#include "Camera.h"
 
 class Cube {
     private:
@@ -36,11 +27,14 @@ class Cube {
         std::unique_ptr<Vertex> origin {};
         std::vector<GLuint> indexArray {};
         std::unique_ptr<std::vector<Vertex>> vertexArray {};
-        std::unique_ptr<std::vector<VertexOffsets>> vertexOffsetArray {};
-        glm::vec3 dimensions {1.0f, 1.0f, 1.0f};
+        std::unique_ptr<std::vector<Vertex>> vertexOffsetArray {};
+        glm::vec3 dimensions {};
 
-        // Display Data
+        // Display and Culling info
         Texture* texture {};
+        SphereBounds* sphereBounds {};
+        BoxBounds* boxBounds {};
+        bool canDisplay = true;
 
         // Bind Data to openGL
         void BindCube() const;
@@ -55,6 +49,7 @@ class Cube {
 
         // Display
         void Display() const;
+        bool CheckCulling(const Camera& _camera);
         void SetTexture(Texture* _texture, glm::vec2 _sheetPosition);
 
         // Positioning
@@ -65,6 +60,7 @@ class Cube {
 
         // Getters
         [[nodiscard]] glm::vec3 GetDimensions() { return dimensions; }
+        [[nodiscard]] glm::vec3 GetCentre() { return origin->position + dimensions/2.0f; }
 };
 
 #endif //UNTITLED7_CUBE_H

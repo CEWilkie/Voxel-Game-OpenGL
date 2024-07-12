@@ -2,8 +2,8 @@
 // Created by cew05 on 18/04/2024.
 //
 
-#ifndef UNTITLED7_COREGLOBALS_H
-#define UNTITLED7_COREGLOBALS_H
+#ifndef UNTITLED7_ERRORLOGGING_H
+#define UNTITLED7_ERRORLOGGING_H
 
 #include <vector>
 #include <iostream>
@@ -19,7 +19,8 @@ static void glClearErrors() {
 }
 
 static bool glErrorStatus(const char* function, int line) {
-    while (GLenum error = glGetError()) {
+    GLenum error;
+    while ((error = glGetError()) != GL_NO_ERROR) {
         printf("OPENGL ERROR: CODE %d, STRING %s\nIN FUNCTION: %s, LINE: %d\n",
                error, glewGetErrorString(error), function, line);
         return true;
@@ -29,4 +30,4 @@ static bool glErrorStatus(const char* function, int line) {
 
 #define GLCHECK(x) glClearErrors(); x; glErrorStatus(#x, __LINE__);
 
-#endif //UNTITLED7_COREGLOBALS_H
+#endif //UNTITLED7_ERRORLOGGING_H

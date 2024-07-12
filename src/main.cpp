@@ -41,20 +41,21 @@ int main(int argc, char** argv){
 
     Texture texture("../resources/testcube64x.png");
     texture.SetTextureSheetGrid({4, 4});
+    Texture textureB("../resources/testcubes16x.png");
+    textureB.SetTextureSheetGrid({16, 16});
 
     /*
      *  WORLD OBJECT CREATION
      */
 
-// CAMERA OBJECT
+    // CAMERA OBJECT
     Camera camera;
 
     // WORLD OBJECT
     World world;
     world.SetSkyboxProperties(&camera);
 
-//    Texture textureB("../resources/testcube64x.png");
-//    texture.SetTextureSheetGrid({4, 4});
+    // CUBES
 
     std::vector<std::unique_ptr<Cube>> cubes;
 
@@ -84,6 +85,20 @@ int main(int argc, char** argv){
         cubes.push_back(std::move(cube));
     }
 
+    std::vector<std::unique_ptr<Cube>> fc;
+    // INDEX SIDE : |0 LEFT | 1 RIGHT | 2 BOTTOM | 3 TOP | 4 NEAR | 5 FAR
+    glm::vec2 origins[6]{{0, 0}, {3, 1}, {4, 3}, {6, 0}, {9, 1}, {12, 0}};
+    int o = 0;
+    for (const auto& plane : camera.GetCameraFrustrum().planes) {
+        std::unique_ptr<Cube> cube = std::make_unique<Cube>();
+        cube->SetPositionCentre(plane.normal);
+        cube->SetTexture(&textureB, origins[o]);
+        cube->SetDimensions({0.1f, 0.1f, 0.1f});
+        fc.push_back(std::move(cube));
+        o++;
+    }
+
+
     // Trap mouse to screen and hide it
     SDL_SetWindowGrab(window.WindowPtr(), SDL_TRUE);
     SDL_ShowCursor(SDL_DISABLE);
@@ -92,7 +107,8 @@ int main(int argc, char** argv){
     bool running = true;
     bool escToggled = false;
     SDL_bool grabMouse = SDL_TRUE;
-    Uint64 deltaFrames, lastFrame;
+    Uint64 deltaFrames, lastFrame = SDL_GetTicks64();
+    glm::mat4 lastViewMatrix {};
     while (running) {
         /*
          * START OF FRAME
@@ -110,18 +126,43 @@ int main(int argc, char** argv){
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         /*
+         * CHECK OBJECT CULLING
+         */
+
+        // If view matrix has changed since last check
+        if (lastViewMatrix != camera.GetViewMatrix()) {
+
+        }
+
+
+        /*
          * DRAW TO SCREEN
          */
 
-        glClearErrors();
+        // 3D OBJECTS
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
 
+        // Display the block objects
         for (const auto& cube : cubes) {
             cube->Display();
         }
 
-        camera.DisplayDirectionVertexes();
-        world.SetSkyboxPosition(camera.GetPosition());
+        // Display the block objects
+        for (const auto& cube : fc) {
+            cube->Display();
+        }
+
+        glDisable(GL_CULL_FACE);
+
+        // Display the background images
         world.Display();
+
+        // 2D OVERLAY
+        glDisable(GL_DEPTH_TEST);
+
+        // positive x,y,z directions
+        camera.DisplayDirectionVertexes();
 
         /*
          * INPUT MANAGEMENT
@@ -157,21 +198,35 @@ int main(int argc, char** argv){
         }
         if (!state[SDL_SCANCODE_ESCAPE]) escToggled = false;
 
+        if (state[SDL_SCANCODE_V]) {
+            lastViewMatrix = camera.GetViewMatrix();
+            camera.UpdateViewFrustrum();
+            unsigned int t = cubes.size();
+            for (const auto& cube : cubes) {
+                if (!cube->CheckCulling(camera)) {
+                    t--;
+                }
+            }
+
+            printf("OF %zu CUBES, %u RENDERED\n", cubes.size(), t);
+
+            for (int c = 0; c < 6; c++) {
+                fc[c]->SetPositionCentre(camera.GetCameraFrustrum().planes[c].normal);
+            }
+        }
+
         // CAMERA
+
         if (grabMouse == SDL_TRUE) {
             camera.Move(deltaFrames);
             camera.MouseLook(grabMouse);
         }
 
         /*
-         * ERROR CHECKING
+         *  UDPATE OBJECTS
          */
 
-        /*
-         *  APPLY INPUTS
-         */
-
-
+        world.SetSkyboxPosition(camera.GetPosition());
 
         /*
          * UPDATE DISPLAY
@@ -184,10 +239,7 @@ int main(int argc, char** argv){
          *  END OF FRAME
          */
 
-//        Uint64 frametime = SDL_GetTicks64() - frameStart;
-//        if (frametime < 1000/60) {
-//            SDL_Delay(1000/60 - frametime);
-//        }
+
 
     }
 
