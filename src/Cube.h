@@ -14,6 +14,7 @@
 
 #include "Texture.h"
 #include "ModelStructs.h"
+#include "ModelTransformations.h"
 #include "Camera.h"
 
 class Cube {
@@ -24,14 +25,16 @@ class Cube {
         unsigned int indexBufferObject {};
 
         // Vertex Data
-        std::unique_ptr<Vertex> origin {};
         std::vector<GLuint> indexArray {};
         std::unique_ptr<std::vector<Vertex>> vertexArray {};
-        std::unique_ptr<std::vector<Vertex>> vertexOffsetArray {};
-        glm::vec3 dimensions {};
+        std::unique_ptr<Transformation> transformation {};
+        GLint modelMatrixLocation = -1;
 
-        // Display and Culling info
+        // Display and Textures
         Texture* texture {};
+        glm::vec2 textureOrigin {};
+
+        // Culling Boundaries
         SphereBounds* sphereBounds {};
         BoxBounds* boxBounds {};
         bool canDisplay = true;
@@ -39,9 +42,7 @@ class Cube {
         // Bind Data to openGL
         void BindCube() const;
 
-        void UpdateVertexPositions() const;
-        void UpdateColorBuffer() const;
-        void UpdateVertexTextureCoords() const;
+        void UpdateTextureData();
 
     public:
         Cube();
@@ -49,18 +50,22 @@ class Cube {
 
         // Display
         void Display() const;
-        bool CheckCulling(const Camera& _camera);
-        void SetTexture(Texture* _texture, glm::vec2 _sheetPosition);
-
-        // Positioning
-        void SetPositionOrigin(glm::vec3 _origin);
-        void SetPositionCentre(glm::vec3 _centre);
+        void SetTexture(Texture* _texture, glm::vec2 _origin);
         void SetTextureOrigin(glm::vec2 _origin);
-        void SetDimensions(glm::vec3 _dimensions);
+
+        // Transformations
+        void SetPositionOrigin(glm::vec3 _originPosition);
+        void SetPositionCentre(glm::vec3 _centre);
+        void SetScale(glm::vec3 _scale);
+        void UpdateModelMatrix();
+
+        // Object culling
+        bool CheckCulling(const Camera& _camera);
 
         // Getters
-        [[nodiscard]] glm::vec3 GetDimensions() { return dimensions; }
-        [[nodiscard]] glm::vec3 GetCentre() { return origin->position + dimensions/2.0f; }
+        [[nodiscard]] glm::vec3 GetDimensions() { return transformation->GetLocalScale(); }
+        [[nodiscard]] glm::vec3 GetGlobalCentre() { return transformation->GetGlobalPosition() + GetDimensions() / 2.0f; }
+        [[nodiscard]] glm::vec3 GetLocalCentre() { return transformation->GetLocalPosition() + GetDimensions() / 2.0f; }
 };
 
 #endif //UNTITLED7_CUBE_H

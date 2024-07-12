@@ -103,14 +103,6 @@ void Texture::SetTextureSheetGrid(std::pair<float, float> _textureGrid) {
     }
 }
 
-std::pair<float, float> Texture::GetTextureSheetTile(glm::vec2 _gridPos) const {
-    // READS FROM TOP LEFT (0,0) TO (1,1)
-    std::pair<float, float> tilePos {_gridPos.x / textureGrid.first, _gridPos.y / textureGrid.second};
-
-//    printf("TILE POS: %f %f\n", tilePos.first, tilePos.second);
-    return tilePos;
-}
-
 void Texture::EnableTexture() const {
     glBindTexture(GL_TEXTURE_2D, textureBuffer);
 }

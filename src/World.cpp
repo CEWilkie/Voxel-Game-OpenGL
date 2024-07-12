@@ -29,7 +29,7 @@ void World::SetSkyboxProperties(const Camera *camera) {
     double maxSqrd = std::pow(minMax.second-1, 2.0);
 
     // Create Skybox
-    skybox->SetDimensions({float(sqrt(maxSqrd/3)), float(sqrt(maxSqrd/3)), float(sqrt(maxSqrd/3))});
+    skybox->SetScale({float(sqrt(maxSqrd / 3)), float(sqrt(maxSqrd / 3)), float(sqrt(maxSqrd / 3))});
     skybox->SetPositionCentre(camera->GetPosition());
 }
 

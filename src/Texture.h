@@ -28,7 +28,9 @@ class Texture {
 
         // Using tilesheets / texturesheets
         void SetTextureSheetGrid(std::pair<float, float> _textureGrid);
-        [[nodiscard]] std::pair<float, float> GetTextureSheetTile(glm::vec2 _gridPos) const;
+        [[nodiscard]] glm::vec2 GetTextureSheetTile(glm::vec2 _gridPos) const {
+            return {_gridPos.x / textureGrid.first, _gridPos.y / textureGrid.second};
+        };
 
         // Activating the texture
         void EnableTexture() const;

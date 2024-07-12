@@ -64,6 +64,7 @@ int main(int argc, char** argv){
         std::unique_ptr<Cube> cube = std::make_unique<Cube>();
         cube->SetPositionOrigin({float(c), 0.f, 0.0f});
         cube->SetTexture(&texture, {0,0});
+        cube->UpdateModelMatrix();
         cubes.push_back(std::move(cube));
     }
 
@@ -73,6 +74,7 @@ int main(int argc, char** argv){
         std::unique_ptr<Cube> cube = std::make_unique<Cube>();
         cube->SetPositionOrigin({0.0f, float(c), 0.0f});
         cube->SetTexture(&texture, {0,0});
+        cube->UpdateModelMatrix();
         cubes.push_back(std::move(cube));
     }
 
@@ -82,6 +84,7 @@ int main(int argc, char** argv){
         std::unique_ptr<Cube> cube = std::make_unique<Cube>();
         cube->SetPositionOrigin({0.0f, 0.f, float(c)});
         cube->SetTexture(&texture, {0,0});
+        cube->UpdateModelMatrix();
         cubes.push_back(std::move(cube));
     }
 
@@ -93,7 +96,8 @@ int main(int argc, char** argv){
         std::unique_ptr<Cube> cube = std::make_unique<Cube>();
         cube->SetPositionCentre(plane.normal);
         cube->SetTexture(&textureB, origins[o]);
-        cube->SetDimensions({0.1f, 0.1f, 0.1f});
+        cube->SetScale({0.1f, 0.1f, 0.1f});
+        cube->UpdateModelMatrix();
         fc.push_back(std::move(cube));
         o++;
     }

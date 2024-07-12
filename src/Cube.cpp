@@ -14,6 +14,10 @@ Cube::Cube() {
     glGenBuffers(1, &vertexBufferObject);
     glGenBuffers(1, &indexBufferObject);
 
+    // Get location for modelMatrix
+    modelMatrixLocation = glGetUniformLocation(window.GetShader(), "uModelMatrix");
+    if (modelMatrixLocation < 0) printf("location not found [uModelMatrix]");
+
     // [POSITION], [TEXCOORD], both values are offsets relative to the set origin points
     std::vector<Vertex> vertexVectors = {
             // Front
@@ -44,25 +48,14 @@ Cube::Cube() {
 
     };
 
-    // Populate vertexOffsetArray with data
-    vertexOffsetArray = std::make_unique<std::vector<Vertex>>(vertexVectors);
+    // Populate vertexArray with this data
+    vertexArray = std::make_unique<std::vector<Vertex>>(vertexVectors);
 
-    // Set default origin position
-    origin = std::make_unique<Vertex>(Vertex{glm::vec3(0.0f, 0.0f, 0.0f),
-                                             glm::vec2(0.0f, 0.0f),
-                                             glm::vec3(1.0f, 1.0f, 1.0f)});
+    // Set texture origin position
+    textureOrigin = {0.0f, 0.0f};
 
-    // set default dimensions
-    dimensions = {1.0f, 1.0f, 1.0f};
-
-    // Create vertexArray of default Vertex Positions
-    vertexArray = std::make_unique<std::vector<Vertex>>();
-    for (const auto& vertexVector : vertexVectors) {
-        Vertex v;
-        v.position = vertexVector.position;
-        v.texture = vertexVector.texture;
-        vertexArray->push_back(v);
-    }
+    // Create transformation object
+    transformation = std::make_unique<Transformation>();
 
     // Create index buffer for traversal order to produce each cube face
     indexArray = {
@@ -75,11 +68,7 @@ Cube::Cube() {
     };
 
 
-    // Create bounding models for object culling
-    sphereBounds = new SphereBounds;
-    sphereBounds->centre = GetCentre();
-    sphereBounds->radius = glm::length(dimensions/2.0f);
-    boxBounds = new BoxBounds(GetCentre(), dimensions);
+
 
     BindCube();
 }
@@ -128,43 +117,6 @@ void Cube::BindCube() const {
     }
 }
 
-void Cube::UpdateVertexPositions() const {
-    // Update vertex position data
-    for (int v = 0; v < vertexArray->size(); v++) {
-        glm::vec3 offset = vertexOffsetArray->at(v).position;
-        vertexArray->at(v).position.x = origin->position.x + (offset.x * dimensions[0]);
-        vertexArray->at(v).position.y = origin->position.y + (offset.y * dimensions[1]);
-        vertexArray->at(v).position.z = origin->position.z + (offset.z * dimensions[2]);
-    }
-
-    // Bind data to buffer
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(vertexArray->size() * sizeof(struct Vertex)), vertexArray->data());
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-void Cube::UpdateColorBuffer() const {
-    // Set vertex with new colours
-    // ...
-
-}
-
-void Cube::UpdateVertexTextureCoords() const {
-    if (texture == nullptr) return;
-
-    // Update vector texture coordinates with new correct value
-    for (int v = 0; v < vertexArray->size(); v++) {
-        std::pair<float, float> texturePos = texture->GetTextureSheetTile(origin->texture + vertexOffsetArray->at(v).texture);
-
-        vertexArray->at(v).texture = {texturePos.first, texturePos.second};
-    }
-
-    // Bind data to buffer
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(vertexArray->size() * sizeof(struct Vertex)), vertexArray->data());
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
 
 
 
@@ -176,6 +128,9 @@ void Cube::Display() const {
     // Bind object
     glBindVertexArray(vertexArrayObject);
 
+    // Update model matrix to uniform
+    if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &transformation->GetModelMatrix()[0][0]);
+
     // Activate texture
     if (texture != nullptr) texture->EnableTexture();
 
@@ -186,16 +141,18 @@ void Cube::Display() const {
     glBindVertexArray(0);
 }
 
-bool Cube::CheckCulling(const Camera& _camera) {
-    // Check sphere, then box
-//    canDisplay = _camera.ObjectInView(*sphereBounds);
-//    if (canDisplay) canDisplay = _camera.ObjectInView(*boxBounds);
+void Cube::UpdateTextureData() {
+    for (auto& vertex : *vertexArray ) {
+        vertex.texture = texture->GetTextureSheetTile(textureOrigin + vertex.textureIndex);
+    }
 
-    canDisplay = true;
-    return canDisplay;
+    // Update buffer
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(vertexArray->size() * sizeof(struct Vertex)), vertexArray->data());
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void Cube::SetTexture(Texture* _texture, glm::vec2 _sheetPosition) {
+void Cube::SetTexture(Texture* _texture, glm::vec2 _origin) {
     if (_texture == nullptr) {
         printf("Texture cannot be assigned to null\n");
         return;
@@ -205,48 +162,43 @@ void Cube::SetTexture(Texture* _texture, glm::vec2 _sheetPosition) {
     texture = _texture;
 
     // Set offset of texture position in texturesheet. non-sheets will use (0.0f, 0.0f).
-    origin->texture = _sheetPosition;
-    UpdateVertexTextureCoords();
-}
+    textureOrigin = _origin;
 
-
-void Cube::SetPositionOrigin(glm::vec3 _origin) {
-    origin->position =_origin;
-
-    // Update the vertex positions
-    UpdateVertexPositions();
-
-    // Update bounding boxes
-    sphereBounds->centre = GetCentre();
-    boxBounds->CreateVertexArray(GetCentre(), dimensions);
-}
-
-void Cube::SetPositionCentre(glm::vec3 _centre) {
-    origin->position = _centre - (dimensions/2.0f);
-    origin->position.y += dimensions.y;
-
-    // Update the vertex positions
-    UpdateVertexPositions();
-
-    // Update bounding boxes
-    sphereBounds->centre = GetCentre();
-    boxBounds->CreateVertexArray(GetCentre(), dimensions);
+    // Update stored texture data
+    UpdateTextureData();
 }
 
 void Cube::SetTextureOrigin(glm::vec2 _origin) {
-    origin->texture = _origin;
+    // Set offset of texture position in texturesheet. non-sheets will use (0.0f, 0.0f).
+    textureOrigin = _origin;
 
-    // Update the texture positions
-    UpdateVertexTextureCoords();
+    // Update stored texture data
+    UpdateTextureData();
 }
 
-void Cube::SetDimensions(glm::vec3 _dimensions) {
-    dimensions = _dimensions;
+void Cube::SetPositionOrigin(glm::vec3 _originPosition) {
+    // set transformation to move to the new origin position
+    transformation->SetPosition(_originPosition);
+}
 
-    // Update vertex positions
-    UpdateVertexPositions();
+void Cube::SetPositionCentre(glm::vec3 _centre) {
+    // set transformation to move to the new origin position, but offset by half the scale of the cube
+    transformation->SetPosition(_centre - (transformation->GetLocalScale()/2.0f));
+}
 
-    // Update bounding boxes
-    sphereBounds->radius = glm::length(dimensions);
-    boxBounds->CreateVertexArray(GetCentre(), dimensions);
+void Cube::SetScale(glm::vec3 _scale) {
+    transformation->SetScale(_scale);
+}
+
+void Cube::UpdateModelMatrix() {
+    transformation->UpdateModelMatrix();
+}
+
+bool Cube::CheckCulling(const Camera& _camera) {
+    // Check sphere, then box
+//    canDisplay = _camera.ObjectInView(*sphereBounds);
+//    if (canDisplay) canDisplay = _camera.ObjectInView(*boxBounds);
+
+    canDisplay = true;
+    return canDisplay;
 }

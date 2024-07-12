@@ -12,16 +12,21 @@ out vec2 v_vertexTextureCoord;
 // UNIFORMS
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
+uniform mat4 uModelMatrix;
 
 void main() {
     // Turn position into vec4
     gl_Position = vec4(position.x, position.y, position.z, 1.0f);
+
+    // Apply transformation matrix
+    gl_Position = uModelMatrix * gl_Position;
 
     // Apply view matrix
     gl_Position = uViewMatrix * gl_Position;
 
     // Projection
     gl_Position = uProjectionMatrix * gl_Position;
+
 
     // Colour
     v_vertexColour = vertexColour;

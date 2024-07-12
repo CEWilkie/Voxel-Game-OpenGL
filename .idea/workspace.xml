@@ -20,20 +20,15 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="Texture objects implemented, creates texture data which a cube can map to.">
-      <change afterPath="$PROJECT_DIR$/src/Chunk.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Chunk.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ModelStructs.h" afterDir="false" />
+    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="Texture object fix, textures are now bound correctly when requested. Some setup for culling implemented, culling of non-visible (back) faces implemented">
+      <change afterPath="$PROJECT_DIR$/src/ModelTransformations.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Camera.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Camera.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Camera.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Camera.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CoreGlobals.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/ErrorLogging.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Cube.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Cube.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Cube.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Cube.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Shaders.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Shaders.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Texture.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Texture.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Window.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Window.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ModelStructs.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/ModelStructs.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/World.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src_shader/vertex.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/src_shader/vertex.glsl" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -144,7 +139,7 @@
       <workItem from="1720704173861" duration="4303000" />
       <workItem from="1720712225700" duration="249000" />
       <workItem from="1720712553537" duration="10714000" />
-      <workItem from="1720779360318" duration="32132000" />
+      <workItem from="1720779360318" duration="36304000" />
     </task>
     <task id="LOCAL-00001" summary="gitignore">
       <option name="closed" value="true" />
@@ -274,7 +269,15 @@
       <option name="project" value="LOCAL" />
       <updated>1720714051094</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="Texture object fix, textures are now bound correctly when requested. Some setup for culling implemented, culling of non-visible (back) faces implemented">
+      <option name="closed" value="true" />
+      <created>1720821890459</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1720821890459</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -300,7 +303,8 @@
     <MESSAGE value="Rudimentary mapping of texture onto cube faces. Now to map properly" />
     <MESSAGE value="Textures map correctly from file. Optimisations for texture loading/management are required. Optimisations for rendering geometry required (culling unseen objects and overlapping faces)." />
     <MESSAGE value="Texture objects implemented, creates texture data which a cube can map to." />
-    <option name="LAST_COMMIT_MESSAGE" value="Texture objects implemented, creates texture data which a cube can map to." />
+    <MESSAGE value="Texture object fix, textures are now bound correctly when requested. Some setup for culling implemented, culling of non-visible (back) faces implemented" />
+    <option name="LAST_COMMIT_MESSAGE" value="Texture object fix, textures are now bound correctly when requested. Some setup for culling implemented, culling of non-visible (back) faces implemented" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

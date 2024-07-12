@@ -27,6 +27,7 @@ struct Frustrum {
 
 struct Vertex {
     glm::vec3 position {};
+    glm::vec2 textureIndex {};
     glm::vec2 texture {};
     glm::vec3 color {};
 };
