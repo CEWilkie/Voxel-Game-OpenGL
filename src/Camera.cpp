@@ -9,8 +9,7 @@
 
 Camera::Camera() {
     // Generate normal direction display buffers
-    glGenVertexArrays(1, &vertexArrayObject);
-    glGenBuffers(1, &vertexBufferObject);
+
 
     // Set the perspective of the camera and update the uniform matrix in the shader
     perspective = glm::perspective(glm::radians(fovAngleY), window.GetAspectRatio(),
@@ -35,35 +34,12 @@ Camera::Camera() {
 
 
 void Camera::BindDirectionVertexes() const {
-    printf("BIND CAMERA\n");
-    glBindVertexArray(vertexArrayObject);
 
-    (glBindBuffer(GL_VERTEX_ARRAY, vertexBufferObject));
-    (glBufferData(GL_VERTEX_ARRAY, GLsizeiptr(vertexArray.size() * sizeof(float)), vertexArray.data(), GL_STATIC_DRAW));
-
-    // Vertex Position Attributes
-    (glEnableVertexAttribArray(0));
-    (glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, nullptr));
-
-    // Vertex Colour Attributes
-    (glEnableVertexAttribArray(1));
-    (glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (GLvoid*)(sizeof(float)*3)));
-
-    // Unbind
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    GLenum error;
-    while ((error = glGetError()) != GL_NO_ERROR) {
-        printf("GL ERROR WHILST BINDING CAMERA OBJECT %u STRING : %s\n", error, glewGetErrorString(error));
-    }
 }
 
 
-void Camera::DisplayDirectionVertexes() const {
-    glBindVertexArray(vertexArrayObject);
-    GLCHECK(glDrawElements(GL_LINES, 6, GL_UNSIGNED_INT, nullptr));
-    glBindVertexArray(0);
+void Camera::DisplayViewBounds() const {
+
 }
 
 
@@ -77,6 +53,10 @@ void Camera::DisplayDirectionVertexes() const {
 
 void Camera::MoveTo(const glm::vec3 &_position) {
     position = _position;
+}
+
+void Camera::SetDirection(const glm::vec3 &_direction) {
+    direction = _direction;
 }
 
 void Camera::Move(Uint64 _deltaFrames) {

@@ -20,13 +20,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="Implemented use of a transformations object rather than directly changing data in buffers for objects">
+    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="object culling implemented using sphere approximations for cubes. Not maximally efficient, some issues exist i think">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Camera.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Camera.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Camera.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Camera.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Cube.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Cube.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Cube.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Cube.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ModelStructs.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/ModelStructs.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -134,7 +131,7 @@
       <workItem from="1720712225700" duration="249000" />
       <workItem from="1720712553537" duration="10714000" />
       <workItem from="1720779360318" duration="40382000" />
-      <workItem from="1721730158936" duration="3510000" />
+      <workItem from="1721730158936" duration="6511000" />
     </task>
     <task id="LOCAL-00001" summary="gitignore">
       <option name="closed" value="true" />
@@ -280,7 +277,15 @@
       <option name="project" value="LOCAL" />
       <updated>1720826137706</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="object culling implemented using sphere approximations for cubes. Not maximally efficient, some issues exist i think">
+      <option name="closed" value="true" />
+      <created>1721734336607</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1721734336607</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -308,7 +313,8 @@
     <MESSAGE value="Texture objects implemented, creates texture data which a cube can map to." />
     <MESSAGE value="Texture object fix, textures are now bound correctly when requested. Some setup for culling implemented, culling of non-visible (back) faces implemented" />
     <MESSAGE value="Implemented use of a transformations object rather than directly changing data in buffers for objects" />
-    <option name="LAST_COMMIT_MESSAGE" value="Implemented use of a transformations object rather than directly changing data in buffers for objects" />
+    <MESSAGE value="object culling implemented using sphere approximations for cubes. Not maximally efficient, some issues exist i think" />
+    <option name="LAST_COMMIT_MESSAGE" value="object culling implemented using sphere approximations for cubes. Not maximally efficient, some issues exist i think" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

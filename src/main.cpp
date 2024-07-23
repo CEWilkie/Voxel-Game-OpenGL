@@ -50,6 +50,8 @@ int main(int argc, char** argv){
 
     // CAMERA OBJECT
     Camera camera;
+    Camera secondaryCamera;
+    Camera* curCam = &camera;
 
     // WORLD OBJECT
     World world;
@@ -87,21 +89,6 @@ int main(int argc, char** argv){
         cube->UpdateModelMatrix();
         cubes.push_back(std::move(cube));
     }
-
-    std::vector<std::unique_ptr<Cube>> fc;
-    // INDEX SIDE : |0 LEFT | 1 RIGHT | 2 BOTTOM | 3 TOP | 4 NEAR | 5 FAR
-    glm::vec2 origins[6]{{0, 0}, {3, 1}, {4, 3}, {6, 0}, {9, 1}, {12, 0}};
-    int o = 0;
-    for (const auto& plane : camera.GetCameraFrustrum().planes) {
-        std::unique_ptr<Cube> cube = std::make_unique<Cube>();
-        cube->SetPositionCentre(plane.normal);
-        cube->SetTexture(&textureB, origins[o]);
-        cube->SetScale({0.1f, 1.0f, 0.1f});
-        cube->UpdateModelMatrix();
-        fc.push_back(std::move(cube));
-        o++;
-    }
-
 
     // Trap mouse to screen and hide it
     SDL_SetWindowGrab(window.WindowPtr(), SDL_TRUE);
@@ -163,11 +150,6 @@ int main(int argc, char** argv){
             cube->Display();
         }
 
-        // Display the block objects
-        for (const auto& cube : fc) {
-            cube->Display();
-        }
-
         glDisable(GL_CULL_FACE);
 
         // Display the background images
@@ -177,7 +159,7 @@ int main(int argc, char** argv){
         glDisable(GL_DEPTH_TEST);
 
         // positive x,y,z directions
-        camera.DisplayDirectionVertexes();
+        camera.DisplayViewBounds();
 
         /*
          * INPUT MANAGEMENT
@@ -220,6 +202,14 @@ int main(int argc, char** argv){
             camera.MouseLook(grabMouse);
         }
 
+        if (state[SDL_SCANCODE_C]) {
+            secondaryCamera.MoveTo(camera.GetPosition());
+            secondaryCamera.SetDirection(camera.GetDirection());
+        }
+
+        if (state[SDL_SCANCODE_1]) curCam = &camera;
+        if (state[SDL_SCANCODE_2]) curCam = &secondaryCamera;
+
         /*
          *  UDPATE OBJECTS
          */
@@ -230,7 +220,7 @@ int main(int argc, char** argv){
          * UPDATE DISPLAY
          */
 
-        camera.UpdateUniform();
+        curCam->UpdateUniform();
         SDL_GL_SwapWindow(window.WindowPtr());
 
         /*

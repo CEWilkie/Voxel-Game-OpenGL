@@ -15,13 +15,10 @@
 
 class Camera {
     private:
-        // Global perspective
+        // Global perspective matrix
         glm::mat4 perspective {};
-        float fovAngleY = 45.0f;
-        float minDistance = 0.1f;
-        float maxDistance = 16*16.0f;
 
-        // Camera info
+        // Camera vector info
         glm::vec3 position {};
         glm::vec3 direction {};
         glm::vec3 normalUp {};
@@ -35,12 +32,10 @@ class Camera {
         double angleHoriz = 0;
         double sensitivity = 0.1;
 
-        // XYZ Vertex Direction Display
-        unsigned int vertexArrayObject {};
-        unsigned int vertexBufferObject {};
-
-        // Direction Vertex Info
-        std::vector<float> vertexArray {};
+        // View Frustrum vars
+        float fovAngleY = 45.0f;
+        float minDistance = 0.1f;
+        float maxDistance = 16*16.0f;
 
         void BindDirectionVertexes() const;
 
@@ -48,10 +43,9 @@ class Camera {
         Camera();
 
         // Direction Vertexes
-        void DisplayDirectionVertexes() const;
+        void DisplayViewBounds() const;
 
         // Camera Movement
-        void MoveTo(const glm::vec3& _position);
         void Move(Uint64 _deltaFrames);
         void MouseLook(SDL_bool _mouseGrabbed);
         void UpdateUniform() const;
@@ -59,11 +53,15 @@ class Camera {
         // Frustrum Culling with view clip planes
         void UpdateViewFrustrum();
 
+        // Camera Setters
+        void MoveTo(const glm::vec3& _position);
+        void SetDirection(const glm::vec3& _direction);
+
         // Getters
         [[nodiscard]] glm::mat4 GetViewMatrix() const {
             return glm::lookAt(position, position+direction, normalUp);
         }
-        [[nodiscard]] glm::vec3 GetFacing() const { return direction; }
+        [[nodiscard]] glm::vec3 GetDirection() const { return direction; }
         [[nodiscard]] std::pair<float, float> GetMinMaxDistance() const { return {minDistance, maxDistance}; }
         [[nodiscard]] glm::vec3 GetPosition() const { return position; }
         [[nodiscard]] Frustrum GetCameraFrustrum() const { return vf; }
