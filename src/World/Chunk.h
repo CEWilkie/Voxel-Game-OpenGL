@@ -5,7 +5,7 @@
 #ifndef UNTITLED7_CHUNK_H
 #define UNTITLED7_CHUNK_H
 
-#include "Cube.h"
+#include "../Blocks/Cube.h"
 
 class Chunk {
 

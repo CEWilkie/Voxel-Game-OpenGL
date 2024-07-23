@@ -9,7 +9,7 @@ World::World() {
     skybox = std::make_unique<Cube>();
 
     // Create skybox texture
-    texture = new Texture("../resources/skybox16x.png");
+    texture = new TextureData("../resources/skybox16x.png");
     texture->SetTextureSheetGrid({16, 16});
     skybox->SetTexture(texture, {0,0});
 
@@ -37,6 +37,6 @@ void World::SetSkyboxPosition(glm::vec3 _position) {
     skybox->SetPositionCentre(_position);
 }
 
-void World::SetSkyboxTexture(Texture *_texture) {
+void World::SetSkyboxTexture(TextureData *_texture) {
     texture = _texture;
 }

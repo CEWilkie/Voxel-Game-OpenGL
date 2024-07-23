@@ -5,7 +5,7 @@
 #include "Camera.h"
 
 #include <glm/gtc/matrix_access.hpp>
-#include "Window.h"
+#include "../Window.h"
 
 Camera::Camera() {
     // Generate normal direction display buffers

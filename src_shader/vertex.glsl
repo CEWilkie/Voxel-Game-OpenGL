@@ -31,6 +31,6 @@ void main() {
     // Colour
     v_vertexColour = vertexColour;
 
-    // Texture
+    // TextureData
     v_vertexTextureCoord = vertexTextureCoord;
 }

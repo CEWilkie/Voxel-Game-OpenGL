@@ -7,13 +7,13 @@
 
 #include <memory>
 
-#include "Cube.h"
-#include "Camera.h"
-#include "Texture.h"
+#include "../Blocks/Cube.h"
+#include "../Player/Camera.h"
+#include "../Textures/TextureData.h"
 
 class World {
     private:
-        Texture* texture {};
+        TextureData* texture {};
         std::unique_ptr<Cube> skybox;
 
         // Sky decos: clouds, sun, moon, stars, night, etc
@@ -28,7 +28,7 @@ class World {
         // Skybox
         void SetSkyboxProperties(const Camera* camera);
         void SetSkyboxPosition(glm::vec3 _position);
-        void SetSkyboxTexture(Texture* _texture);
+        void SetSkyboxTexture(TextureData* _texture);
 };
 
 #endif //UNTITLED7_WORLD_H

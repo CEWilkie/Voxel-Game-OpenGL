@@ -2,21 +2,20 @@
 // Created by cew05 on 10/07/2024.
 //
 
-#include "Texture.h"
+#include "TextureData.h"
 
 #include <SDL.h>
 #include <SDL_image.h>
 
-#include "ErrorLogging.h"
+#include "../ErrorLogging.h"
 
-Texture::Texture(const std::string& _texturePath) {
+TextureData::TextureData(const std::string& _texturePath) {
     // store path
     texturePath = _texturePath;
 
     // Generate new texture ID
-    glGenTextures(1, &textureBuffer);
-    glGenBuffers(1, &pixelbuffer);
-    printf("TEXTURE BUFFER %u TEXTURE PATH %s\n", textureBuffer, texturePath.c_str());
+    glGenTextures(1, &textureObject);
+    glGenBuffers(1, &textureBuffer);
 
     // Load image to surface
     SDL_Surface* surface = IMG_Load(texturePath.c_str());
@@ -50,7 +49,7 @@ Texture::Texture(const std::string& _texturePath) {
     }
 
     // bind to the texture object
-    glBindTexture(GL_TEXTURE_2D, textureBuffer);
+    glBindTexture(GL_TEXTURE_2D, textureObject);
 
     // Pixel Alignment Info
     int alignment = 8;
@@ -61,10 +60,10 @@ Texture::Texture(const std::string& _texturePath) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    // Texture wrapping
+    // TextureData wrapping
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 
-    // Texture environment interactions
+    // TextureData environment interactions
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
     // Store image data
@@ -78,14 +77,14 @@ Texture::Texture(const std::string& _texturePath) {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-Texture::~Texture() {
+TextureData::~TextureData() {
     // Clear buffer and texture data
-    printf("Deleted Texture %u %s\n", textureBuffer, texturePath.c_str());
-
+    glDeleteTextures(1, &textureObject);
+    glDeleteBuffers(1, &textureBuffer);
 }
 
 
-void Texture::SetTextureSheetGrid(std::pair<float, float> _textureGrid) {
+void TextureData::SetTextureSheetGrid(std::pair<float, float> _textureGrid) {
     if (_textureGrid.first == 0 || _textureGrid.second == 0) {
         printf("INVALID GRID SIZE %f %f\n", _textureGrid.first, _textureGrid.second);
         return;
@@ -103,10 +102,10 @@ void Texture::SetTextureSheetGrid(std::pair<float, float> _textureGrid) {
     }
 }
 
-void Texture::EnableTexture() const {
-    glBindTexture(GL_TEXTURE_2D, textureBuffer);
+void TextureData::EnableTexture() const {
+    glBindTexture(GL_TEXTURE_2D, textureObject);
 }
 
-void Texture::DisableTexture() const {
+void TextureData::DisableTexture() const {
     glBindTexture(GL_TEXTURE_2D, 0);
 }

@@ -12,7 +12,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "ErrorLogging.h"
-#include "Shaders.h"
+#include "../src_shader/Shaders.h"
 
 class Window {
     private:

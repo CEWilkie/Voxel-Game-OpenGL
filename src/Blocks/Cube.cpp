@@ -4,7 +4,7 @@
 
 #include "Cube.h"
 
-#include "Window.h"
+#include "../Window.h"
 #include <SDL.h>
 #include <SDL_image.h>
 
@@ -96,7 +96,7 @@ void Cube::BindCube() const {
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, color));
 
-    // Vertex Texture attributes
+    // Vertex TextureData attributes
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, texture));
 
@@ -143,10 +143,8 @@ void Cube::Display() const {
 }
 
 bool Cube::CheckCulling(const Camera& _camera) {
-    // Check sphere, then box
+    // Check sphere bounds
     canDisplay = sphereBounds->InFrustrum(_camera.GetCameraFrustrum(), *transformation);
-//    if (canDisplay) canDisplay = boxBounds->InFrustrum(_camera.GetCameraFrustrum(), *transformation);
-
     return canDisplay;
 }
 
@@ -161,9 +159,9 @@ void Cube::UpdateTextureData() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void Cube::SetTexture(Texture* _texture, glm::vec2 _origin) {
+void Cube::SetTexture(TextureData* _texture, glm::vec2 _origin) {
     if (_texture == nullptr) {
-        printf("Texture cannot be assigned to null\n");
+        printf("TextureData cannot be assigned to null\n");
         return;
     }
 

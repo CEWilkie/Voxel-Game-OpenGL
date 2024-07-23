@@ -3,14 +3,12 @@
 #include <memory>
 
 #include <SDL.h>
-#include <SDL_image.h>
-
 #include <glew.h>
 
 #include "Window.h"
-#include "Cube.h"
-#include "Camera.h"
-#include "World.h"
+#include "Blocks/Cube.h"
+#include "Player/Camera.h"
+#include "World/World.h"
 
 int main(int argc, char** argv){
     // Init SDL
@@ -39,9 +37,11 @@ int main(int argc, char** argv){
      * TEXTURE CREATION
      */
 
-    Texture texture("../resources/testcube64x.png");
+    TextureData texture("../resources/testcube64x.png");
     texture.SetTextureSheetGrid({4, 4});
-    Texture textureB("../resources/testcubes16x.png");
+
+
+    TextureData textureB("../resources/testcubes16x.png");
     textureB.SetTextureSheetGrid({16, 16});
 
     /*

@@ -20,11 +20,28 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="object culling implemented using sphere approximations for cubes. Not maximally efficient, some issues exist i think">
+    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="implemented a secondary camera. swap between cameras using 1 and 2 buttons, allows visuals of objects being culled as primary camera turns away">
+      <change afterPath="$PROJECT_DIR$/src/Blocks/Blocks.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/Blocks/Blocks.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/Textures/TextureManager.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/Textures/TextureManager.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Camera.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Camera.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Camera.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Camera.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Camera.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Player/Camera.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Camera.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Player/Camera.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Chunk.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Chunk.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Chunk.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Chunk.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Cube.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/Cube.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Cube.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/Cube.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ModelStructs.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/ModelStructs.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ModelTransformations.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/ModelTransformations.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Shaders.h" beforeDir="false" afterPath="$PROJECT_DIR$/src_shader/Shaders.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Texture.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Textures/Texture.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Texture.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Textures/TextureData.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Window.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Window.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/World.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/World.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/World.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/World.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src_shader/vertex.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/src_shader/vertex.glsl" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -83,11 +100,19 @@
       <recent name="C:\Users\cew05\CLionProjects\untitled7" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\cew05\CLionProjects\untitled7\src" />
-      <recent name="C:\Users\cew05\CLionProjects\untitled7\Libs" />
+      <recent name="C:\Github\openGl First Program\src\Textures" />
+      <recent name="C:\Github\openGl First Program\src" />
+      <recent name="C:\Github\openGl First Program\src_shader" />
+      <recent name="C:\Github\openGl First Program\src\World" />
+      <recent name="C:\Github\openGl First Program\src\Player" />
     </key>
   </component>
   <component name="RunManager">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="untitled7" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="untitled7" TARGET_NAME="untitled7" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="untitled7" RUN_TARGET_NAME="untitled7">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -131,7 +156,8 @@
       <workItem from="1720712225700" duration="249000" />
       <workItem from="1720712553537" duration="10714000" />
       <workItem from="1720779360318" duration="40382000" />
-      <workItem from="1721730158936" duration="6511000" />
+      <workItem from="1721730158936" duration="11193000" />
+      <workItem from="1721745893609" duration="1201000" />
     </task>
     <task id="LOCAL-00001" summary="gitignore">
       <option name="closed" value="true" />
@@ -285,7 +311,15 @@
       <option name="project" value="LOCAL" />
       <updated>1721734336607</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="implemented a secondary camera. swap between cameras using 1 and 2 buttons, allows visuals of objects being culled as primary camera turns away">
+      <option name="closed" value="true" />
+      <created>1721738320170</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1721738320170</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -314,7 +348,8 @@
     <MESSAGE value="Texture object fix, textures are now bound correctly when requested. Some setup for culling implemented, culling of non-visible (back) faces implemented" />
     <MESSAGE value="Implemented use of a transformations object rather than directly changing data in buffers for objects" />
     <MESSAGE value="object culling implemented using sphere approximations for cubes. Not maximally efficient, some issues exist i think" />
-    <option name="LAST_COMMIT_MESSAGE" value="object culling implemented using sphere approximations for cubes. Not maximally efficient, some issues exist i think" />
+    <MESSAGE value="implemented a secondary camera. swap between cameras using 1 and 2 buttons, allows visuals of objects being culled as primary camera turns away" />
+    <option name="LAST_COMMIT_MESSAGE" value="implemented a secondary camera. swap between cameras using 1 and 2 buttons, allows visuals of objects being culled as primary camera turns away" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

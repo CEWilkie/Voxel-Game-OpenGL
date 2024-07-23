@@ -2,18 +2,18 @@
 // Created by cew05 on 10/07/2024.
 //
 
-#ifndef UNTITLED7_TEXTURE_H
-#define UNTITLED7_TEXTURE_H
+#ifndef UNTITLED7_TEXTUREDATA_H
+#define UNTITLED7_TEXTUREDATA_H
 
 #include <string>
 #include <glew.h>
 #include <glm/vec2.hpp>
 
-class Texture {
+class TextureData {
     private:
-        // Texture buffer
+        // TextureData buffer
+        GLuint textureObject {};
         GLuint textureBuffer {};
-        GLuint pixelbuffer {};
 
         std::string texturePath {};
         std::pair<int, int> textureSheetSize {};
@@ -21,8 +21,8 @@ class Texture {
         std::pair<float, float> textureGrid {};
 
     public:
-        explicit Texture(const std::string& _texturePath);
-        ~Texture();
+        explicit TextureData(const std::string& _texturePath);
+        ~TextureData();
 
         void Path() const { printf("path: %s\n", texturePath.c_str()); };
 
@@ -37,5 +37,4 @@ class Texture {
         void DisableTexture() const;
 };
 
-
-#endif //UNTITLED7_TEXTURE_H
+#endif //UNTITLED7_TEXTUREDATA_H

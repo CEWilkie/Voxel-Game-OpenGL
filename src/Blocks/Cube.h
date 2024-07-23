@@ -12,13 +12,13 @@
 #include <glew.h>
 #include <glm/matrix.hpp>
 
-#include "Texture.h"
+#include "../Textures/TextureData.h"
 #include "ModelStructs.h"
 #include "ModelTransformations.h"
-#include "Camera.h"
+#include "../Player/Camera.h"
 
 class Cube {
-    private:
+    protected:
         // Buffer objects
         unsigned int vertexArrayObject {};
         unsigned int vertexBufferObject {};
@@ -31,12 +31,11 @@ class Cube {
         GLint modelMatrixLocation = -1;
 
         // Display and Textures
-        Texture* texture {};
+        TextureData* texture {};
         glm::vec2 textureOrigin {};
 
         // Culling Boundaries
         SphereBounds* sphereBounds {};
-        BoxBounds* boxBounds {};
         bool canDisplay = true;
 
         // Bind Data to openGL
@@ -55,7 +54,7 @@ class Cube {
         bool CheckCulling(const Camera& _camera);
 
         // Textures
-        void SetTexture(Texture* _texture, glm::vec2 _origin);
+        void SetTexture(TextureData* _texture, glm::vec2 _origin);
         void SetTextureOrigin(glm::vec2 _origin);
 
         // Transformations
