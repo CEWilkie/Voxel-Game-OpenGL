@@ -50,6 +50,11 @@ class Cube {
 
         // Display
         void Display() const;
+
+        // Object culling
+        bool CheckCulling(const Camera& _camera);
+
+        // Textures
         void SetTexture(Texture* _texture, glm::vec2 _origin);
         void SetTextureOrigin(glm::vec2 _origin);
 
@@ -57,10 +62,8 @@ class Cube {
         void SetPositionOrigin(glm::vec3 _originPosition);
         void SetPositionCentre(glm::vec3 _centre);
         void SetScale(glm::vec3 _scale);
+        void SetRotation(glm::vec3 _rotation);
         void UpdateModelMatrix();
-
-        // Object culling
-        bool CheckCulling(const Camera& _camera);
 
         // Getters
         [[nodiscard]] glm::vec3 GetDimensions() { return transformation->GetLocalScale(); }

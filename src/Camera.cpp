@@ -176,17 +176,13 @@ void Camera::UpdateViewFrustrum() {
     // Get rows from projection matrix
     const float halfVertFarSide = maxDistance * tanf(fovAngleY * .5f);
     const float halfHoriFarSide = halfVertFarSide * window.GetAspectRatio();
-    const glm::vec3 farDistance = maxDistance * -direction;
+    const glm::vec3 farDistance = maxDistance * direction;
 
     // INDEX SIDE : |0 LEFT | 1 RIGHT | 2 BOTTOM | 3 TOP | 4 NEAR | 5 FAR
     vf.planes[0].SetPlane(position, glm::cross(normalUp, farDistance + normalRight*halfHoriFarSide));
     vf.planes[1].SetPlane(position, glm::cross(farDistance - normalRight * halfHoriFarSide, normalUp));
     vf.planes[2].SetPlane(position, glm::cross(farDistance + normalUp * halfVertFarSide, normalRight));
     vf.planes[3].SetPlane(position, glm::cross(normalRight, farDistance - normalUp * halfVertFarSide));
-    vf.planes[4].SetPlane(position+minDistance*direction, -direction);
-    vf.planes[5].SetPlane(position+farDistance, direction);
-}
-
-bool Camera::ObjectInView(const BoundingVolume &_volume) const {
-    return _volume.InFrustrum(vf, perspective * GetViewMatrix());
+    vf.planes[4].SetPlane(position+minDistance*direction, direction);
+    vf.planes[5].SetPlane(position+farDistance, -direction);
 }

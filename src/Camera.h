@@ -18,7 +18,7 @@ class Camera {
         // Global perspective
         glm::mat4 perspective {};
         float fovAngleY = 45.0f;
-        float minDistance = 1.0f;
+        float minDistance = 0.1f;
         float maxDistance = 16*16.0f;
 
         // Camera info
@@ -44,8 +44,6 @@ class Camera {
 
         void BindDirectionVertexes() const;
 
-        float maxy = 0.5f;
-
     public:
         Camera();
 
@@ -60,7 +58,6 @@ class Camera {
 
         // Frustrum Culling with view clip planes
         void UpdateViewFrustrum();
-        [[nodiscard]] bool ObjectInView(const BoundingVolume &_volume) const;
 
         // Getters
         [[nodiscard]] glm::mat4 GetViewMatrix() const {

@@ -96,7 +96,7 @@ int main(int argc, char** argv){
         std::unique_ptr<Cube> cube = std::make_unique<Cube>();
         cube->SetPositionCentre(plane.normal);
         cube->SetTexture(&textureB, origins[o]);
-        cube->SetScale({0.1f, 0.1f, 0.1f});
+        cube->SetScale({0.1f, 1.0f, 0.1f});
         cube->UpdateModelMatrix();
         fc.push_back(std::move(cube));
         o++;
@@ -135,7 +135,18 @@ int main(int argc, char** argv){
 
         // If view matrix has changed since last check
         if (lastViewMatrix != camera.GetViewMatrix()) {
+            lastViewMatrix = camera.GetViewMatrix();
+            camera.UpdateViewFrustrum();
 
+            unsigned int t = cubes.size();
+            for (const auto& cube : cubes) {
+                if (!cube->CheckCulling(camera)) {
+                    // Cube is culled, remove from displaying list
+                    t--;
+                }
+            }
+
+            printf("OF %zu CUBES, %u RENDERED\n", cubes.size(), t);
         }
 
 
@@ -201,23 +212,6 @@ int main(int argc, char** argv){
             SDL_ShowCursor((grabMouse == SDL_TRUE) ? SDL_DISABLE : SDL_ENABLE);
         }
         if (!state[SDL_SCANCODE_ESCAPE]) escToggled = false;
-
-        if (state[SDL_SCANCODE_V]) {
-            lastViewMatrix = camera.GetViewMatrix();
-            camera.UpdateViewFrustrum();
-            unsigned int t = cubes.size();
-            for (const auto& cube : cubes) {
-                if (!cube->CheckCulling(camera)) {
-                    t--;
-                }
-            }
-
-            printf("OF %zu CUBES, %u RENDERED\n", cubes.size(), t);
-
-            for (int c = 0; c < 6; c++) {
-                fc[c]->SetPositionCentre(camera.GetCameraFrustrum().planes[c].normal);
-            }
-        }
 
         // CAMERA
 

@@ -67,8 +67,9 @@ Cube::Cube() {
             2, 12, 3, 13, 3, 12
     };
 
-
-
+    // Create bounding models for culling purposes
+    auto sb = GenerateSphere(*vertexArray);
+    sphereBounds = new SphereBounds(sb.centre, sb.radius);
 
     BindCube();
 }
@@ -141,6 +142,14 @@ void Cube::Display() const {
     glBindVertexArray(0);
 }
 
+bool Cube::CheckCulling(const Camera& _camera) {
+    // Check sphere, then box
+    canDisplay = sphereBounds->InFrustrum(_camera.GetCameraFrustrum(), *transformation);
+//    if (canDisplay) canDisplay = boxBounds->InFrustrum(_camera.GetCameraFrustrum(), *transformation);
+
+    return canDisplay;
+}
+
 void Cube::UpdateTextureData() {
     for (auto& vertex : *vertexArray ) {
         vertex.texture = texture->GetTextureSheetTile(textureOrigin + vertex.textureIndex);
@@ -190,15 +199,10 @@ void Cube::SetScale(glm::vec3 _scale) {
     transformation->SetScale(_scale);
 }
 
-void Cube::UpdateModelMatrix() {
-    transformation->UpdateModelMatrix();
+void Cube::SetRotation(glm::vec3 _rotation) {
+    transformation->SetRotation(_rotation);
 }
 
-bool Cube::CheckCulling(const Camera& _camera) {
-    // Check sphere, then box
-//    canDisplay = _camera.ObjectInView(*sphereBounds);
-//    if (canDisplay) canDisplay = _camera.ObjectInView(*boxBounds);
-
-    canDisplay = true;
-    return canDisplay;
+void Cube::UpdateModelMatrix() {
+    transformation->UpdateModelMatrix();
 }
