@@ -16,6 +16,7 @@
 #include "ModelStructs.h"
 #include "ModelTransformations.h"
 #include "../Player/Camera.h"
+#include "../Textures/TextureManager.h"
 
 class Cube {
     protected:
@@ -30,9 +31,9 @@ class Cube {
         std::unique_ptr<Transformation> transformation {};
         GLint modelMatrixLocation = -1;
 
-        // Display and Textures
-        TextureData* texture {};
-        glm::vec2 textureOrigin {};
+        // Texture information
+        TEXTURESHEET textureSheetID = TEXTURESHEET::TEST16;
+        glm::vec2 textureOrigin {1, 1};
 
         // Culling Boundaries
         SphereBounds* sphereBounds {};
@@ -40,7 +41,6 @@ class Cube {
 
         // Bind Data to openGL
         void BindCube() const;
-
         void UpdateTextureData();
 
     public:
@@ -54,7 +54,7 @@ class Cube {
         bool CheckCulling(const Camera& _camera);
 
         // Textures
-        void SetTexture(TextureData* _texture, glm::vec2 _origin);
+        void SetTexture(TEXTURESHEET _textureID, glm::vec2 _origin);
         void SetTextureOrigin(glm::vec2 _origin);
 
         // Transformations

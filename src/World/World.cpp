@@ -11,7 +11,7 @@ World::World() {
     // Create skybox texture
     texture = new TextureData("../resources/skybox16x.png");
     texture->SetTextureSheetGrid({16, 16});
-    skybox->SetTexture(texture, {0,0});
+    skybox->SetTexture(TEXTURESHEET::WORLD, {0,0});
 
 }
 

@@ -10,6 +10,7 @@
 #include "Player/Camera.h"
 #include "World/World.h"
 #include "Textures/TextureManager.h"
+#include "Blocks/NaturalBlocks.h"
 
 int main(int argc, char** argv){
     // Init SDL
@@ -41,13 +42,6 @@ int main(int argc, char** argv){
     // Create the texture manager
     textureManager = std::make_unique<TextureManager>();
 
-    TextureData texture("../resources/testcube64x.png");
-    texture.SetTextureSheetGrid({4, 4});
-
-
-    TextureData textureB("../resources/testcubes16x.png");
-    textureB.SetTextureSheetGrid({16, 16});
-
     /*
      *  WORLD OBJECT CREATION
      */
@@ -69,7 +63,7 @@ int main(int argc, char** argv){
     for (int c = 0; c < 20; c++) {
         std::unique_ptr<Cube> cube = std::make_unique<Cube>();
         cube->SetPositionOrigin({float(c), 0.f, 0.0f});
-        cube->SetTexture(&texture, {0,0});
+        cube->SetTexture(TEXTURESHEET::TEST16, {1,1});
         cube->UpdateModelMatrix();
         cubes.push_back(std::move(cube));
     }
@@ -77,10 +71,8 @@ int main(int argc, char** argv){
 
     // Line of cubes in y
     for (int c = 0; c < 20; c++) {
-        std::unique_ptr<Cube> cube = std::make_unique<Cube>();
-        cube->SetPositionOrigin({0.0f, float(c), 0.0f});
-        cube->SetTexture(&texture, {0,0});
-        cube->UpdateModelMatrix();
+        glm::vec3 position{0.0f, float(c), 0.0f};
+        std::unique_ptr<Cube> cube = std::make_unique<Stone>(position);
         cubes.push_back(std::move(cube));
     }
 
@@ -89,7 +81,7 @@ int main(int argc, char** argv){
     for (int c = 0; c < 10; c++) {
         std::unique_ptr<Cube> cube = std::make_unique<Cube>();
         cube->SetPositionOrigin({0.0f, 0.f, float(c)});
-        cube->SetTexture(&texture, {0,0});
+        cube->SetTexture(TEXTURESHEET::TEST16, {1,1});
         cube->UpdateModelMatrix();
         cubes.push_back(std::move(cube));
     }

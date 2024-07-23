@@ -2,8 +2,8 @@
 // Created by cew05 on 23/07/2024.
 //
 
-#ifndef UNTITLED7_BLOCKS_H
-#define UNTITLED7_BLOCKS_H
+#ifndef UNTITLED7_NATURALBLOCKS_H
+#define UNTITLED7_NATURALBLOCKS_H
 
 #include "Cube.h"
 
@@ -15,4 +15,4 @@ class Stone : public Cube {
 };
 
 
-#endif //UNTITLED7_BLOCKS_H
+#endif //UNTITLED7_NATURALBLOCKS_H

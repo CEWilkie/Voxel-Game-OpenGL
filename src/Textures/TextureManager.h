@@ -31,6 +31,7 @@ class TextureManager {
         void EnableTextureSheet(TEXTURESHEET _sheetID);
         void DisableTextureSheet(TEXTURESHEET _sheetID);
 
+        TextureData* GetTextureData(TEXTURESHEET _sheetID);
 };
 
 

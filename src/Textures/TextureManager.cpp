@@ -60,3 +60,10 @@ void TextureManager::DisableTextureSheet(TEXTURESHEET _sheetID) {
     if (textureSheetMap.count(_sheetID) < 1) return;
     textureSheetMap[_sheetID]->DisableTexture();
 }
+
+TextureData* TextureManager::GetTextureData(TEXTURESHEET _sheetID) {
+    // ensure sheet has been constructed in the map
+    if (textureSheetMap.count(_sheetID) < 1) return nullptr;
+
+    return textureSheetMap[_sheetID].get();
+}
