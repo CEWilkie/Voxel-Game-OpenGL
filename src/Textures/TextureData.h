@@ -20,11 +20,13 @@ class TextureData {
         std::pair<int, int> textureTileSize {};
         std::pair<float, float> textureGrid {};
 
+        // Checker vars
+        bool isGood = false; // Checker var to ensure texture data is fully constructed
+        bool isBound = false; // Checker var for status of the TextureData being bound
+
     public:
         explicit TextureData(const std::string& _texturePath);
         ~TextureData();
-
-        void Path() const { printf("path: %s\n", texturePath.c_str()); };
 
         // Using tilesheets / texturesheets
         void SetTextureSheetGrid(std::pair<float, float> _textureGrid);
@@ -33,8 +35,12 @@ class TextureData {
         };
 
         // Activating the texture
-        void EnableTexture() const;
-        void DisableTexture() const;
+        void EnableTexture();
+        void DisableTexture();
+
+        // Checking texture states
+        [[nodiscard]] bool IsTextureValid() const { return isGood; };
+        [[nodiscard]] bool IsTextureBound() const { return isBound; };
 };
 
 #endif //UNTITLED7_TEXTUREDATA_H

@@ -75,6 +75,9 @@ TextureData::TextureData(const std::string& _texturePath) {
     // Unbind
     SDL_FreeSurface(surface);
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Constructor completed, texture is good
+    isGood = true;
 }
 
 TextureData::~TextureData() {
@@ -102,10 +105,12 @@ void TextureData::SetTextureSheetGrid(std::pair<float, float> _textureGrid) {
     }
 }
 
-void TextureData::EnableTexture() const {
+void TextureData::EnableTexture() {
     glBindTexture(GL_TEXTURE_2D, textureObject);
+    isBound = true;
 }
 
-void TextureData::DisableTexture() const {
+void TextureData::DisableTexture() {
     glBindTexture(GL_TEXTURE_2D, 0);
+    isBound = false;
 }

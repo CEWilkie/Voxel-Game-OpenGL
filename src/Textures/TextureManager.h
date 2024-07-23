@@ -13,41 +13,28 @@ enum class TEXTURESHEET {
     NATURAL, WORLD, TEST16, TEST64,
 };
 
-/*
- * Set enums for individual textures
- */
-
-enum class TEXTURE {
-        STONE, DIRT, GRASS
-};
-
 #include <unordered_map>
 #include <memory>
 
 #include "TextureData.h"
 
-struct Texture {
-    TEXTURESHEET sheetID;
-    std::pair<int, int> textureGridOrigin;
-};
-
-
 class TextureManager {
     private:
         std::unordered_map<TEXTURESHEET, std::unique_ptr<TextureData>> textureSheetMap;
-        std::unordered_map<TEXTURE, Texture> textureMap;
 
     public:
         // Con/Destructor
         TextureManager();
         ~TextureManager();
 
-        //
+        // Enable and Disable the specific texture sheets
+        void EnableTextureSheet(TEXTURESHEET _sheetID);
+        void DisableTextureSheet(TEXTURESHEET _sheetID);
 
 };
 
 
 // Global texture manager which can be used by other objects int the program to fetch textures from
-inline std::unique_ptr<TextureManager> textureManager = std::make_unique<TextureManager>();
+inline std::unique_ptr<TextureManager> textureManager;
 
 #endif //UNTITLED7_TEXTUREMANAGER_H

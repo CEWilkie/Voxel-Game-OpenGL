@@ -9,6 +9,7 @@
 #include "Blocks/Cube.h"
 #include "Player/Camera.h"
 #include "World/World.h"
+#include "Textures/TextureManager.h"
 
 int main(int argc, char** argv){
     // Init SDL
@@ -36,6 +37,9 @@ int main(int argc, char** argv){
     /*
      * TEXTURE CREATION
      */
+
+    // Create the texture manager
+    textureManager = std::make_unique<TextureManager>();
 
     TextureData texture("../resources/testcube64x.png");
     texture.SetTextureSheetGrid({4, 4});
