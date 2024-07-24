@@ -86,23 +86,6 @@ struct SphereBounds : public BoundingVolume {
     }
 };
 
-inline SphereBounds GenerateSphere(const std::vector<Vertex>& _verticies)
-{
-    auto minAABB = glm::vec3(std::numeric_limits<float>::max());
-    auto maxAABB = glm::vec3(std::numeric_limits<float>::min());
-    for (auto& vertex : _verticies) {
-        minAABB.x = std::min(minAABB.x, vertex.position.x);
-        minAABB.y = std::min(minAABB.y, vertex.position.y);
-        minAABB.z = std::min(minAABB.z, vertex.position.z);
-
-        maxAABB.x = std::max(maxAABB.x, vertex.position.x);
-        maxAABB.y = std::max(maxAABB.y, vertex.position.y);
-        maxAABB.z = std::max(maxAABB.z, vertex.position.z);
-    }
-
-    return {(maxAABB + minAABB) * 0.5f, glm::length(minAABB - maxAABB)};
-}
-
 struct BoxBounds : public BoundingVolume {
     glm::vec3 centre {0.0f, 0.0f, 0.0f};
     float extent {0.0f};
@@ -110,6 +93,10 @@ struct BoxBounds : public BoundingVolume {
     BoxBounds(const glm::vec3& _centre, float _extent) : BoundingVolume() {
         centre = _centre;
         extent = _extent;
+    }
+
+    [[nodiscard]] std::pair<glm::vec3, glm::vec3> GetMinMaxVertex() const {
+        return {centre - extent, centre + extent};
     }
 
     [[nodiscard]] int InFrustrum(const Frustrum& _camFrustrum, const Transformation& _transformation) const override {
@@ -135,7 +122,7 @@ struct BoxBounds : public BoundingVolume {
 
         const BoxBounds globalAABB(globalCentre, std::max(std::max(newIi, newIj), newIk));
 
-        // test temp sphere in each frustrum plane
+        // test global box bounds in each frustrum plane
         bool inOrInFrontOfPlane;
         for (const auto& plane : _camFrustrum.planes) {
             float r = globalAABB.extent * (std::abs(plane.normal.x) + std::abs(plane.normal.y) + std::abs(plane.normal.z));
@@ -150,5 +137,43 @@ struct BoxBounds : public BoundingVolume {
     }
 };
 
+
+
+
+
+/*
+ * GENERATING BOUNDING OBJECTS
+ */
+
+// Obtain the minimum and maximum verticies from a vertex array
+inline std::pair<glm::vec3, glm::vec3> minMaxVertex(const std::vector<Vertex>& _verticies) {
+    auto minVertex = glm::vec3(std::numeric_limits<float>::max());
+    auto maxVertex = glm::vec3(std::numeric_limits<float>::min());
+    for (auto& vertex : _verticies) {
+        minVertex.x = std::min(minVertex.x, vertex.position.x);
+        minVertex.y = std::min(minVertex.y, vertex.position.y);
+        minVertex.z = std::min(minVertex.z, vertex.position.z);
+
+        maxVertex.x = std::max(maxVertex.x, vertex.position.x);
+        maxVertex.y = std::max(maxVertex.y, vertex.position.y);
+        maxVertex.z = std::max(maxVertex.z, vertex.position.z);
+    }
+
+    return {minVertex, maxVertex};
+}
+
+inline SphereBounds GenerateSphere(const std::vector<Vertex>& _verticies) {
+    auto [minVertex, maxVertex] = minMaxVertex(_verticies);
+    return {(maxVertex + minVertex) * 0.5f, glm::length(minVertex - maxVertex)};
+}
+
+
+
+inline BoxBounds GenerateBoxBounds(const std::vector<Vertex>& _verticies) {
+    auto [minVertex, maxVertex] = minMaxVertex(_verticies);
+
+    auto centre = (maxVertex + minVertex) * 0.5f;
+    return {centre, glm::length(maxVertex - centre)};
+}
 
 #endif //UNTITLED7_MODELSTRUCTS_H

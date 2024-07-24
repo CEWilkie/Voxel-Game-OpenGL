@@ -63,11 +63,13 @@ class Cube {
         void SetScale(glm::vec3 _scale);
         void SetRotation(glm::vec3 _rotation);
         void UpdateModelMatrix();
+        void UpdateModelMatrix(const glm::mat4& _parentTransformationMatrix);
 
         // Getters
         [[nodiscard]] glm::vec3 GetDimensions() { return transformation->GetLocalScale(); }
         [[nodiscard]] glm::vec3 GetGlobalCentre() { return transformation->GetGlobalPosition() + GetDimensions() / 2.0f; }
         [[nodiscard]] glm::vec3 GetLocalCentre() { return transformation->GetLocalPosition() + GetDimensions() / 2.0f; }
+        [[nodiscard]] std::vector<Vertex> GetVertexArray() { return *vertexArray; };
 };
 
 #endif //UNTITLED7_CUBE_H

@@ -39,7 +39,7 @@ class Transformation {
             modelUpdated = true;
         }
 
-        // Account for transformation of partent model
+        // Account for transformation of parent model
         void UpdateModelMatrix(const glm::mat4& _parentTransformationMatrix) {
             modelMatrix = _parentTransformationMatrix * GetLocalTransformationMatrix();
             modelUpdated = true;

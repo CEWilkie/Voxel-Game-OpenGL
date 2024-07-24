@@ -20,28 +20,17 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="implemented a secondary camera. swap between cameras using 1 and 2 buttons, allows visuals of objects being culled as primary camera turns away">
-      <change afterPath="$PROJECT_DIR$/src/Blocks/Blocks.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Blocks/Blocks.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Textures/TextureManager.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Textures/TextureManager.h" afterDir="false" />
+    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="add in aseprite resources">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Camera.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Player/Camera.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Camera.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Player/Camera.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Chunk.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Chunk.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Chunk.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Chunk.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Cube.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/Cube.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Cube.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/Cube.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ModelStructs.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/ModelStructs.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ModelTransformations.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/ModelTransformations.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Shaders.h" beforeDir="false" afterPath="$PROJECT_DIR$/src_shader/Shaders.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Texture.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Textures/Texture.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Texture.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Textures/TextureData.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Window.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Window.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/World.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/World.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/World.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/World.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Blocks/Cube.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/Cube.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Blocks/Cube.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/Cube.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Blocks/ModelStructs.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/ModelStructs.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Blocks/ModelTransformations.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/ModelTransformations.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/World/Chunk.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Chunk.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/World/Chunk.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Chunk.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/World/World.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/World.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/World/World.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/World.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src_shader/vertex.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/src_shader/vertex.glsl" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -83,6 +72,7 @@
     &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;C:/Github/openGl First Program&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
@@ -100,19 +90,14 @@
       <recent name="C:\Users\cew05\CLionProjects\untitled7" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Github\openGl First Program\resources\asepriteFiles" />
+      <recent name="C:\Github\openGl First Program\resources" />
+      <recent name="C:\Github\openGl First Program\resources\Palettes\Natural" />
       <recent name="C:\Github\openGl First Program\src\Textures" />
       <recent name="C:\Github\openGl First Program\src" />
-      <recent name="C:\Github\openGl First Program\src_shader" />
-      <recent name="C:\Github\openGl First Program\src\World" />
-      <recent name="C:\Github\openGl First Program\src\Player" />
     </key>
   </component>
   <component name="RunManager">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="untitled7" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="untitled7" TARGET_NAME="untitled7" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="untitled7" RUN_TARGET_NAME="untitled7">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -158,6 +143,10 @@
       <workItem from="1720779360318" duration="40382000" />
       <workItem from="1721730158936" duration="11193000" />
       <workItem from="1721745893609" duration="1201000" />
+      <workItem from="1721747104165" duration="6853000" />
+      <workItem from="1721770228339" duration="3708000" />
+      <workItem from="1721775569174" duration="4458000" />
+      <workItem from="1721812202938" duration="13436000" />
     </task>
     <task id="LOCAL-00001" summary="gitignore">
       <option name="closed" value="true" />
@@ -319,7 +308,39 @@
       <option name="project" value="LOCAL" />
       <updated>1721738320170</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="Reorganised files">
+      <option name="closed" value="true" />
+      <created>1721748009443</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1721748009443</updated>
+    </task>
+    <task id="LOCAL-00022" summary="starting to implement a global texture manager to manage the texture sheets in use by the program">
+      <option name="closed" value="true" />
+      <created>1721755966700</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1721755966700</updated>
+    </task>
+    <task id="LOCAL-00023" summary="Created first true block which inherits from the Cube class">
+      <option name="closed" value="true" />
+      <created>1721758760582</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1721758760582</updated>
+    </task>
+    <task id="LOCAL-00024" summary="add in aseprite resources">
+      <option name="closed" value="true" />
+      <created>1721770678628</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1721770678628</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -349,7 +370,11 @@
     <MESSAGE value="Implemented use of a transformations object rather than directly changing data in buffers for objects" />
     <MESSAGE value="object culling implemented using sphere approximations for cubes. Not maximally efficient, some issues exist i think" />
     <MESSAGE value="implemented a secondary camera. swap between cameras using 1 and 2 buttons, allows visuals of objects being culled as primary camera turns away" />
-    <option name="LAST_COMMIT_MESSAGE" value="implemented a secondary camera. swap between cameras using 1 and 2 buttons, allows visuals of objects being culled as primary camera turns away" />
+    <MESSAGE value="Reorganised files" />
+    <MESSAGE value="starting to implement a global texture manager to manage the texture sheets in use by the program" />
+    <MESSAGE value="Created first true block which inherits from the Cube class" />
+    <MESSAGE value="add in aseprite resources" />
+    <option name="LAST_COMMIT_MESSAGE" value="add in aseprite resources" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

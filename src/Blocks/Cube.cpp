@@ -182,7 +182,10 @@ void Cube::SetPositionOrigin(glm::vec3 _originPosition) {
 
 void Cube::SetPositionCentre(glm::vec3 _centre) {
     // set transformation to move to the new origin position, but offset by half the scale of the cube
-    transformation->SetPosition(_centre - (transformation->GetLocalScale()/2.0f));
+    glm::vec3 originFromCentre{_centre - (transformation->GetLocalScale() / 2.0f)};
+    originFromCentre.y += transformation->GetLocalScale().y;
+
+    transformation->SetPosition(originFromCentre);
 }
 
 void Cube::SetScale(glm::vec3 _scale) {
@@ -195,4 +198,8 @@ void Cube::SetRotation(glm::vec3 _rotation) {
 
 void Cube::UpdateModelMatrix() {
     transformation->UpdateModelMatrix();
+}
+
+void Cube::UpdateModelMatrix(const glm::mat4 &_parentTransformationMatrix) {
+    transformation->UpdateModelMatrix(_parentTransformationMatrix);
 }

@@ -6,11 +6,11 @@
 #include <glew.h>
 
 #include "Window.h"
-#include "Blocks/Cube.h"
 #include "Player/Camera.h"
 #include "World/World.h"
 #include "Textures/TextureManager.h"
-#include "Blocks/NaturalBlocks.h"
+
+#include "World/Chunk.h"
 
 int main(int argc, char** argv){
     // Init SDL
@@ -35,56 +35,26 @@ int main(int argc, char** argv){
     glUseProgram(shaderID);
 
 
-    /*
-     * TEXTURE CREATION
-     */
+    // CREATE CAMERA
+    Camera camera;
+    Camera secondaryCamera;
+    Camera* curCam = &camera;
+
+    // LOAD TEXTURES
 
     // Create the texture manager
     textureManager = std::make_unique<TextureManager>();
 
     /*
-     *  WORLD OBJECT CREATION
+     *  WORLD CREATION
      */
 
-    // CAMERA OBJECT
-    Camera camera;
-    Camera secondaryCamera;
-    Camera* curCam = &camera;
-
-    // WORLD OBJECT
-    World world;
-    world.SetSkyboxProperties(&camera);
-
-    // CUBES
-
-    std::vector<std::unique_ptr<Cube>> cubes;
-
-    // Line of cubes in x
-    for (int c = 0; c < 20; c++) {
-        std::unique_ptr<Cube> cube = std::make_unique<Cube>();
-        cube->SetPositionOrigin({float(c), 0.f, 0.0f});
-        cube->SetTexture(TEXTURESHEET::TEST16, {1,1});
-        cube->UpdateModelMatrix();
-        cubes.push_back(std::move(cube));
-    }
+    // Create world
+    world = std::make_unique<World>();
+    world->SetSkyboxProperties(&camera);
+    world->GenerateWorld();
 
 
-    // Line of cubes in y
-    for (int c = 0; c < 20; c++) {
-        glm::vec3 position{0.0f, float(c), 0.0f};
-        std::unique_ptr<Cube> cube = std::make_unique<Stone>(position);
-        cubes.push_back(std::move(cube));
-    }
-
-
-    // Line of cubes in z
-    for (int c = 0; c < 10; c++) {
-        std::unique_ptr<Cube> cube = std::make_unique<Cube>();
-        cube->SetPositionOrigin({0.0f, 0.f, float(c)});
-        cube->SetTexture(TEXTURESHEET::TEST16, {1,1});
-        cube->UpdateModelMatrix();
-        cubes.push_back(std::move(cube));
-    }
 
     // Trap mouse to screen and hide it
     SDL_SetWindowGrab(window.WindowPtr(), SDL_TRUE);
@@ -121,15 +91,7 @@ int main(int argc, char** argv){
             lastViewMatrix = camera.GetViewMatrix();
             camera.UpdateViewFrustrum();
 
-            unsigned int t = cubes.size();
-            for (const auto& cube : cubes) {
-                if (!cube->CheckCulling(camera)) {
-                    // Cube is culled, remove from displaying list
-                    t--;
-                }
-            }
-
-            printf("OF %zu CUBES, %u RENDERED\n", cubes.size(), t);
+            //chunk.CheckCulling(camera);
         }
 
 
@@ -137,19 +99,7 @@ int main(int argc, char** argv){
          * DRAW TO SCREEN
          */
 
-        // 3D OBJECTS
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
-
-        // Display the block objects
-        for (const auto& cube : cubes) {
-            cube->Display();
-        }
-
-        glDisable(GL_CULL_FACE);
-
-        // Display the background images
-        world.Display();
+        world->Display();
 
         // 2D OVERLAY
         glDisable(GL_DEPTH_TEST);
@@ -210,7 +160,7 @@ int main(int argc, char** argv){
          *  UDPATE OBJECTS
          */
 
-        world.SetSkyboxPosition(camera.GetPosition());
+        world->SetSkyboxPosition(camera.GetPosition());
 
         /*
          * UPDATE DISPLAY

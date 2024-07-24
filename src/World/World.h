@@ -10,13 +10,19 @@
 #include "../Blocks/Cube.h"
 #include "../Player/Camera.h"
 #include "../Textures/TextureData.h"
+#include "Chunk.h"
 
 class World {
     private:
-        TextureData* texture {};
         std::unique_ptr<Cube> skybox;
 
         // Sky decos: clouds, sun, moon, stars, night, etc
+
+        // Generation
+        static const int worldSize = 16; // n chunks
+        static const int worldArea = worldSize * worldSize;
+
+        std::vector<std::unique_ptr<Chunk>> worldChunks {};
 
     public:
         World();
@@ -28,7 +34,13 @@ class World {
         // Skybox
         void SetSkyboxProperties(const Camera* camera);
         void SetSkyboxPosition(glm::vec3 _position);
-        void SetSkyboxTexture(TextureData* _texture);
+
+        // Generation
+        void GenerateWorld();
+        void GenerateTerrain();
+
 };
+
+inline std::unique_ptr<World> world {};
 
 #endif //UNTITLED7_WORLD_H
