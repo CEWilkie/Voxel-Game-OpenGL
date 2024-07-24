@@ -31,13 +31,13 @@ class Cube {
         std::unique_ptr<Transformation> transformation {};
         GLint modelMatrixLocation = -1;
 
+        // Culling Information
+        std::unique_ptr<BoxBounds> boxBounds {};
+        bool isCulled = false;
+
         // Texture information
         TEXTURESHEET textureSheetID = TEXTURESHEET::TEST16;
         glm::vec2 textureOrigin {1, 1};
-
-        // Culling Boundaries
-        SphereBounds* sphereBounds {};
-        bool canDisplay = true;
 
         // Bind Data to openGL
         void BindCube() const;
@@ -69,7 +69,9 @@ class Cube {
         [[nodiscard]] glm::vec3 GetDimensions() { return transformation->GetLocalScale(); }
         [[nodiscard]] glm::vec3 GetGlobalCentre() { return transformation->GetGlobalPosition() + GetDimensions() / 2.0f; }
         [[nodiscard]] glm::vec3 GetLocalCentre() { return transformation->GetLocalPosition() + GetDimensions() / 2.0f; }
-        [[nodiscard]] std::vector<Vertex> GetVertexArray() { return *vertexArray; };
+        [[nodiscard]] std::vector<Vertex> GetVertexArray() { return *vertexArray; }
+        [[nodiscard]] std::pair<glm::vec3, glm::vec3> GetMinMaxGlobalBounds() const {
+            return boxBounds->GetMinMaxGlobalVertex(*transformation); }
 };
 
 #endif //UNTITLED7_CUBE_H

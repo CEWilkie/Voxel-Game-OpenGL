@@ -12,18 +12,36 @@
 
 SubChunk::SubChunk() = default;
 
-SubChunk::SubChunk(Cube* _cube) {
+SubChunk::SubChunk(const std::vector<Cube*>& _subCubes) {
     // Move the _cube parameter into the cube var of the SubChunk
-    cube.reset(_cube);
+    for (auto& cube : _subCubes) subCubes.emplace_back(cube);
 
-    // Create culling bounds for cube
-    bounds = std::make_unique<BoxBounds>(GenerateBoxBounds(cube->GetVertexArray()));
+    // Fetch min max verticies from cubes
+    std::vector<Vertex> vertexArray {};
+    for (const auto& cube : subCubes) {
+        auto [minVertex, maxVertex] = cube->GetMinMaxGlobalBounds();
+        vertexArray.push_back({minVertex});
+        vertexArray.push_back({maxVertex});
+    }
+
+    // Create culling bounds from cubes
+    bounds = std::make_unique<BoxBounds>(GenerateBoxBounds(vertexArray));
 }
 
-SubChunk::SubChunk(std::vector<std::unique_ptr<SubChunk>> _subChunks) {
-    // Assign the child subChunks and create culling bounds for them.
-    subChunks = std::move(_subChunks);
-    CreateCullingBounds();
+SubChunk::SubChunk(const std::vector<SubChunk*>& _subChunks) {
+    // Assign the child subChunks
+    for (auto& chunk : _subChunks) subChunks.emplace_back(chunk);
+
+    // Fetch min max verticies from subChunks
+    std::vector<Vertex> vertexArray {};
+    for (const auto& chunk : subChunks) {
+        auto [minVertex, maxVertex] = chunk->bounds->GetMinMaxVertex();
+        vertexArray.push_back({minVertex});
+        vertexArray.push_back({maxVertex});
+    }
+
+    // Create culling bounds from subChunks
+    bounds = std::make_unique<BoxBounds>(GenerateBoxBounds(vertexArray));
 }
 
 SubChunk::~SubChunk() {
@@ -31,12 +49,10 @@ SubChunk::~SubChunk() {
 }
 
 
-void SubChunk::UpdateModelMatrix() {
+void Chunk::UpdateCubeMatricies() {
     // Used by the parent subChunk, enacts UpdateModelMatrix with a parent transformation matrix
     // Traverse subchunk tree untill reaching the individual cubes to update their model matricies
 
-    transformation->UpdateModelMatrix();
-    UpdateModelMatrix(transformation->GetLocalTransformationMatrix());
 }
 
 void SubChunk::UpdateModelMatrix(const glm::mat4& _parentTransformationMatrix) {
@@ -46,46 +62,25 @@ void SubChunk::UpdateModelMatrix(const glm::mat4& _parentTransformationMatrix) {
             subChunk->UpdateModelMatrix(_parentTransformationMatrix);
     }
 
-    // If the subchunk is at the end of the tree, it is expected to have a Cube to update instead of further subchunks
-    if (cube != nullptr) {
-        cube->UpdateModelMatrix(_parentTransformationMatrix);
-        return;
-    }
-}
-
-
-void SubChunk::CreateCullingBounds() {
-    // Take the verticies of the subChunk, and create a bounding box from those
-    std::vector<Vertex> subChunkVerticies{};
-
-    if (!subChunks.empty()) {
-        for (auto &subChunk: subChunks) {
-            // Proceed down the tree untill reaching the final cube node
-            subChunk->CreateCullingBounds();
-
-            // Fetch the min, max verticies
-            auto minMaxVerticies = subChunk->bounds->GetMinMaxVertex();
-            subChunkVerticies.push_back({minMaxVerticies.first});
-            subChunkVerticies.push_back({minMaxVerticies.second});
-        }
-
-        // Generate Bounding box from the vertex list
-        bounds = std::make_unique<BoxBounds>(GenerateBoxBounds(subChunkVerticies));
-        auto [mi, ma] = bounds->GetMinMaxVertex();
-        printf("minv %f %f %f, maxv %f %f %f\n", mi.x, mi.y, mi.z, ma.x, ma.y, ma.z);
+    // End of branch, update cubes, goes back to rest of branches
+    else if (!subCubes.empty()) {
+        for (auto& cube : subCubes)
+            cube->UpdateModelMatrix(_parentTransformationMatrix);
     }
 }
 
 void SubChunk::CheckCulling(const Camera &_camera) {
-    if (transformation == nullptr) return;
-
-    // Check sphere bounds
-    isCulled = bounds->InFrustrum(_camera.GetCameraFrustrum(), *transformation);
+    // Bounds are pre-globalised, so utilise a clean transformation
+    Transformation t {};
+    isCulled = bounds->InFrustrum(_camera.GetCameraFrustrum(), t);
 
     // If the subchunk is not culled, check further along the tree of subChunks
-    if (!isCulled && !subChunks.empty()) {
+    if (!isCulled && !subChunks.empty())
         for (auto& subChunk : subChunks) subChunk->CheckCulling(_camera);
-    }
+
+    // If the subchunk is not called and the subchunk is an ending node, check the cubes for culling
+    if (!isCulled && !subCubes.empty())
+        for (auto& cube : subCubes) cube->CheckCulling(_camera);
 }
 
 void SubChunk::Display() {
@@ -93,28 +88,37 @@ void SubChunk::Display() {
     if (isCulled) return;
 
     for (auto& subChunk : subChunks) subChunk->Display();
-    if (cube != nullptr) cube->Display();
+    for (auto& cube : subCubes) cube->Display();
 }
 
 /*
  * CHUNK
  */
 
-Chunk::Chunk(const glm::vec3& _chunkPosition) : SubChunk() {
+Chunk::Chunk(const glm::vec3& _chunkPosition) {
     CreateHeightMap();
 
     // Creates blocks in chunk and populates the subChunks
     CreateTerrain();
-    if (subChunks.empty()) { // big wuh oh
+    if (cubes.empty()) { // big wuh oh
         printf("Failed to Create SubChunks!\n");
         return;
     }
 
     // Update the model matricies and then create culling bounds for the subChunks
+    transformation = std::make_unique<Transformation>();
     transformation->SetPosition(_chunkPosition * (float)chunkSize);
-    UpdateModelMatrix();
-    SubChunk::CreateCullingBounds();
 }
+
+
+void Chunk::Display() {
+    for (auto& cube : cubes) cube->Display();
+}
+
+void Chunk::CheckCulling(const Camera& _camera) {
+    for (auto& cube : cubes) cube->CheckCulling(_camera);
+}
+
 
 
 void Chunk::CreateHeightMap() {
@@ -137,8 +141,6 @@ void Chunk::CreateHeightMap() {
 
 void Chunk::CreateTerrain() {
     // Temp container for the cubes before being sorted into their subChunks
-    std::vector<Cube*> cubes {};
-
     for (int x = 0; x < chunkSize; x++) {
         for (int z = 0; z < chunkSize; z++) {
             // Fetch height
@@ -147,46 +149,22 @@ void Chunk::CreateTerrain() {
             for (int y = 0; y < chunkSize; y++) {
                 int blockY = ((int)chunkOrigin.y * chunkSize) + y;
 
-                // Determine block type
-                // ...
+                glm::vec3 position = {x, y, z};
 
-                // Example stone block
-                cubes.push_back(new Stone({x, y, z}));
+                // Determine block type
+                if (y == chunkSize - 1) cubes.push_back(std::make_unique<Grass>(position));
+                else if (y > chunkSize - 4) cubes.push_back(std::make_unique<Dirt>(position));
+                else cubes.push_back(std::make_unique<Stone>(position));
             }
         }
     }
-
-    CreateSubchunks(cubes);
 }
 
-void Chunk::CreateSubchunks(const std::vector<Cube*>& _cubeContainer) {
-    if (_cubeContainer.empty()) return;
+void Chunk::CreateSubchunks(const std::vector<std::vector<std::vector<Cube*>>>& _xzyCubeContainer) {
 
-    // First put all cubes into subchunks
-    for (auto& cube : _cubeContainer) {
-        auto sc = std::make_unique<SubChunk>(cube);
-        subChunks.push_back(std::move(sc));
-    }
+}
 
-    printf("SC: %zu\n", subChunks.size());
 
-    // Condense into 8 subchunks (as you move down the tree, each subchunk splits into 8 further sections until reaching
-    // the final singular cubes)
-    int maxSubChunkIndex = chunkSize;
-//    while (subChunks.size() != 8) {
-//        for (int x = 0; x < maxSubChunkIndex; x++) {
-//            for (int z = 0; z < maxSubChunkIndex; z++) {
-//                for (int y = 0; y < maxSubChunkIndex; y++) {
-//                    // Fetch subChunk and adjacent subchunks
-//                    // subChunks[y + (z*maxSubChunkIndex) + (x*maxSubChunkIndex)];
-//
-//
-//                    printf("x %d y %d z %d\n", x, y, z);
-//                }
-//            }
-//        }
-//
-//        maxSubChunkIndex /= 2;
-//    }
-
+void Chunk::MoveChunk(glm::vec3 move) {
+   // transformation->SetPosition(transformation->GetLocalPosition() + move);
 }

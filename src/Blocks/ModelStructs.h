@@ -58,7 +58,7 @@ struct SphereBounds : public BoundingVolume {
         radius = _radius;
     }
 
-    [[nodiscard]] int InFrustrum(const Frustrum& _camFrustrum, const Transformation& _transformation) const override {
+    [[nodiscard]] SphereBounds GetGlobalSphere(const Transformation& _transformation) const {
         // move sphere centre to model centre by using the model's transformation matrix
         glm::vec3 globalCentre = { _transformation.GetModelMatrix() * glm::vec4(centre, 1.0f)};
 
@@ -67,7 +67,11 @@ struct SphereBounds : public BoundingVolume {
         float maxScale = std::max(std::max(globalScale.x, globalScale.y), globalScale.z);
 
         // Create a temp sphere struct using this global positioning info
-        SphereBounds globalSphere(globalCentre, radius * maxScale * 0.5f);
+        return {globalCentre, radius * maxScale * 0.5f};
+    }
+
+    [[nodiscard]] int InFrustrum(const Frustrum& _camFrustrum, const Transformation& _transformation) const override {
+        SphereBounds globalSphere = GetGlobalSphere(_transformation);
 
         // test temp sphere in each frustrum plane
         bool inOrInFrontOfPlane;
@@ -95,11 +99,7 @@ struct BoxBounds : public BoundingVolume {
         extent = _extent;
     }
 
-    [[nodiscard]] std::pair<glm::vec3, glm::vec3> GetMinMaxVertex() const {
-        return {centre - extent, centre + extent};
-    }
-
-    [[nodiscard]] int InFrustrum(const Frustrum& _camFrustrum, const Transformation& _transformation) const override {
+    [[nodiscard]] BoxBounds GetGlobalBoxBounds(const Transformation& _transformation) const {
         glm::vec3 globalCentre = { _transformation.GetModelMatrix() * glm::vec4(centre, 1.0f)};
 
         // Scaled orientation
@@ -119,14 +119,26 @@ struct BoxBounds : public BoundingVolume {
                             std::abs(glm::dot(glm::vec3{ 0.f, 0.f, 1.f }, up)) +
                             std::abs(glm::dot(glm::vec3{ 0.f, 0.f, 1.f }, forward));
 
+        return {globalCentre, std::max(std::max(newIi, newIj), newIk)};
+    }
 
-        const BoxBounds globalAABB(globalCentre, std::max(std::max(newIi, newIj), newIk));
+    [[nodiscard]] std::pair<glm::vec3, glm::vec3> GetMinMaxVertex() const {
+        return {centre - extent, centre + extent};
+    }
+
+    [[nodiscard]] std::pair<glm::vec3, glm::vec3> GetMinMaxGlobalVertex(const Transformation& _transformation) const {
+        BoxBounds globalBoxBounds = GetGlobalBoxBounds(_transformation);
+        return {globalBoxBounds.centre - globalBoxBounds.extent, globalBoxBounds.centre + globalBoxBounds.extent};
+    }
+
+    [[nodiscard]] int InFrustrum(const Frustrum& _camFrustrum, const Transformation& _transformation) const override {
+        BoxBounds globalBoxBounds = GetGlobalBoxBounds(_transformation);
 
         // test global box bounds in each frustrum plane
         bool inOrInFrontOfPlane;
         for (const auto& plane : _camFrustrum.planes) {
-            float r = globalAABB.extent * (std::abs(plane.normal.x) + std::abs(plane.normal.y) + std::abs(plane.normal.z));
-            inOrInFrontOfPlane = (-r <= plane.DistToPlane(globalAABB.centre));
+            float r = globalBoxBounds.extent * (std::abs(plane.normal.x) + std::abs(plane.normal.y) + std::abs(plane.normal.z));
+            inOrInFrontOfPlane = (-r <= plane.DistToPlane(globalBoxBounds.centre));
 
             // If sphere is behind plane, sphere is not in view
             if (!inOrInFrontOfPlane) return OUTSIDE;

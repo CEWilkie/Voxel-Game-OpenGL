@@ -54,6 +54,9 @@ Cube::Cube() {
     // Create transformation object
     transformation = std::make_unique<Transformation>();
 
+    // Create object bounds
+    boxBounds = std::make_unique<BoxBounds>(GenerateBoxBounds(*vertexArray));
+
     // Create index buffer for traversal order to produce each cube face
     indexArray = {
             11, 10, 0, 1, 11, 0,
@@ -63,10 +66,6 @@ Cube::Cube() {
             5, 2, 4, 0, 4, 2,
             2, 12, 3, 13, 3, 12
     };
-
-    // Create bounding models for culling purposes
-    auto sb = GenerateSphere(*vertexArray);
-    sphereBounds = new SphereBounds(sb.centre, sb.radius);
 
     BindCube();
 }
@@ -120,8 +119,7 @@ void Cube::BindCube() const {
 
 
 void Cube::Display() const {
-    // Can display?
-    if (!canDisplay) return;
+    if (isCulled) return;
 
     // Bind object
     glBindVertexArray(vertexArrayObject);
@@ -138,9 +136,8 @@ void Cube::Display() const {
 }
 
 bool Cube::CheckCulling(const Camera& _camera) {
-    // Check sphere bounds
-    canDisplay = sphereBounds->InFrustrum(_camera.GetCameraFrustrum(), *transformation);
-    return canDisplay;
+    isCulled = !boxBounds->InFrustrum(_camera.GetCameraFrustrum(), *transformation);
+    return isCulled;
 }
 
 void Cube::UpdateTextureData() {

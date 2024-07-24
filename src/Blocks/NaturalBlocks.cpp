@@ -20,3 +20,25 @@ Stone::Stone(glm::vec3 _position) : Cube() {
     textureOrigin = {1,1};
     UpdateTextureData();
 }
+
+Dirt::Dirt(glm::vec3 _position) {
+    // set the position of the cube
+    SetPositionOrigin(_position);
+    UpdateModelMatrix();
+
+    // Set the texture and texture origin
+    textureSheetID = TEXTURESHEET::NATURAL;
+    textureOrigin = {4,2};
+    UpdateTextureData();
+}
+
+Grass::Grass(glm::vec3 _position) {
+    // set the position of the cube
+    SetPositionOrigin(_position);
+    UpdateModelMatrix();
+
+    // Set the texture and texture origin
+    textureSheetID = TEXTURESHEET::NATURAL;
+    textureOrigin = {7,1};
+    UpdateTextureData();
+}

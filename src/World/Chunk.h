@@ -19,49 +19,57 @@ class SubChunk {
     protected:
         // Tree object pointers
         std::vector<std::unique_ptr<SubChunk>> subChunks {};
-        std::unique_ptr<Cube> cube {};
+        std::vector<std::unique_ptr<Cube>> subCubes {};
 
         // Is the subchunk within the view frustrum
         std::unique_ptr<BoxBounds> bounds {};
         bool isCulled = false;
 
-        // Transformation matrix for the subchunk
-        std::unique_ptr<Transformation> transformation = std::make_unique<Transformation>();;
-
     public:
         SubChunk();
-        explicit SubChunk(Cube* _cube);
-        explicit SubChunk(std::vector<std::unique_ptr<SubChunk>> _subChunks);
+        explicit SubChunk(const std::vector<Cube*>& _subCubes);
+        explicit SubChunk(const std::vector<SubChunk*>& _subChunks);
         ~SubChunk();
 
         // Updating the model matrix
-        void UpdateModelMatrix();
         void UpdateModelMatrix(const glm::mat4& _parentTransformationMatrix);
 
         // SubChunk Tree Culling and Display
-        void CreateCullingBounds();
         void CheckCulling(const Camera& _camera);
         void Display();
+
+        [[nodiscard]] BoxBounds GetBounds() const { return *bounds; }
 };
 
 
 
-class Chunk : public SubChunk {
+class Chunk {
     private:
-        static const int chunkSize = 2; // must be power of 2 for subchunk division
+        static const int chunkSize = 4; // must be power of 2 for subchunk division
         static const int chunkArea = chunkSize * chunkSize;
         static const int chunkVolume = chunkArea * chunkSize;
 
         glm::vec3 chunkOrigin {0.0f, 0.0f, 0.0f};
 
+        // Transformation matrix for the chunk
+        std::unique_ptr<Transformation> transformation {};
+
+        // Testing cube
+        std::vector<std::unique_ptr<Cube>> cubes;
+
     public:
         explicit Chunk(const glm::vec3& _chunkPosition);
 
+
+        void Display();
+        void CheckCulling(const Camera& _camera);
+
         void CreateHeightMap();
         void CreateTerrain();
-        void CreateSubchunks(const std::vector<Cube*>& _cubeContainer);
+        void CreateSubchunks(const std::vector<std::vector<std::vector<Cube*>>>& _xzyCubeContainer);
 
-        void CreateCullingBounds();
+        void UpdateCubeMatricies();
+        void MoveChunk(glm::vec3 move);
 };
 
 

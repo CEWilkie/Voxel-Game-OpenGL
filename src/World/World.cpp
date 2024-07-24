@@ -28,6 +28,12 @@ void World::Display() {
 
     glDisable(GL_CULL_FACE);
 
+
+    worldChunks[0]->MoveChunk({0.0f, 0.001f, 0.0f});
+}
+
+void World::CheckCulling(const Camera &_camera) {
+    for (auto& chunk : worldChunks) chunk->CheckCulling(_camera);
 }
 
 void World::SetSkyboxProperties(const Camera *camera) {

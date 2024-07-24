@@ -19,7 +19,7 @@ class World {
         // Sky decos: clouds, sun, moon, stars, night, etc
 
         // Generation
-        static const int worldSize = 16; // n chunks
+        static const int worldSize = 2; // n chunks
         static const int worldArea = worldSize * worldSize;
 
         std::vector<std::unique_ptr<Chunk>> worldChunks {};
@@ -30,6 +30,7 @@ class World {
 
         // Display
         void Display();
+        void CheckCulling(const Camera& _camera);
 
         // Skybox
         void SetSkyboxProperties(const Camera* camera);

@@ -91,7 +91,7 @@ int main(int argc, char** argv){
             lastViewMatrix = camera.GetViewMatrix();
             camera.UpdateViewFrustrum();
 
-            //chunk.CheckCulling(camera);
+            world->CheckCulling(camera);
         }
 
 
