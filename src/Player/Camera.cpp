@@ -28,22 +28,7 @@ Camera::Camera() {
 
     // Set the view frustrum
     UpdateViewFrustrum();
-
-    BindDirectionVertexes();
 }
-
-
-void Camera::BindDirectionVertexes() const {
-
-}
-
-
-void Camera::DisplayViewBounds() const {
-
-}
-
-
-
 
 
 

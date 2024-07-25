@@ -26,8 +26,6 @@ class Cube {
         unsigned int indexBufferObject {};
 
         // Vertex Data
-        std::vector<GLuint> indexArray {};
-        std::unique_ptr<std::vector<Vertex>> vertexArray {};
         std::unique_ptr<Transformation> transformation {};
         GLint modelMatrixLocation = -1;
 
@@ -39,23 +37,25 @@ class Cube {
         TEXTURESHEET textureSheetID = TEXTURESHEET::TEST16;
         glm::vec2 textureOrigin {1, 1};
 
-        // Bind Data to openGL
-        void BindCube() const;
-        void UpdateTextureData();
-
     public:
         Cube();
         ~Cube();
 
+        // Object Creation
+        static std::vector<Vertex> BaseVertexArray();
+        static std::vector<glm::vec2> BaseTextureCoordsArray();
+        static std::vector<GLuint> BaseIndexArray();
+        void BindCube() const;
+
         // Display
         void Display() const;
-
-        // Object culling
         bool CheckCulling(const Camera& _camera);
 
         // Textures
+        static std::vector<Vertex> GetTrueTextureCoords(TEXTURESHEET _sheetID, glm::vec2 _textureOrigin);
         void SetTexture(TEXTURESHEET _textureID, glm::vec2 _origin);
         void SetTextureOrigin(glm::vec2 _origin);
+        void UpdateTextureData();
 
         // Transformations
         void SetPositionOrigin(glm::vec3 _originPosition);
@@ -69,7 +69,6 @@ class Cube {
         [[nodiscard]] glm::vec3 GetDimensions() { return transformation->GetLocalScale(); }
         [[nodiscard]] glm::vec3 GetGlobalCentre() { return transformation->GetGlobalPosition() + GetDimensions() / 2.0f; }
         [[nodiscard]] glm::vec3 GetLocalCentre() { return transformation->GetLocalPosition() + GetDimensions() / 2.0f; }
-        [[nodiscard]] std::vector<Vertex> GetVertexArray() { return *vertexArray; }
         [[nodiscard]] std::pair<glm::vec3, glm::vec3> GetMinMaxGlobalBounds() const {
             return boxBounds->GetMinMaxGlobalVertex(*transformation); }
 };

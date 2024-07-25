@@ -31,5 +31,21 @@ class Grass : public Cube {
         explicit Grass(glm::vec3 _position);
 };
 
+class Water : public Cube {
+    private:
+
+
+    public:
+        explicit Water(glm::vec3 _position);
+};
+
+class Air : public Cube {
+    private:
+
+
+    public:
+        explicit Air(glm::vec3 _position);
+};
+
 
 #endif //UNTITLED7_NATURALBLOCKS_H

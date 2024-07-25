@@ -10,7 +10,6 @@ World::World() {
 
     // Create skybox texture
     skybox->SetTexture(TEXTURESHEET::WORLD, {1,1});
-
 }
 
 World::~World() = default;

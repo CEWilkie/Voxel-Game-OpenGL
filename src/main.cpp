@@ -34,6 +34,9 @@ int main(int argc, char** argv){
     if ((shaderID = window.CreateShaders()) == 0) return 0;
     glUseProgram(shaderID);
 
+    glEnable(GL_BLEND);
+    glBlendEquation(GL_FUNC_ADD); // this is default
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // CREATE CAMERA
     Camera camera;
@@ -103,9 +106,6 @@ int main(int argc, char** argv){
 
         // 2D OVERLAY
         glDisable(GL_DEPTH_TEST);
-
-        // positive x,y,z directions
-        camera.DisplayViewBounds();
 
         /*
          * INPUT MANAGEMENT

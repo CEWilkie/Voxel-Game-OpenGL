@@ -18,8 +18,25 @@ Cube::Cube() {
     modelMatrixLocation = glGetUniformLocation(window.GetShader(), "uModelMatrix");
     if (modelMatrixLocation < 0) printf("location not found [uModelMatrix]");
 
+    // Create transformation object
+    transformation = std::make_unique<Transformation>();
+
+    // Create object bounds
+    boxBounds = std::make_unique<BoxBounds>(GenerateBoxBounds(BaseVertexArray()));
+
+    BindCube();
+}
+
+Cube::~Cube() {
+    glDeleteBuffers(1, &vertexBufferObject);
+    glDeleteBuffers(1, &indexBufferObject);
+    glDeleteVertexArrays(1, &vertexArrayObject);
+}
+
+
+std::vector<Vertex> Cube::BaseVertexArray() {
     // [POSITION], [TEXCOORD], both values are offsets relative to the set origin points
-    std::vector<Vertex> vertexVectors = {
+    return {
             // Front
             { glm::vec3(0.0f, 0.0f, 0.0f),  glm::vec2(0.0f, 0.0f) },            // TOPLEFT VERTEX
             { glm::vec3(0.0f, 0.0f, 1.0f),  glm::vec2(1.0f, 0.0f) },            // TOPRIGHT VERTEX
@@ -45,20 +62,36 @@ Cube::Cube() {
             // Bottom
             { glm::vec3(1.0f, -1.0f, 0.0f),glm::vec2(0.0f, 2.0f) },            // BACKLEFT VERTEX
             { glm::vec3(1.0f, -1.0f, 1.0f),glm::vec2(1.0f, 2.0f) },            // BACKRIGHT VERTEX
-
     };
+}
 
-    // Populate vertexArray with this data
-    vertexArray = std::make_unique<std::vector<Vertex>>(vertexVectors);
+std::vector<glm::vec2> Cube::BaseTextureCoordsArray() {
+    return {
+            glm::vec2(0.0f, 0.0f),            // TOPLEFT VERTEX
+            glm::vec2(1.0f, 0.0f),            // TOPRIGHT VERTEX
+            glm::vec2(0.0f, 1.0f),            // BOTTOMLEFT VERTEX
+            glm::vec2(1.0f, 1.0f),            // BOTTOMRIGHT VERTEX
 
-    // Create transformation object
-    transformation = std::make_unique<Transformation>();
+            // Left
+            glm::vec2(-1.0f, 0.0f),            // TOPLEFT VERTEX
+            glm::vec2(-1.0f, 1.0f),            // BOTTOMLEFT VERTEX
 
-    // Create object bounds
-    boxBounds = std::make_unique<BoxBounds>(GenerateBoxBounds(*vertexArray));
+            // Right
+            glm::vec2(2.0f, 0.0f),             // TOPRIGHT VERTEX
+            glm::vec2(2.0f, 1.0f),             // BOTTOMRIGHT VERTEX
 
-    // Create index buffer for traversal order to produce each cube face
-    indexArray = {
+            // Back
+            glm::vec2(3.0f, 0.0f),             // TOPRIGHT VERTEX
+            glm::vec2(3.0f, 1.0f),             // BOTTOMRIGHT VERTEX
+
+            // Top
+            glm::vec2(0.0f, -1.0f),            // TOPLEFT VERTEX
+            glm::vec2(1.0f, -1.0f),            // TOPRIGHT VERTEX
+    };
+}
+
+std::vector<GLuint> Cube::BaseIndexArray() {
+    return {
             11, 10, 0, 1, 11, 0,
             1, 0, 3, 2, 3, 0,
             1, 3, 7, 6, 1, 7,
@@ -66,39 +99,33 @@ Cube::Cube() {
             5, 2, 4, 0, 4, 2,
             2, 12, 3, 13, 3, 12
     };
-
-    BindCube();
 }
 
-Cube::~Cube() {
-    glDeleteBuffers(1, &vertexBufferObject);
-    glDeleteBuffers(1, &indexBufferObject);
-    glDeleteVertexArrays(1, &vertexArrayObject);
-}
+
 
 
 void Cube::BindCube() const {
     glBindVertexArray(vertexArrayObject);
 
-    // bind vertex buffer array
+    // bind vertex buffer object
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(vertexArray->size() * sizeof(struct Vertex)), vertexArray->data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(BaseVertexArray().size() * sizeof(Vertex)), BaseVertexArray().data(), GL_STATIC_DRAW);
 
     // Vertex Position Attributes
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, position));
 
     // Vertex Colour Attributes
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, color));
+//    glEnableVertexAttribArray(1);
+//    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, color));
 
     // Vertex TextureData attributes
     glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, texture));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, textureCoord));
 
     // Bind index buffer
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(indexArray.size()*sizeof(GLuint)), indexArray.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(BaseIndexArray().size()*sizeof(GLuint)), BaseIndexArray().data(), GL_STATIC_DRAW);
 
     GLint tex0Location = glGetUniformLocation(window.GetShader(), "tex0");
     glUniform1i(tex0Location, 0);
@@ -118,6 +145,11 @@ void Cube::BindCube() const {
 
 
 
+
+
+
+
+
 void Cube::Display() const {
     if (isCulled) return;
 
@@ -129,7 +161,6 @@ void Cube::Display() const {
 
     // Activate texture
     textureManager->EnableTextureSheet(textureSheetID);
-
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
 
     glBindVertexArray(0);
@@ -140,17 +171,26 @@ bool Cube::CheckCulling(const Camera& _camera) {
     return isCulled;
 }
 
+
+std::vector<Vertex> Cube::GetTrueTextureCoords(TEXTURESHEET _sheetID, glm::vec2 _textureOrigin) {
+    std::vector<Vertex> vertexArray = BaseVertexArray();
+    auto textureData = textureManager->GetTextureData(_sheetID);
+
+    for (auto& vertex : vertexArray) {
+        vertex.textureCoord = textureData->GetTextureSheetTile(_textureOrigin + vertex.textureCoord);
+    }
+
+    return vertexArray;
+}
+
+
 void Cube::UpdateTextureData() {
     // Get textureData
-    auto textureData = textureManager->GetTextureData(textureSheetID);
-
-    for (auto& vertex : *vertexArray ) {
-        vertex.texture = textureData->GetTextureSheetTile(textureOrigin + vertex.textureIndex);
-    }
+    std::vector<Vertex> vertexArray = GetTrueTextureCoords(textureSheetID, textureOrigin);
 
     // Update buffer
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(vertexArray->size() * sizeof(struct Vertex)), vertexArray->data());
+    glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(vertexArray.size() * sizeof(struct Vertex)), vertexArray.data());
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 

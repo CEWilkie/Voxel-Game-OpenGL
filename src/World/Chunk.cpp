@@ -100,7 +100,7 @@ Chunk::Chunk(const glm::vec3& _chunkPosition) {
 
     // Creates blocks in chunk and populates the subChunks
     CreateTerrain();
-    if (cubes.empty()) { // big wuh oh
+    if (chunkCubes.empty()) { // big wuh oh
         printf("Failed to Create SubChunks!\n");
         return;
     }
@@ -112,11 +112,11 @@ Chunk::Chunk(const glm::vec3& _chunkPosition) {
 
 
 void Chunk::Display() {
-    for (auto& cube : cubes) cube->Display();
+    for (auto& cube : chunkCubes) cube->Display();
 }
 
 void Chunk::CheckCulling(const Camera& _camera) {
-    for (auto& cube : cubes) cube->CheckCulling(_camera);
+    for (auto& cube : chunkCubes) cube->CheckCulling(_camera);
 }
 
 
@@ -152,9 +152,9 @@ void Chunk::CreateTerrain() {
                 glm::vec3 position = {x, y, z};
 
                 // Determine block type
-                if (y == chunkSize - 1) cubes.push_back(std::make_unique<Grass>(position));
-                else if (y > chunkSize - 4) cubes.push_back(std::make_unique<Dirt>(position));
-                else cubes.push_back(std::make_unique<Stone>(position));
+                if (y == chunkSize - 1) chunkCubes.push_back(std::make_unique<Grass>(position));
+                else if (y > chunkSize - 4) chunkCubes.push_back(std::make_unique<Dirt>(position));
+                else chunkCubes.push_back(std::make_unique<Stone>(position));
             }
         }
     }

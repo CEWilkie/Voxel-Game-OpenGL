@@ -19,7 +19,7 @@ class SubChunk {
     protected:
         // Tree object pointers
         std::vector<std::unique_ptr<SubChunk>> subChunks {};
-        std::vector<std::unique_ptr<Cube>> subCubes {};
+        std::vector<Cube*> subCubes {};
 
         // Is the subchunk within the view frustrum
         std::unique_ptr<BoxBounds> bounds {};
@@ -54,8 +54,11 @@ class Chunk {
         // Transformation matrix for the chunk
         std::unique_ptr<Transformation> transformation {};
 
-        // Testing cube
-        std::vector<std::unique_ptr<Cube>> cubes;
+        // Culling Bounds
+        std::vector<std::unique_ptr<BoxBounds>> boxBounds {};
+
+        // Block Data
+        std::vector<std::unique_ptr<Cube>> chunkCubes {};
 
     public:
         explicit Chunk(const glm::vec3& _chunkPosition);

@@ -20,18 +20,25 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="World Generation of just a flat plane of blocks, starting setup for proper terrain generation.&#10;&#10;Object culling using bounding box and subChunk tree appears broken, requires fix">
+    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="Cubes are stored in a very unoptimised manner">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/TerrainBlocks/terrainSheet.aseprite" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/asepriteFiles/terrainSheet.aseprite" beforeDir="false" afterPath="$PROJECT_DIR$/resources/asepriteFiles/terrainSheet.aseprite" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/terrainSheet.png" beforeDir="false" afterPath="$PROJECT_DIR$/resources/terrainSheet.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/testcubes16x.aseprite" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Blocks/Cube.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/Cube.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Blocks/Cube.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/Cube.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Blocks/ModelStructs.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/ModelStructs.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Player/Camera.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Player/Camera.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Player/Camera.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Player/Camera.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/World/Chunk.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Chunk.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/World/Chunk.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Chunk.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/World/World.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/World.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/World/World.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/World.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src_shader/fragment.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/src_shader/fragment.glsl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src_shader/vertex.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/src_shader/vertex.glsl" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -147,7 +154,8 @@
       <workItem from="1721747104165" duration="6853000" />
       <workItem from="1721770228339" duration="3708000" />
       <workItem from="1721775569174" duration="4458000" />
-      <workItem from="1721812202938" duration="33622000" />
+      <workItem from="1721812202938" duration="38560000" />
+      <workItem from="1721858240944" duration="4725000" />
     </task>
     <task id="LOCAL-00001" summary="gitignore">
       <option name="closed" value="true" />
@@ -349,7 +357,15 @@
       <option name="project" value="LOCAL" />
       <updated>1721826442490</updated>
     </task>
-    <option name="localTasksCounter" value="26" />
+    <task id="LOCAL-00026" summary="Cubes are stored in a very unoptimised manner">
+      <option name="closed" value="true" />
+      <created>1721847715989</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1721847715989</updated>
+    </task>
+    <option name="localTasksCounter" value="27" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -384,18 +400,10 @@
     <MESSAGE value="Created first true block which inherits from the Cube class" />
     <MESSAGE value="add in aseprite resources" />
     <MESSAGE value="World Generation of just a flat plane of blocks, starting setup for proper terrain generation.&#10;&#10;Object culling using bounding box and subChunk tree appears broken, requires fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="World Generation of just a flat plane of blocks, starting setup for proper terrain generation.&#10;&#10;Object culling using bounding box and subChunk tree appears broken, requires fix" />
+    <MESSAGE value="Cubes are stored in a very unoptimised manner" />
+    <option name="LAST_COMMIT_MESSAGE" value="Cubes are stored in a very unoptimised manner" />
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/src/World/Chunk.cpp</url>
-          <line>118</line>
-          <option name="timeStamp" value="7" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
     <watches-manager>
       <configuration name="CMakeRunConfiguration">
         <watch expression="this-&gt;subChunks[0].get()-&gt;subChunks[0].get()-&gt;subChunks[0].get()-&gt;subChunks[0].get()-&gt;subChunks[0].get()-&gt;subChunks[0]" />

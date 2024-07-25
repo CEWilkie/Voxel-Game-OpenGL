@@ -12,6 +12,11 @@
 
 #include "ModelTransformations.h"
 
+struct Vertex {
+    glm::vec3 position {};
+    glm::vec2 textureCoord {};
+};
+
 struct Plane {
     glm::vec3 normal {};
     float distance {};
@@ -30,13 +35,6 @@ struct Plane {
 struct Frustrum {
     // INDEX SIDE : |0 LEFT | 1 RIGHT | 2 BOTTOM | 3 TOP | 4 NEAR | 5 FAR
     Plane planes[6] {};
-};
-
-struct Vertex {
-    glm::vec3 position {};
-    glm::vec2 textureIndex {};
-    glm::vec2 texture {};
-    glm::vec3 color {};
 };
 
 struct BoundingVolume {

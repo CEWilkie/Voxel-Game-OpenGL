@@ -37,13 +37,8 @@ class Camera {
         float minDistance = 0.1f;
         float maxDistance = 16*16.0f;
 
-        void BindDirectionVertexes() const;
-
     public:
         Camera();
-
-        // Direction Vertexes
-        void DisplayViewBounds() const;
 
         // Camera Movement
         void Move(Uint64 _deltaFrames);

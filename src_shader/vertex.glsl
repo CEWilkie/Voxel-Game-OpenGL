@@ -2,11 +2,11 @@
 
 // PIPE IN
 layout(location = 0) in vec3 position;
-layout(location = 1) in vec3 vertexColour;
+//layout(location = 1) in vec4 vertexColour;
 layout(location = 2) in vec2 vertexTextureCoord;
 
 // PIPE OUT
-out vec3 v_vertexColour;
+//out vec4 v_vertexColour;
 out vec2 v_vertexTextureCoord;
 
 // UNIFORMS
@@ -29,7 +29,7 @@ void main() {
 
 
     // Colour
-    v_vertexColour = vertexColour;
+    //v_vertexColour = vertexColour;
 
     // TextureData
     v_vertexTextureCoord = vertexTextureCoord;
