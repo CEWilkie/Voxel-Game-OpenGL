@@ -18,6 +18,17 @@
 #include "../Player/Camera.h"
 #include "../Textures/TextureManager.h"
 
+enum class BLOCKID {
+        last
+};
+
+struct BlockData {
+    TEXTURESHEET sheetID;
+    BLOCKID blockID;
+    int variantID;
+};
+
+
 class Block {
     protected:
         // Buffer objects
@@ -30,11 +41,11 @@ class Block {
         GLint modelMatrixLocation = -1;
 
         // Culling Information
-        std::unique_ptr<BoxBounds> boxBounds {};
         bool transparent = false;
         bool isCulled = false;
 
-        TEXTURESHEET sheetID;
+        // Temp scum to be removed at some point
+        TEXTURESHEET sheetID {};
 
     public:
         Block();
@@ -66,8 +77,6 @@ class Block {
         [[nodiscard]] glm::vec3 GetDimensions() { return transformation->GetLocalScale(); }
         [[nodiscard]] glm::vec3 GetGlobalCentre() { return transformation->GetGlobalPosition() + GetDimensions() / 2.0f; }
         [[nodiscard]] glm::vec3 GetLocalCentre() { return transformation->GetLocalPosition() + GetDimensions() / 2.0f; }
-        [[nodiscard]] std::pair<glm::vec3, glm::vec3> GetMinMaxGlobalBounds() const {
-            return boxBounds->GetMinMaxGlobalVertex(*transformation); }
 };
 
 #endif //UNTITLED7_BLOCK_H

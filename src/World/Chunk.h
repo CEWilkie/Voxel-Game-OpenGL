@@ -15,40 +15,36 @@
 // Either the subchunk vector is populated with further, smaller subchunks, or the Cube object is instantiated
 // A SubChunk with a valid cube object is considered to be a terminating point of the subchunk tree.
 
-class SubChunk {
+class ChunkNode {
     protected:
         // Tree object pointers
-        std::vector<std::unique_ptr<SubChunk>> subChunks {};
-        std::vector<Block*> subCubes {};
+        std::vector<std::unique_ptr<ChunkNode>> subNodes {};
+        std::vector<BlockData> subBlocks {};
 
         // SubChunk culling
-        std::unique_ptr<BoxBounds> bounds {};
+        Transformation* transformation {};
         bool isCulled = false;
 
+        // Display of contents
+        bool isSingleType = false;
+        int nBlocks = 0;
+
     public:
-        SubChunk();
-        explicit SubChunk(const std::vector<Block*>& _subCubes);
-        explicit SubChunk(const std::vector<SubChunk*>& _subChunks);
-        ~SubChunk();
-
-        // Updating the model matrix
-        void UpdateModelMatrix(const glm::mat4& _parentTransformationMatrix);
-
-        // SubChunk Tree Culling and Display
-        void CheckCulling(const Camera& _camera);
-        void Display();
-
-        [[nodiscard]] BoxBounds GetBounds() const { return *bounds; }
+        ChunkNode();
+        ~ChunkNode();
 };
 
 
 
+
+
+
+static const int chunkSize = 8; // must be power of 2 for subchunk division
+static const int chunkArea = chunkSize * chunkSize;
+static const int chunkVolume = chunkArea * chunkSize;
+
 class Chunk {
     private:
-        static const int chunkSize = 4; // must be power of 2 for subchunk division
-        static const int chunkArea = chunkSize * chunkSize;
-        static const int chunkVolume = chunkArea * chunkSize;
-
         glm::vec3 chunkOrigin {0.0f, 0.0f, 0.0f};
 
         // Transformation matrix for the chunk
@@ -64,11 +60,10 @@ class Chunk {
     public:
         explicit Chunk(const glm::vec3& _chunkPosition);
 
-
         void Display();
         void CheckCulling(const Camera& _camera);
 
-        void CreateHeightMap();
+        std::array<int, chunkArea> CreateHeightMap();
         void CreateTerrain();
         void CreateSubchunks(const std::vector<std::vector<std::vector<Block*>>>& _xzyCubeContainer);
 

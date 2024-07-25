@@ -148,7 +148,7 @@ struct BoxBounds : public BoundingVolume {
 };
 
 
-
+inline std::unique_ptr<BoxBounds> blockBounds {};
 
 
 /*

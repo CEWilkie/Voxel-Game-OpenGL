@@ -8,7 +8,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 
-Block::Block() {
+Block::Block() : transformation(std::make_unique<Transformation>()) {
     // Generate objectIDs
     glGenVertexArrays(1, &vertexArrayObject);
     glGenBuffers(1, &vertexBufferObject);
@@ -17,12 +17,6 @@ Block::Block() {
     // Get location for modelMatrix
     modelMatrixLocation = glGetUniformLocation(window.GetShader(), "uModelMatrix");
     if (modelMatrixLocation < 0) printf("location not found [uModelMatrix]");
-
-    // Create transformation object
-    transformation = std::make_unique<Transformation>();
-
-    // Create object bounds
-    boxBounds = std::make_unique<BoxBounds>(GenerateBoxBounds(BaseVertexArray()));
 
     BindCube();
 }
@@ -166,7 +160,7 @@ void Block::Display() const {
 }
 
 bool Block::CheckCulling(const Camera& _camera) {
-    isCulled = !boxBounds->InFrustrum(_camera.GetCameraFrustrum(), *transformation);
+    isCulled = !blockBounds->InFrustrum(_camera.GetCameraFrustrum(), *transformation);
     return isCulled;
 }
 

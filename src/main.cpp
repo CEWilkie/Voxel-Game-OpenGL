@@ -52,12 +52,14 @@ int main(int argc, char** argv){
      *  WORLD CREATION
      */
 
+    // Create bounding box for world objects (transformed to necessary size when used)
+    blockBounds = std::make_unique<BoxBounds>(
+            GenerateBoxBounds({{{0.0f, 0.0f, 0.0f}}, {{1.0f, 1.0f, 1.0f}}}));
+
     // Create world
     world = std::make_unique<World>();
     world->SetSkyboxProperties(&camera);
     world->GenerateWorld();
-
-
 
     // Trap mouse to screen and hide it
     SDL_SetWindowGrab(window.WindowPtr(), SDL_TRUE);
