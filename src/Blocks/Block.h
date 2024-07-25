@@ -2,8 +2,8 @@
 // Created by cew05 on 07/07/2024.
 //
 
-#ifndef UNTITLED7_CUBE_H
-#define UNTITLED7_CUBE_H
+#ifndef UNTITLED7_BLOCK_H
+#define UNTITLED7_BLOCK_H
 
 #include <memory>
 #include <vector>
@@ -18,7 +18,7 @@
 #include "../Player/Camera.h"
 #include "../Textures/TextureManager.h"
 
-class Cube {
+class Block {
     protected:
         // Buffer objects
         unsigned int vertexArrayObject {};
@@ -31,15 +31,14 @@ class Cube {
 
         // Culling Information
         std::unique_ptr<BoxBounds> boxBounds {};
+        bool transparent = false;
         bool isCulled = false;
 
-        // Texture information
-        TEXTURESHEET textureSheetID = TEXTURESHEET::TEST16;
-        glm::vec2 textureOrigin {1, 1};
+        TEXTURESHEET sheetID;
 
     public:
-        Cube();
-        ~Cube();
+        Block();
+        ~Block();
 
         // Object Creation
         static std::vector<Vertex> BaseVertexArray();
@@ -52,10 +51,8 @@ class Cube {
         bool CheckCulling(const Camera& _camera);
 
         // Textures
-        static std::vector<Vertex> GetTrueTextureCoords(TEXTURESHEET _sheetID, glm::vec2 _textureOrigin);
         void SetTexture(TEXTURESHEET _textureID, glm::vec2 _origin);
-        void SetTextureOrigin(glm::vec2 _origin);
-        void UpdateTextureData();
+        static std::vector<Vertex> GetTrueTextureCoords(TEXTURESHEET _sheetID, glm::vec2 _textureOrigin);
 
         // Transformations
         void SetPositionOrigin(glm::vec3 _originPosition);
@@ -73,4 +70,4 @@ class Cube {
             return boxBounds->GetMinMaxGlobalVertex(*transformation); }
 };
 
-#endif //UNTITLED7_CUBE_H
+#endif //UNTITLED7_BLOCK_H

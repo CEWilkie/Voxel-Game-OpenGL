@@ -10,15 +10,13 @@
  * STONE
  */
 
-Stone::Stone(glm::vec3 _position) : Cube() {
+Stone::Stone(glm::vec3 _position) : Block() {
     // set the position of the cube
     SetPositionOrigin(_position);
     UpdateModelMatrix();
 
     // Set the texture and texture origin
-    textureSheetID = TEXTURESHEET::NATURAL;
-    textureOrigin = {1,1};
-    UpdateTextureData();
+    SetTexture(TEXTURESHEET::NATURAL, {1,1});
 }
 
 Dirt::Dirt(glm::vec3 _position) {
@@ -27,9 +25,7 @@ Dirt::Dirt(glm::vec3 _position) {
     UpdateModelMatrix();
 
     // Set the texture and texture origin
-    textureSheetID = TEXTURESHEET::NATURAL;
-    textureOrigin = {4,2};
-    UpdateTextureData();
+    SetTexture(TEXTURESHEET::NATURAL, {4,2});
 }
 
 Grass::Grass(glm::vec3 _position) {
@@ -38,9 +34,7 @@ Grass::Grass(glm::vec3 _position) {
     UpdateModelMatrix();
 
     // Set the texture and texture origin
-    textureSheetID = TEXTURESHEET::NATURAL;
-    textureOrigin = {7,1};
-    UpdateTextureData();
+    SetTexture(TEXTURESHEET::NATURAL, {7,1});
 }
 
 Water::Water(glm::vec3 _position) {
@@ -49,9 +43,10 @@ Water::Water(glm::vec3 _position) {
     UpdateModelMatrix();
 
     // Set the texture and texture origin
-    textureSheetID = TEXTURESHEET::NATURAL;
-    textureOrigin = {10,2};
-    UpdateTextureData();
+    SetTexture(TEXTURESHEET::NATURAL, {10,2});
+
+    // Set transparency
+    transparent = true;
 }
 
 Air::Air(glm::vec3 _position) {
@@ -60,7 +55,8 @@ Air::Air(glm::vec3 _position) {
     UpdateModelMatrix();
 
     // Set the texture and texture origin
-    textureSheetID = TEXTURESHEET::NATURAL;
-    textureOrigin = {12,1};
-    UpdateTextureData();
+    SetTexture(TEXTURESHEET::NATURAL, {12,1});
+
+    // Set transparency
+    transparent = true;
 }

@@ -19,15 +19,15 @@ class SubChunk {
     protected:
         // Tree object pointers
         std::vector<std::unique_ptr<SubChunk>> subChunks {};
-        std::vector<Cube*> subCubes {};
+        std::vector<Block*> subCubes {};
 
-        // Is the subchunk within the view frustrum
+        // SubChunk culling
         std::unique_ptr<BoxBounds> bounds {};
         bool isCulled = false;
 
     public:
         SubChunk();
-        explicit SubChunk(const std::vector<Cube*>& _subCubes);
+        explicit SubChunk(const std::vector<Block*>& _subCubes);
         explicit SubChunk(const std::vector<SubChunk*>& _subChunks);
         ~SubChunk();
 
@@ -58,7 +58,8 @@ class Chunk {
         std::vector<std::unique_ptr<BoxBounds>> boxBounds {};
 
         // Block Data
-        std::vector<std::unique_ptr<Cube>> chunkCubes {};
+        std::vector<TEXTURESHEET> blockSheets {};
+        std::vector<std::unique_ptr<Block>> chunkCubes {};
 
     public:
         explicit Chunk(const glm::vec3& _chunkPosition);
@@ -69,7 +70,7 @@ class Chunk {
 
         void CreateHeightMap();
         void CreateTerrain();
-        void CreateSubchunks(const std::vector<std::vector<std::vector<Cube*>>>& _xzyCubeContainer);
+        void CreateSubchunks(const std::vector<std::vector<std::vector<Block*>>>& _xzyCubeContainer);
 
         void UpdateCubeMatricies();
         void MoveChunk(glm::vec3 move);

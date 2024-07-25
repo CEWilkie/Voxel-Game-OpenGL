@@ -12,7 +12,7 @@
 
 SubChunk::SubChunk() = default;
 
-SubChunk::SubChunk(const std::vector<Cube*>& _subCubes) {
+SubChunk::SubChunk(const std::vector<Block*>& _subCubes) {
     // Move the _cube parameter into the cube var of the SubChunk
     for (auto& cube : _subCubes) subCubes.emplace_back(cube);
 
@@ -160,7 +160,7 @@ void Chunk::CreateTerrain() {
     }
 }
 
-void Chunk::CreateSubchunks(const std::vector<std::vector<std::vector<Cube*>>>& _xzyCubeContainer) {
+void Chunk::CreateSubchunks(const std::vector<std::vector<std::vector<Block*>>>& _xzyCubeContainer) {
 
 }
 

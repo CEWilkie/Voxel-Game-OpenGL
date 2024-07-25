@@ -6,7 +6,7 @@
 
 World::World() {
     // Create skybox
-    skybox = std::make_unique<Cube>();
+    skybox = std::make_unique<Block>();
 
     // Create skybox texture
     skybox->SetTexture(TEXTURESHEET::WORLD, {1,1});

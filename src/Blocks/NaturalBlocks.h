@@ -5,9 +5,9 @@
 #ifndef UNTITLED7_NATURALBLOCKS_H
 #define UNTITLED7_NATURALBLOCKS_H
 
-#include "Cube.h"
+#include "Block.h"
 
-class Stone : public Cube {
+class Stone : public Block {
     private:
 
 
@@ -15,7 +15,7 @@ class Stone : public Cube {
         explicit Stone(glm::vec3 _position);
 };
 
-class Dirt : public Cube {
+class Dirt : public Block {
     private:
 
 
@@ -23,7 +23,7 @@ class Dirt : public Cube {
         explicit Dirt(glm::vec3 _position);
 };
 
-class Grass : public Cube {
+class Grass : public Block {
     private:
 
 
@@ -31,17 +31,15 @@ class Grass : public Cube {
         explicit Grass(glm::vec3 _position);
 };
 
-class Water : public Cube {
+class Water : public Block {
     private:
-
 
     public:
         explicit Water(glm::vec3 _position);
 };
 
-class Air : public Cube {
+class Air : public Block {
     private:
-
 
     public:
         explicit Air(glm::vec3 _position);

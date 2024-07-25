@@ -2,13 +2,13 @@
 // Created by cew05 on 07/07/2024.
 //
 
-#include "Cube.h"
+#include "Block.h"
 
 #include "../Window.h"
 #include <SDL.h>
 #include <SDL_image.h>
 
-Cube::Cube() {
+Block::Block() {
     // Generate objectIDs
     glGenVertexArrays(1, &vertexArrayObject);
     glGenBuffers(1, &vertexBufferObject);
@@ -27,14 +27,14 @@ Cube::Cube() {
     BindCube();
 }
 
-Cube::~Cube() {
+Block::~Block() {
     glDeleteBuffers(1, &vertexBufferObject);
     glDeleteBuffers(1, &indexBufferObject);
     glDeleteVertexArrays(1, &vertexArrayObject);
 }
 
 
-std::vector<Vertex> Cube::BaseVertexArray() {
+std::vector<Vertex> Block::BaseVertexArray() {
     // [POSITION], [TEXCOORD], both values are offsets relative to the set origin points
     return {
             // Front
@@ -65,7 +65,7 @@ std::vector<Vertex> Cube::BaseVertexArray() {
     };
 }
 
-std::vector<glm::vec2> Cube::BaseTextureCoordsArray() {
+std::vector<glm::vec2> Block::BaseTextureCoordsArray() {
     return {
             glm::vec2(0.0f, 0.0f),            // TOPLEFT VERTEX
             glm::vec2(1.0f, 0.0f),            // TOPRIGHT VERTEX
@@ -90,7 +90,7 @@ std::vector<glm::vec2> Cube::BaseTextureCoordsArray() {
     };
 }
 
-std::vector<GLuint> Cube::BaseIndexArray() {
+std::vector<GLuint> Block::BaseIndexArray() {
     return {
             11, 10, 0, 1, 11, 0,
             1, 0, 3, 2, 3, 0,
@@ -104,7 +104,7 @@ std::vector<GLuint> Cube::BaseIndexArray() {
 
 
 
-void Cube::BindCube() const {
+void Block::BindCube() const {
     glBindVertexArray(vertexArrayObject);
 
     // bind vertex buffer object
@@ -150,7 +150,7 @@ void Cube::BindCube() const {
 
 
 
-void Cube::Display() const {
+void Block::Display() const {
     if (isCulled) return;
 
     // Bind object
@@ -159,20 +159,19 @@ void Cube::Display() const {
     // Update model matrix to uniform
     if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &transformation->GetModelMatrix()[0][0]);
 
-    // Activate texture
-    textureManager->EnableTextureSheet(textureSheetID);
+    textureManager->EnableTextureSheet(sheetID);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
 
     glBindVertexArray(0);
 }
 
-bool Cube::CheckCulling(const Camera& _camera) {
+bool Block::CheckCulling(const Camera& _camera) {
     isCulled = !boxBounds->InFrustrum(_camera.GetCameraFrustrum(), *transformation);
     return isCulled;
 }
 
 
-std::vector<Vertex> Cube::GetTrueTextureCoords(TEXTURESHEET _sheetID, glm::vec2 _textureOrigin) {
+std::vector<Vertex> Block::GetTrueTextureCoords(TEXTURESHEET _sheetID, glm::vec2 _textureOrigin) {
     std::vector<Vertex> vertexArray = BaseVertexArray();
     auto textureData = textureManager->GetTextureData(_sheetID);
 
@@ -183,10 +182,10 @@ std::vector<Vertex> Cube::GetTrueTextureCoords(TEXTURESHEET _sheetID, glm::vec2 
     return vertexArray;
 }
 
-
-void Cube::UpdateTextureData() {
-    // Get textureData
-    std::vector<Vertex> vertexArray = GetTrueTextureCoords(textureSheetID, textureOrigin);
+void Block::SetTexture(TEXTURESHEET _textureID, glm::vec2 _origin) {
+    // Update stored texture data
+    std::vector<Vertex> vertexArray = GetTrueTextureCoords(_textureID, _origin);
+    sheetID = _textureID;
 
     // Update buffer
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
@@ -194,30 +193,12 @@ void Cube::UpdateTextureData() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void Cube::SetTexture(TEXTURESHEET _textureID, glm::vec2 _origin) {
-    textureSheetID = _textureID;
-
-    // Set offset of texture position in texturesheet
-    textureOrigin = _origin;
-
-    // Update stored texture data
-    UpdateTextureData();
-}
-
-void Cube::SetTextureOrigin(glm::vec2 _origin) {
-    // Set offset of texture position in texturesheet. non-sheets will use (0.0f, 0.0f).
-    textureOrigin = _origin;
-
-    // Update stored texture data
-    UpdateTextureData();
-}
-
-void Cube::SetPositionOrigin(glm::vec3 _originPosition) {
+void Block::SetPositionOrigin(glm::vec3 _originPosition) {
     // set transformation to move to the new origin position
     transformation->SetPosition(_originPosition);
 }
 
-void Cube::SetPositionCentre(glm::vec3 _centre) {
+void Block::SetPositionCentre(glm::vec3 _centre) {
     // set transformation to move to the new origin position, but offset by half the scale of the cube
     glm::vec3 originFromCentre{_centre - (transformation->GetLocalScale() / 2.0f)};
     originFromCentre.y += transformation->GetLocalScale().y;
@@ -225,18 +206,18 @@ void Cube::SetPositionCentre(glm::vec3 _centre) {
     transformation->SetPosition(originFromCentre);
 }
 
-void Cube::SetScale(glm::vec3 _scale) {
+void Block::SetScale(glm::vec3 _scale) {
     transformation->SetScale(_scale);
 }
 
-void Cube::SetRotation(glm::vec3 _rotation) {
+void Block::SetRotation(glm::vec3 _rotation) {
     transformation->SetRotation(_rotation);
 }
 
-void Cube::UpdateModelMatrix() {
+void Block::UpdateModelMatrix() {
     transformation->UpdateModelMatrix();
 }
 
-void Cube::UpdateModelMatrix(const glm::mat4 &_parentTransformationMatrix) {
+void Block::UpdateModelMatrix(const glm::mat4 &_parentTransformationMatrix) {
     transformation->UpdateModelMatrix(_parentTransformationMatrix);
 }

@@ -20,25 +20,16 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="Cubes are stored in a very unoptimised manner">
+    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="cubes no longer store vertex array as data, is constructed from functions">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/TerrainBlocks/terrainSheet.aseprite" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/asepriteFiles/terrainSheet.aseprite" beforeDir="false" afterPath="$PROJECT_DIR$/resources/asepriteFiles/terrainSheet.aseprite" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/terrainSheet.png" beforeDir="false" afterPath="$PROJECT_DIR$/resources/terrainSheet.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/testcubes16x.aseprite" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Blocks/Cube.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/Cube.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Blocks/Cube.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/Cube.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Blocks/ModelStructs.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/ModelStructs.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Blocks/Cube.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/Block.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Blocks/Cube.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/Block.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Player/Camera.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Player/Camera.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Player/Camera.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Player/Camera.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/World/Chunk.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Chunk.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/World/Chunk.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Chunk.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/World/World.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/World.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src_shader/fragment.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/src_shader/fragment.glsl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src_shader/vertex.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/src_shader/vertex.glsl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/World/World.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/World.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -106,6 +97,11 @@
     </key>
   </component>
   <component name="RunManager">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="untitled7" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="untitled7" TARGET_NAME="untitled7" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="untitled7" RUN_TARGET_NAME="untitled7">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -155,7 +151,7 @@
       <workItem from="1721770228339" duration="3708000" />
       <workItem from="1721775569174" duration="4458000" />
       <workItem from="1721812202938" duration="38560000" />
-      <workItem from="1721858240944" duration="4725000" />
+      <workItem from="1721858240944" duration="7102000" />
     </task>
     <task id="LOCAL-00001" summary="gitignore">
       <option name="closed" value="true" />
@@ -365,7 +361,15 @@
       <option name="project" value="LOCAL" />
       <updated>1721847715989</updated>
     </task>
-    <option name="localTasksCounter" value="27" />
+    <task id="LOCAL-00027" summary="cubes no longer store vertex array as data, is constructed from functions">
+      <option name="closed" value="true" />
+      <created>1721904835526</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1721904835527</updated>
+    </task>
+    <option name="localTasksCounter" value="28" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -401,7 +405,8 @@
     <MESSAGE value="add in aseprite resources" />
     <MESSAGE value="World Generation of just a flat plane of blocks, starting setup for proper terrain generation.&#10;&#10;Object culling using bounding box and subChunk tree appears broken, requires fix" />
     <MESSAGE value="Cubes are stored in a very unoptimised manner" />
-    <option name="LAST_COMMIT_MESSAGE" value="Cubes are stored in a very unoptimised manner" />
+    <MESSAGE value="cubes no longer store vertex array as data, is constructed from functions" />
+    <option name="LAST_COMMIT_MESSAGE" value="cubes no longer store vertex array as data, is constructed from functions" />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>

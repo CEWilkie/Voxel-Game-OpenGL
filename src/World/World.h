@@ -7,14 +7,14 @@
 
 #include <memory>
 
-#include "../Blocks/Cube.h"
+#include "../Blocks/Block.h"
 #include "../Player/Camera.h"
 #include "../Textures/TextureData.h"
 #include "Chunk.h"
 
 class World {
     private:
-        std::unique_ptr<Cube> skybox;
+        std::unique_ptr<Block> skybox;
 
         // Sky decos: clouds, sun, moon, stars, night, etc
 
