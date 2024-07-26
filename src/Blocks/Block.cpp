@@ -8,15 +8,11 @@
 #include <SDL.h>
 #include <SDL_image.h>
 
-Block::Block() : transformation(std::make_unique<Transformation>()) {
+Block::Block() {
     // Generate objectIDs
     glGenVertexArrays(1, &vertexArrayObject);
     glGenBuffers(1, &vertexBufferObject);
     glGenBuffers(1, &indexBufferObject);
-
-    // Get location for modelMatrix
-    modelMatrixLocation = glGetUniformLocation(window.GetShader(), "uModelMatrix");
-    if (modelMatrixLocation < 0) printf("location not found [uModelMatrix]");
 
     BindCube();
 }
@@ -59,31 +55,6 @@ std::vector<Vertex> Block::BaseVertexArray() {
     };
 }
 
-std::vector<glm::vec2> Block::BaseTextureCoordsArray() {
-    return {
-            glm::vec2(0.0f, 0.0f),            // TOPLEFT VERTEX
-            glm::vec2(1.0f, 0.0f),            // TOPRIGHT VERTEX
-            glm::vec2(0.0f, 1.0f),            // BOTTOMLEFT VERTEX
-            glm::vec2(1.0f, 1.0f),            // BOTTOMRIGHT VERTEX
-
-            // Left
-            glm::vec2(-1.0f, 0.0f),            // TOPLEFT VERTEX
-            glm::vec2(-1.0f, 1.0f),            // BOTTOMLEFT VERTEX
-
-            // Right
-            glm::vec2(2.0f, 0.0f),             // TOPRIGHT VERTEX
-            glm::vec2(2.0f, 1.0f),             // BOTTOMRIGHT VERTEX
-
-            // Back
-            glm::vec2(3.0f, 0.0f),             // TOPRIGHT VERTEX
-            glm::vec2(3.0f, 1.0f),             // BOTTOMRIGHT VERTEX
-
-            // Top
-            glm::vec2(0.0f, -1.0f),            // TOPLEFT VERTEX
-            glm::vec2(1.0f, -1.0f),            // TOPRIGHT VERTEX
-    };
-}
-
 std::vector<GLuint> Block::BaseIndexArray() {
     return {
             11, 10, 0, 1, 11, 0,
@@ -95,7 +66,9 @@ std::vector<GLuint> Block::BaseIndexArray() {
     };
 }
 
-
+void Block::SetBlockData(BlockData _data) {
+    blockData = _data;
+}
 
 
 void Block::BindCube() const {
@@ -147,13 +120,17 @@ void Block::BindCube() const {
 void Block::Display() const {
     if (isCulled) return;
 
+    if (blockData.blockID == BLOCKID::AIR) return;
+
     // Bind object
     glBindVertexArray(vertexArrayObject);
 
     // Update model matrix to uniform
+    GLint modelMatrixLocation = glGetUniformLocation(window.GetShader(), "uModelMatrix");
+    if (modelMatrixLocation < 0) printf("location not found [uModelMatrix]");
     if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &transformation->GetModelMatrix()[0][0]);
 
-    textureManager->EnableTextureSheet(sheetID);
+    textureManager->EnableTextureSheet(blockData.textureSheet);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
 
     glBindVertexArray(0);
@@ -179,7 +156,7 @@ std::vector<Vertex> Block::GetTrueTextureCoords(TEXTURESHEET _sheetID, glm::vec2
 void Block::SetTexture(TEXTURESHEET _textureID, glm::vec2 _origin) {
     // Update stored texture data
     std::vector<Vertex> vertexArray = GetTrueTextureCoords(_textureID, _origin);
-    sheetID = _textureID;
+    blockData.textureSheet = _textureID;
 
     // Update buffer
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);

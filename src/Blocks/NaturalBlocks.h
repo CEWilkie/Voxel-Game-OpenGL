@@ -13,10 +13,10 @@
 class Stone : public Block {
     private:
 
-
     public:
         explicit Stone(glm::vec3 _position);
 };
+
 
 class Dirt : public Block {
     private:

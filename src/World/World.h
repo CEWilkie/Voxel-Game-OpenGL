@@ -12,15 +12,15 @@
 #include "../Textures/TextureData.h"
 #include "Chunk.h"
 
+static const int worldSize = 2; // n chunks
+static const int worldArea = worldSize * worldSize;
+static const int worldVolume = worldArea * worldSize;
+
 class World {
     private:
         std::unique_ptr<Block> skybox;
 
         // Sky decos: clouds, sun, moon, stars, night, etc
-
-        // Generation
-        static const int worldSize = 2; // n chunks
-        static const int worldArea = worldSize * worldSize;
 
         std::vector<std::unique_ptr<Chunk>> worldChunks {};
 

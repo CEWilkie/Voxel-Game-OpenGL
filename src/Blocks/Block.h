@@ -19,13 +19,20 @@
 #include "../Textures/TextureManager.h"
 
 enum class BLOCKID {
-        last
+        GRASS, DIRT, STONE, WATER, AIR,
 };
 
 struct BlockData {
-    TEXTURESHEET sheetID;
-    BLOCKID blockID;
-    int variantID;
+    // Determines correct texture sheet to draw texture from
+    TEXTURESHEET textureSheet = TEXTURESHEET::WORLD;
+
+    // Used to identify what the actual block object is of
+    BLOCKID blockID {BLOCKID::AIR};
+    int variantID {0};
+
+    static bool Compare(BlockData A, BlockData B) {
+        return A.blockID == B.blockID && A.variantID == B.variantID;
+    }
 };
 
 
@@ -36,16 +43,16 @@ class Block {
         unsigned int vertexBufferObject {};
         unsigned int indexBufferObject {};
 
-        // Vertex Data
-        std::unique_ptr<Transformation> transformation {};
-        GLint modelMatrixLocation = -1;
+        // Block Transformation
+        std::unique_ptr<Transformation> transformation = std::make_unique<Transformation>();
 
         // Culling Information
         bool transparent = false;
         bool isCulled = false;
+        bool visibleFaces[6] {true, true, true, true, true, true};
 
-        // Temp scum to be removed at some point
-        TEXTURESHEET sheetID {};
+        // Block Data
+        BlockData blockData {};
 
     public:
         Block();
@@ -53,8 +60,8 @@ class Block {
 
         // Object Creation
         static std::vector<Vertex> BaseVertexArray();
-        static std::vector<glm::vec2> BaseTextureCoordsArray();
         static std::vector<GLuint> BaseIndexArray();
+        void SetBlockData(BlockData _data);
         void BindCube() const;
 
         // Display
@@ -75,8 +82,8 @@ class Block {
 
         // Getters
         [[nodiscard]] glm::vec3 GetDimensions() { return transformation->GetLocalScale(); }
-        [[nodiscard]] glm::vec3 GetGlobalCentre() { return transformation->GetGlobalPosition() + GetDimensions() / 2.0f; }
-        [[nodiscard]] glm::vec3 GetLocalCentre() { return transformation->GetLocalPosition() + GetDimensions() / 2.0f; }
+        [[nodiscard]] bool IsTransparent() const { return transparent; }
+        [[nodiscard]] BlockData GetBlockData() const { return blockData; }
 };
 
 #endif //UNTITLED7_BLOCK_H

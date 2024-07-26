@@ -20,16 +20,17 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="Cubes redefined to Blocks, still stores some data i wish to remove from the cube.">
+    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="fixed generation of chunks not applying actual chunk location">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Blocks/Block.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/Block.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Blocks/Block.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/Block.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Blocks/ModelStructs.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/ModelStructs.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Player/Camera.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Player/Camera.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/World/Chunk.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Chunk.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/World/Chunk.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Chunk.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src_shader/fragment.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/src_shader/fragment.glsl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/World/World.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/World.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/World/World.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/World.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -151,7 +152,7 @@
       <workItem from="1721770228339" duration="3708000" />
       <workItem from="1721775569174" duration="4458000" />
       <workItem from="1721812202938" duration="38560000" />
-      <workItem from="1721858240944" duration="15472000" />
+      <workItem from="1721858240944" duration="41780000" />
     </task>
     <task id="LOCAL-00001" summary="gitignore">
       <option name="closed" value="true" />
@@ -377,7 +378,15 @@
       <option name="project" value="LOCAL" />
       <updated>1721908677450</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL-00029" summary="fixed generation of chunks not applying actual chunk location">
+      <option name="closed" value="true" />
+      <created>1721923615044</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1721923615044</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -389,7 +398,6 @@
     <isAutomaticReloadCMake value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="." />
     <MESSAGE value="Makes 2 random coloured triangles move around the screen." />
     <MESSAGE value="fixed colour binding" />
     <MESSAGE value="Making a rectangle object" />
@@ -414,7 +422,8 @@
     <MESSAGE value="Cubes are stored in a very unoptimised manner" />
     <MESSAGE value="cubes no longer store vertex array as data, is constructed from functions" />
     <MESSAGE value="Cubes redefined to Blocks, still stores some data i wish to remove from the cube." />
-    <option name="LAST_COMMIT_MESSAGE" value="Cubes redefined to Blocks, still stores some data i wish to remove from the cube." />
+    <MESSAGE value="fixed generation of chunks not applying actual chunk location" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed generation of chunks not applying actual chunk location" />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>

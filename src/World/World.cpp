@@ -35,6 +35,12 @@ void World::CheckCulling(const Camera &_camera) {
     for (auto& chunk : worldChunks) chunk->CheckCulling(_camera);
 }
 
+
+
+/*
+ * SKYBOX
+ */
+
 void World::SetSkyboxProperties(const Camera *camera) {
     // Determine max distance for skybox
     std::pair<float, float> minMax = camera->GetMinMaxDistance();
