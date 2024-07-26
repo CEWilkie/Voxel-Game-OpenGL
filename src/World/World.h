@@ -13,8 +13,9 @@
 #include "Chunk.h"
 
 static const int worldSize = 2; // n chunks
+static const int worldHeight = 4; // from 0 to n chunks high
 static const int worldArea = worldSize * worldSize;
-static const int worldVolume = worldArea * worldSize;
+static const int worldVolume = worldArea * worldHeight;
 
 class World {
     private:

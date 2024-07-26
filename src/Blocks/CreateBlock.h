@@ -11,25 +11,31 @@
 inline std::unique_ptr<Block> CreateBlock(BLOCKID _id, int _variant = 0) {
     std::unique_ptr<Block> newBlock {};
 
+    // In order of likelihood to appear to save search time
     switch (_id) {
-        case BLOCKID::GRASS:
-            newBlock = std::make_unique<Grass>(_variant);
-            break;
-
-        case BLOCKID::DIRT:
-            newBlock = std::make_unique<Dirt>(_variant);
+        case BLOCKID::AIR:
+            newBlock = std::make_unique<Air>(_variant);
             break;
 
         case BLOCKID::STONE:
             newBlock = std::make_unique<Stone>(_variant);
             break;
 
+        case BLOCKID::DIRT:
+            newBlock = std::make_unique<Dirt>(_variant);
+            break;
+
         case BLOCKID::WATER:
             newBlock = std::make_unique<Water>(_variant);
             break;
 
+        case BLOCKID::GRASS:
+            newBlock = std::make_unique<Grass>(_variant);
+            break;
+
         default:
-            newBlock = std::make_unique<Air>();
+            // Block not defined
+            newBlock = std::make_unique<TestBlock>(_variant);
     }
 
     return newBlock;

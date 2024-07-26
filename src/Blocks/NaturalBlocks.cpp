@@ -41,11 +41,11 @@ Water::Water(int _variant) {
     transparent = true;
 }
 
-Air::Air() {
-    SetBlockData({BLOCKID::AIR, 0});
+Air::Air(int _variant) {
+    SetBlockData({BLOCKID::AIR, _variant});
 
     // Set the texture and texture origin
-    SetTexture(TEXTURESHEET::NATURAL, {12,1});
+    SetTexture(TEXTURESHEET::WORLD, {12,1});
 
     // Set transparency
     transparent = true;

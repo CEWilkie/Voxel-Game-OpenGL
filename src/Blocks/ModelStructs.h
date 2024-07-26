@@ -138,7 +138,7 @@ struct BoxBounds : public BoundingVolume {
             float r = globalBoxBounds.extent * (std::abs(plane.normal.x) + std::abs(plane.normal.y) + std::abs(plane.normal.z));
             inOrInFrontOfPlane = (-r <= plane.DistToPlane(globalBoxBounds.centre));
 
-            // If sphere is behind plane, sphere is not in view
+            // If box is behind plane, sphere is not in view
             if (!inOrInFrontOfPlane) return OUTSIDE;
         }
 

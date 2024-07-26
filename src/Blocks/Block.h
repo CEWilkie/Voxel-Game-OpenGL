@@ -19,7 +19,7 @@
 #include "../Textures/TextureManager.h"
 
 enum class BLOCKID {
-        GRASS, DIRT, STONE, WATER, AIR,
+        TEST, GRASS, DIRT, STONE, WATER, AIR,
 };
 
 struct BlockData {
@@ -81,5 +81,15 @@ class Block {
         [[nodiscard]] bool IsTransparent() const { return transparent; }
         [[nodiscard]] BlockData GetBlockData() const { return blockData; }
 };
+
+
+class TestBlock : public Block {
+    private:
+
+    public:
+        explicit TestBlock(int _variant);
+};
+
+
 
 #endif //UNTITLED7_BLOCK_H

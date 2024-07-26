@@ -3,10 +3,11 @@
 //
 
 #include "World.h"
+#include "../Blocks/CreateBlock.h"
 
 World::World() {
     // Create skybox
-    skybox = std::make_unique<Block>();
+    skybox = CreateBlock(BLOCKID::AIR, 1);
     skybox->SetTexture(TEXTURESHEET::WORLD, {1,1}); // Set skybox texture
     skyboxTransformation = Transformation();
 
@@ -27,12 +28,12 @@ void World::Display() {
 
     glDisable(GL_CULL_FACE);
 
-
     worldChunks[0]->MoveChunk({0.0f, 0.001f, 0.0f});
 }
 
 void World::CheckCulling(const Camera &_camera) {
-    for (auto& chunk : worldChunks) chunk->CheckCulling(_camera);
+    for (auto& chunk : worldChunks)
+        chunk->CheckCulling(_camera);
 }
 
 
@@ -74,8 +75,10 @@ void World::GenerateWorld() {
 void World::GenerateTerrain() {
     for (int chunkX = -worldSize/2; chunkX < worldSize/2; chunkX++) {
         for (int chunkZ = -worldSize/2; chunkZ < worldSize/2; chunkZ++) {
-            glm::vec3 chunkPos{chunkX, 0, chunkZ};
-            worldChunks.push_back(std::make_unique<Chunk>(chunkPos));
+            for (int chunkY = 0; chunkY < worldHeight; chunkY++) {
+                glm::vec3 chunkPos{chunkX, chunkY, chunkZ};
+                worldChunks.push_back(std::make_unique<Chunk>(chunkPos));
+            }
         }
     }
 }

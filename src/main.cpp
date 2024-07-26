@@ -65,6 +65,75 @@ int main(int argc, char** argv){
     SDL_SetWindowGrab(window.WindowPtr(), SDL_TRUE);
     SDL_ShowCursor(SDL_DISABLE);
 
+
+    GLuint vertexArrayObject, vertexBufferObject, indexBufferObject;
+
+    // Generate objectIDs
+    glGenVertexArrays(1, &vertexArrayObject);
+    glGenBuffers(1, &vertexBufferObject);
+    glGenBuffers(1, &indexBufferObject);
+
+    // Create vertex positions (two triangles
+    std::vector<Vertex> vertexArray = {
+            // bottom Left Triangle
+            { glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f/16)},
+            { glm::vec3(50.0f, 0.0f, 0.0f), glm::vec2(1.0f/16, 1.0f/16)},
+            { glm::vec3(0.0f, 50.0f, 0.0f), glm::vec2(0.0f, 0.0f/16)},
+            { glm::vec3(50.0f, 50.0f, 0.0f), glm::vec2(01.0f/16, 0.0f)},
+    };
+
+    std::vector<GLuint> indexArray {
+        0, 1, 2, 1, 3, 2
+    };
+
+    // bind object id
+    glBindVertexArray(vertexArrayObject);
+
+    // bind vertex buffer array
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+    glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(vertexArray.size() * sizeof(Vertex)), vertexArray.data(), GL_STREAM_DRAW);
+
+    // Vertex Position Attributes
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, position));
+
+    // Vertex Colour Attributes
+//    glEnableVertexAttribArray(1);
+//    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, color));
+
+    // Vertex TextureData attributes
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, textureCoord));
+
+    // Bind index buffer
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(indexArray.size()*sizeof(GLuint)), indexArray.data(), GL_STATIC_DRAW);
+
+    GLint tex0Location = glGetUniformLocation(window.GetShader(), "tex0");
+    glUniform1i(tex0Location, 0);
+
+    // Unbind arrays / buffers
+    glBindVertexArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    Transformation t {};
+    t.SetScale({0.25f, 0.25f, 0.25f});
+
+    // vertical rotation
+    glm::mat4 rotation = glm::rotate(glm::mat4(1.0f),
+                           (float)glm::radians(45.0f),
+                           glm::normalize(glm::cross(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f))));
+
+    glm::vec3 direction = glm::normalize(rotation * glm::vec4(glm::vec3(0.0f, 0.0f, 1.0f), 1.0f));
+
+    t.SetRotation(direction);
+    t.SetPosition({0, 100, 50});
+    t.UpdateModelMatrix();
+
+    t.SetRotation(direction);
+    t.UpdateModelMatrix();
+
     // Render Loop
     bool running = true;
     bool escToggled = false;
@@ -96,7 +165,7 @@ int main(int argc, char** argv){
             lastViewMatrix = camera.GetViewMatrix();
             camera.UpdateViewFrustrum();
 
-            world->CheckCulling(camera);
+           // world->CheckCulling(camera);
         }
 
 
@@ -105,6 +174,19 @@ int main(int argc, char** argv){
          */
 
         world->Display();
+
+        // Bind object
+        glBindVertexArray(vertexArrayObject);
+
+        // Update model matrix to uniform
+        GLint modelMatrixLocation = glGetUniformLocation(window.GetShader(), "uModelMatrix");
+        if (modelMatrixLocation < 0) printf("location not found [uModelMatrix]");
+        if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &t.GetModelMatrix()[0][0]);
+
+        textureManager->EnableTextureSheet(TEXTURESHEET::WORLD);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+
+        glBindVertexArray(0);
 
         // 2D OVERLAY
         glDisable(GL_DEPTH_TEST);

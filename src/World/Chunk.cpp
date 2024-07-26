@@ -67,6 +67,9 @@ ChunkNode::ChunkNode(std::vector<std::unique_ptr<ChunkNode>> _subNodes, Chunk* _
         transformation->SetScale(scale);
         transformation->SetPosition(position);
         transformation->UpdateModelMatrix();
+
+        // drop subnodes
+        subNodes.clear();
     }
 }
 ChunkNode::~ChunkNode() = default;
@@ -88,16 +91,12 @@ void ChunkNode::Display() {
 
 void ChunkNode::CheckCulling(const Camera& _camera) {
     isCulled = !blockBounds->InFrustrum(_camera.GetCameraFrustrum(), *transformation);
+
+    // If the node is not culled, check any further nodes
+    if (!isCulled && !subNodes.empty())
+        for (auto& node : subNodes) node->CheckCulling(_camera);
 }
 
-ChunkNode ChunkNode::CreateNodeTree(std::array<std::array<std::array<ChunkNode*, chunkSize>, chunkSize>, chunkSize> _blockNodes) {
-    // First create a 3d array of ending nodes
-
-
-    int size = chunkSize;
-
-
-}
 
 
 
@@ -112,8 +111,14 @@ Chunk::Chunk(const glm::vec3& _chunkPosition) {
 
     CreateHeightMap();
 
+    // Measure of chunk creation time
+    auto st = SDL_GetTicks64();
+
     // Creates blocks in chunk and Put blocks into octTree
     CreateNodeTree(CreateTerrain());
+    auto et = SDL_GetTicks64();
+
+    printf("CHUNK CREATION : %llu TICKS TAKEN\n", et-st);
 }
 
 
@@ -144,12 +149,12 @@ std::array<int, chunkArea> Chunk::CreateHeightMap() {
             int cubeZ = z + (int)transformation->GetLocalPosition().z;
 
             // Get positive noise value
-            float simplexNoise = glm::simplex(glm::vec2(cubeX / 4, cubeZ / 4));
+            float simplexNoise = glm::simplex(glm::vec2(cubeX / 16.0, cubeZ / 16.0));
             simplexNoise = (simplexNoise + 1) / 2;
             simplexNoise *= 3;
 
             // Apply to height map
-            heightMap[x + z*chunkSize] += (int)simplexNoise + 5;
+            heightMap[x + z*chunkSize] += (int)simplexNoise + 32;
         }
     }
 
@@ -222,7 +227,6 @@ void Chunk::CreateNodeTree(std::array<std::array<std::array<std::unique_ptr<Chun
                     nodes +=1;
                 }
         nodesToTraverse = nodesToTraverse / 2;
-        printf("NODES: %d\n", nodes);
     }
 
     rootNode = std::move(_chunkNodes[0][0][0]);

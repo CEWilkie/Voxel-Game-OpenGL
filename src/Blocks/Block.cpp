@@ -120,7 +120,7 @@ void Block::BindCube() const {
 void Block::Display(const Transformation& _transformation) const {
     if (isCulled) return;
 
-    if (blockData.blockID == BLOCKID::AIR) return;
+    if (blockData.blockID == BLOCKID::AIR && blockData.variantID == 0) return;
 
     // Bind object
     glBindVertexArray(vertexArrayObject);
@@ -192,3 +192,20 @@ void Block::SetTexture(TEXTURESHEET _textureID, glm::vec2 _origin) {
 //void Block::UpdateModelMatrix(const glm::mat4 &_parentTransformationMatrix) {
 //    transformation->UpdateModelMatrix(_parentTransformationMatrix);
 //}
+
+
+TestBlock::TestBlock(int _variant) {
+    SetBlockData({BLOCKID::STONE, _variant});
+
+    // Set the texture and texture origin
+    glm::vec2 textureOrigin = {1,1};
+    switch (_variant) {
+        case 1: textureOrigin = {4,2}; break;
+        case 2: textureOrigin = {5,4}; break;
+        case 3: textureOrigin = {7,1}; break;
+        case 4: textureOrigin = {10,2}; break;
+        case 5: textureOrigin = {13,1};
+    }
+
+    SetTexture(TEXTURESHEET::TEST16, textureOrigin);
+}

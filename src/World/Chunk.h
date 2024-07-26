@@ -11,15 +11,15 @@
 #include "../Blocks/NaturalBlocks.h"
 #include "../Blocks/ModelTransformations.h"
 
-static const int chunkSize = 16; // must be power of 2 for subchunk division
+static const int chunkSize = 16; // must be power of 2 for subchunk division ie 2, 4, 8, 16 | 32, 64, 128, ... ( too big)
 static const int chunkArea = chunkSize * chunkSize;
 static const int chunkVolume = chunkArea * chunkSize;
+
+class Chunk;
 
 // Used to construct a tree of chunks to manage object culling and display
 // Either the subchunk vector is populated with further, smaller subchunks, or the Cube object is instantiated
 // A SubChunk with a valid cube object is considered to be a terminating point of the subchunk tree.
-
-class Chunk;
 
 class ChunkNode {
     protected:
@@ -44,8 +44,6 @@ class ChunkNode {
 
         void Display();
         void CheckCulling(const Camera& _camera);
-
-        ChunkNode CreateNodeTree(std::array<std::array<std::array<ChunkNode*, chunkSize>, chunkSize>, chunkSize> _blockNodes);
 };
 
 

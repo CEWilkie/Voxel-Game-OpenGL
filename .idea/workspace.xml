@@ -20,17 +20,22 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="Implementation of an OctTree to help cull faces. However program memory requirements are becoming extremely large">
-      <change afterPath="$PROJECT_DIR$/src/Blocks/CreateBlock.h" afterDir="false" />
+    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="Chunks now store only a single instance of each unique block used within the chunk. OctTree &quot;merges&quot; adjacent blocks by displaying cubic areas of the same block as 1 single large block.&#10;&#10;Overall vast improvement to memory usage.&#10;&#10;Still faces to be culled">
+      <change afterPath="$PROJECT_DIR$/src/Blocks/Quad.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/Blocks/Quad.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Blocks/Block.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/Block.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Blocks/Block.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/Block.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Blocks/CreateBlock.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/CreateBlock.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Blocks/ModelStructs.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/ModelStructs.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Player/Camera.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Player/Camera.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/World/Chunk.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Chunk.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/World/Chunk.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Chunk.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/World/World.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/World.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/World/World.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/World.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,7 +68,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "CMake Application.untitled7.executor": "Debug",
+    "CMake Application.untitled7.executor": "Run",
     "OCFindUsagesOptions.isSearchForTextOccurrences": "true",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -153,7 +158,7 @@
       <workItem from="1721775569174" duration="4458000" />
       <workItem from="1721812202938" duration="38560000" />
       <workItem from="1721858240944" duration="42061000" />
-      <workItem from="1721983199279" duration="5171000" />
+      <workItem from="1721983199279" duration="12856000" />
     </task>
     <task id="LOCAL-00001" summary="gitignore">
       <option name="closed" value="true" />
@@ -395,7 +400,15 @@
       <option name="project" value="LOCAL" />
       <updated>1721952511082</updated>
     </task>
-    <option name="localTasksCounter" value="31" />
+    <task id="LOCAL-00031" summary="Chunks now store only a single instance of each unique block used within the chunk. OctTree &quot;merges&quot; adjacent blocks by displaying cubic areas of the same block as 1 single large block.&#10;&#10;Overall vast improvement to memory usage.&#10;&#10;Still faces to be culled">
+      <option name="closed" value="true" />
+      <created>1721993763963</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1721993763963</updated>
+    </task>
+    <option name="localTasksCounter" value="32" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -407,7 +420,6 @@
     <isAutomaticReloadCMake value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixed colour binding" />
     <MESSAGE value="Making a rectangle object" />
     <MESSAGE value="Making a rectangle object with index buffer" />
     <MESSAGE value="Made a &quot;Cube&quot; although depth doesnt truly work. however all triangles should be being drawn correctly. Can move up/down with uniform vars" />
@@ -432,7 +444,8 @@
     <MESSAGE value="Cubes redefined to Blocks, still stores some data i wish to remove from the cube." />
     <MESSAGE value="fixed generation of chunks not applying actual chunk location" />
     <MESSAGE value="Implementation of an OctTree to help cull faces. However program memory requirements are becoming extremely large" />
-    <option name="LAST_COMMIT_MESSAGE" value="Implementation of an OctTree to help cull faces. However program memory requirements are becoming extremely large" />
+    <MESSAGE value="Chunks now store only a single instance of each unique block used within the chunk. OctTree &quot;merges&quot; adjacent blocks by displaying cubic areas of the same block as 1 single large block.&#10;&#10;Overall vast improvement to memory usage.&#10;&#10;Still faces to be culled" />
+    <option name="LAST_COMMIT_MESSAGE" value="Chunks now store only a single instance of each unique block used within the chunk. OctTree &quot;merges&quot; adjacent blocks by displaying cubic areas of the same block as 1 single large block.&#10;&#10;Overall vast improvement to memory usage.&#10;&#10;Still faces to be culled" />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>

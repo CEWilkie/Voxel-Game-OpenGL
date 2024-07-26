@@ -45,7 +45,7 @@ class Air : public Block {
     private:
 
     public:
-        explicit Air();
+        explicit Air(int _variant);
 };
 
 
