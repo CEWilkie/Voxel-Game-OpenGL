@@ -57,12 +57,12 @@ std::vector<Vertex> Block::BaseVertexArray() {
 
 std::vector<GLuint> Block::BaseIndexArray() {
     return {
-            11, 10, 0, 1, 11, 0,
-            1, 0, 3, 2, 3, 0,
-            1, 3, 7, 6, 1, 7,
-            7, 9, 6, 8, 6, 9,
-            5, 2, 4, 0, 4, 2,
-            2, 12, 3, 13, 3, 12
+             1, 0, 3, 2, 3, 0,     // FRONT
+             7, 9, 6, 8, 6, 9,     // BACK
+             5, 2, 4, 0, 4, 2,     // LEFT
+             1, 3, 7, 6, 1, 7,     // RIGHT
+             11, 10, 0, 1, 11, 0,  // TOP
+             2, 12, 3, 13, 3, 12   // BOTTOM
     };
 }
 
@@ -81,10 +81,6 @@ void Block::BindCube() const {
     // Vertex Position Attributes
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, position));
-
-    // Vertex Colour Attributes
-//    glEnableVertexAttribArray(1);
-//    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, color));
 
     // Vertex TextureData attributes
     glEnableVertexAttribArray(2);
@@ -125,7 +121,7 @@ void Block::Display(const Transformation& _transformation) const {
     // Bind object
     glBindVertexArray(vertexArrayObject);
 
-    // Update model matrix to uniform
+    // Update uniform
     GLint modelMatrixLocation = glGetUniformLocation(window.GetShader(), "uModelMatrix");
     if (modelMatrixLocation < 0) printf("location not found [uModelMatrix]");
     if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &_transformation.GetModelMatrix()[0][0]);
@@ -136,11 +132,26 @@ void Block::Display(const Transformation& _transformation) const {
     glBindVertexArray(0);
 }
 
+void Block::DisplayFace(BLOCKFACE _face, const Transformation &_transformation) const {
+    if (isCulled) return;
+    if (blockData.blockID == BLOCKID::AIR && blockData.variantID == 0) return;
+
+    glBindVertexArray(vertexArrayObject);
+
+    // Update uniform
+    GLint modelMatrixLocation = glGetUniformLocation(window.GetShader(), "uModelMatrix");
+    if (modelMatrixLocation < 0) printf("location not found [uModelMatrix]");
+    if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &_transformation.GetModelMatrix()[0][0]);
+
+    textureManager->EnableTextureSheet(textureSheet);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(sizeof(GLuint)*_face));
+}
+
+
 bool Block::CheckCulling(const Camera& _camera, const Transformation& _transformation) {
     isCulled = !blockBounds->InFrustrum(_camera.GetCameraFrustrum(), _transformation);
     return isCulled;
 }
-
 
 std::vector<Vertex> Block::GetTrueTextureCoords(TEXTURESHEET _sheetID, glm::vec2 _textureOrigin) {
     std::vector<Vertex> vertexArray = BaseVertexArray();

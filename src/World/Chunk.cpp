@@ -81,8 +81,10 @@ void ChunkNode::Display() {
     // Only need to draw one type of block
     if (isSingleType) {
         Block* displayBlock = rootChunk->GetBlockFromData(nodeBlockData);
-        if (displayBlock != nullptr)
+        if (displayBlock != nullptr) {
+//            displayBlock->DisplayFace(FRONT, *transformation);
             displayBlock->Display(*transformation);
+        }
     }
     else {
         for (const auto& node : subNodes) node->Display();

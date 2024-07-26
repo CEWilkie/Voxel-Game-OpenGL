@@ -147,6 +147,7 @@ int main(int argc, char** argv){
 
         Uint64 frameStart = SDL_GetTicks64();
         deltaFrames = frameStart - lastFrame;
+        printf("FPS: %llu\n", 1000/(deltaFrames+1));
         lastFrame = frameStart;
 
         /*

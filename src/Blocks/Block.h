@@ -22,6 +22,10 @@ enum class BLOCKID {
         TEST, GRASS, DIRT, STONE, WATER, AIR,
 };
 
+enum BLOCKFACE : int{
+        FRONT, BACK, LEFT, RIGHT, TOP, BOTTOM
+};
+
 struct BlockData {
     // Used to identify what the actual block object is of
     BLOCKID blockID {BLOCKID::AIR};
@@ -43,7 +47,6 @@ class Block {
         // Culling Information
         bool transparent = false;
         bool isCulled = false;
-        bool visibleFaces[6] {true, true, true, true, true, true};
 
         // Block Data
         BlockData blockData {};
@@ -63,6 +66,7 @@ class Block {
 
         // Display
         void Display(const Transformation& _transformation) const;
+        void DisplayFace(BLOCKFACE _face, const Transformation& _transformation) const;
         bool CheckCulling(const Camera& _camera, const Transformation& _transformation);
 
         // Textures
