@@ -18,6 +18,7 @@ static const int worldVolume = worldArea * worldSize;
 
 class World {
     private:
+        Transformation skyboxTransformation;
         std::unique_ptr<Block> skybox;
 
         // Sky decos: clouds, sun, moon, stars, night, etc

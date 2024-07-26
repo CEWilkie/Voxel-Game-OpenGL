@@ -3,22 +3,31 @@
 //
 
 #include "Chunk.h"
+
 #include <glm/gtc/noise.hpp>
 #include <memory>
 #include <utility>
+
+#include "../Blocks/CreateBlock.h"
 
 /*
  * SUBCHUNK
  */
 
-ChunkNode::ChunkNode(std::unique_ptr<Block> _nodeBlock, glm::vec3 _position) {
-    nodeBlock = std::move(_nodeBlock);
+ChunkNode::ChunkNode(BlockData _nodeBlockData, glm::vec3 _position, Chunk* _root) {
+    rootChunk = _root;
+    nodeBlockData = _nodeBlockData;
 
     // Set position, scale remains default 1x1x1
     position = _position;
+
+    // Create transformation matrix
+    transformation->SetPosition(position);
+    transformation->UpdateModelMatrix();
 }
 
-ChunkNode::ChunkNode(std::vector<std::unique_ptr<ChunkNode>> _subNodes) {
+ChunkNode::ChunkNode(std::vector<std::unique_ptr<ChunkNode>> _subNodes, Chunk* _root) {
+    rootChunk = _root;
     subNodes = std::move(_subNodes);
 
     // Set scale of the node
@@ -30,11 +39,12 @@ ChunkNode::ChunkNode(std::vector<std::unique_ptr<ChunkNode>> _subNodes) {
         if (subNode->position.x < position.x && subNode->position.y > position.y && subNode->position.z < position.z)
             position = subNode->position;
     }
+    position.y += scale.y / 2;
 
+
+    // Check if all subnodes are of the same block type
     if (subNodes.front()->isSingleType) {
-
-        // Check if all subnodes are of the same block type
-        BlockData firstNodeData = subNodes.front()->nodeBlock->GetBlockData();
+        BlockData firstNodeData = subNodes.front()->nodeBlockData;
         for (const auto& subNode : subNodes) {
             // sub node is not of a singular block type, cannot merge
             if (!subNode->isSingleType) {
@@ -43,7 +53,7 @@ ChunkNode::ChunkNode(std::vector<std::unique_ptr<ChunkNode>> _subNodes) {
             }
 
             // sub node block type is not the same as the first node, cannot merge
-            if (!BlockData::Compare(subNode->nodeBlock->GetBlockData(), firstNodeData)) {
+            if (!BlockData::Compare(subNode->nodeBlockData, firstNodeData)) {
                 isSingleType = false;
                 break;
             }
@@ -53,10 +63,10 @@ ChunkNode::ChunkNode(std::vector<std::unique_ptr<ChunkNode>> _subNodes) {
 
     // If they are the same, use their blockData for the chunk
     if (isSingleType) {
-        if (nodeBlock == nullptr) nodeBlock = subNodes.front()->nodeBlock;
-        nodeBlock->SetScale(scale);
-        nodeBlock->SetPositionOrigin({position.x, position.y + scale.y - 1, position.z} );
-        nodeBlock->UpdateModelMatrix();
+        nodeBlockData = subNodes.front()->nodeBlockData;
+        transformation->SetScale(scale);
+        transformation->SetPosition(position);
+        transformation->UpdateModelMatrix();
     }
 }
 ChunkNode::~ChunkNode() = default;
@@ -67,8 +77,9 @@ void ChunkNode::Display() {
 
     // Only need to draw one type of block
     if (isSingleType) {
-        textureManager->EnableTextureSheet(nodeBlock->GetBlockData().textureSheet);
-        nodeBlock->Display();
+        Block* displayBlock = rootChunk->GetBlockFromData(nodeBlockData);
+        if (displayBlock != nullptr)
+            displayBlock->Display(*transformation);
     }
     else {
         for (const auto& node : subNodes) node->Display();
@@ -76,11 +87,7 @@ void ChunkNode::Display() {
 }
 
 void ChunkNode::CheckCulling(const Camera& _camera) {
-    Transformation t;
-    t.SetScale(scale);
-    t.SetPosition(position);
-    t.UpdateModelMatrix();
-    isCulled = !blockBounds->InFrustrum(_camera.GetCameraFrustrum(), t);
+    isCulled = !blockBounds->InFrustrum(_camera.GetCameraFrustrum(), *transformation);
 }
 
 ChunkNode ChunkNode::CreateNodeTree(std::array<std::array<std::array<ChunkNode*, chunkSize>, chunkSize>, chunkSize> _blockNodes) {
@@ -118,7 +125,13 @@ void Chunk::CheckCulling(const Camera& _camera) {
     rootNode->CheckCulling(_camera);
 }
 
+Block *Chunk::GetBlockFromData(BlockData _data) {
+    for (auto& block : uniqueBlocks) {
+        if (BlockData::Compare(block->GetBlockData(), _data)) return block.get();
+    }
 
+    return nullptr;
+}
 
 
 
@@ -156,15 +169,23 @@ std::array<std::array<std::array<std::unique_ptr<ChunkNode>, chunkSize>, chunkSi
             for (int y = 0; y < chunkSize; y++) {
                 glm::vec3 blockPos = glm::vec3(x,y,z) + transformation->GetLocalPosition();
 
-                std::unique_ptr<Block> newBlock {};
+                BlockData newBlockData;
 
                 // Determine block type
-                if (blockPos.y > height) newBlock = std::make_unique<Air>(blockPos);
-                else if (blockPos.y == height) newBlock = std::make_unique<Grass>(blockPos);
-                else if (blockPos.y > height -4) newBlock = (std::make_unique<Dirt>(blockPos));
-                else newBlock = (std::make_unique<Stone>(blockPos));
+                if (blockPos.y > height) newBlockData = {BLOCKID::AIR, 0};
+                else if (blockPos.y == height) newBlockData = {BLOCKID::GRASS, 0};
+                else if (blockPos.y > height -4) newBlockData = {BLOCKID::DIRT, 0};
+                else newBlockData = {BLOCKID::STONE, 0};
 
-                chunkBlocks[x][y][z] = std::make_unique<ChunkNode>(std::move(newBlock), blockPos);
+                // Check if material is new to the chunk
+                if (!std::any_of(uniqueBlocks.begin(), uniqueBlocks.end(), [&](const std::unique_ptr<Block>& uniqueBlock){
+                    return BlockData::Compare(uniqueBlock->GetBlockData(), newBlockData);
+                })) {
+                    // new material, add to block list
+                    uniqueBlocks.push_back(CreateBlock(newBlockData.blockID, newBlockData.variantID));
+                }
+
+                chunkBlocks[x][y][z] = std::make_unique<ChunkNode>(newBlockData, blockPos, this);
             }
         }
     }
@@ -197,7 +218,7 @@ void Chunk::CreateNodeTree(std::array<std::array<std::array<std::unique_ptr<Chun
                     subNodes.push_back(std::move(_chunkNodes[x+offset][y+offset][z+offset]));
 
                     // Create new node
-                    _chunkNodes[x][y][z] = std::make_unique<ChunkNode>(std::move(subNodes));
+                    _chunkNodes[x][y][z] = std::make_unique<ChunkNode>(std::move(subNodes), this);
                     nodes +=1;
                 }
         nodesToTraverse = nodesToTraverse / 2;

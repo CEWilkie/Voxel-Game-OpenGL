@@ -7,9 +7,9 @@
 World::World() {
     // Create skybox
     skybox = std::make_unique<Block>();
+    skybox->SetTexture(TEXTURESHEET::WORLD, {1,1}); // Set skybox texture
+    skyboxTransformation = Transformation();
 
-    // Create skybox texture
-    skybox->SetTexture(TEXTURESHEET::WORLD, {1,1});
 }
 
 World::~World() = default;
@@ -18,7 +18,7 @@ void World::Display() {
     glEnable(GL_DEPTH_TEST);
 
     // First draw in the skybox and decorations
-    skybox->Display();
+    skybox->Display(skyboxTransformation);
 
     // Now draw the world terrain / objecst
     glEnable(GL_CULL_FACE);
@@ -47,14 +47,18 @@ void World::SetSkyboxProperties(const Camera *camera) {
     double maxSqrd = std::pow(minMax.second-1, 2.0);
 
     // Set skybox scale
-    skybox->SetScale({float(sqrt(maxSqrd / 3)), float(sqrt(maxSqrd / 3)), float(sqrt(maxSqrd / 3))});
-    skybox->SetPositionCentre(camera->GetPosition());
-    skybox->UpdateModelMatrix();
+    skyboxTransformation.SetScale({float(sqrt(maxSqrd / 3)), float(sqrt(maxSqrd / 3)), float(sqrt(maxSqrd / 3))});
+
+    // Set skybox position centred on the player
+    SetSkyboxPosition(camera->GetPosition());
 }
 
 void World::SetSkyboxPosition(glm::vec3 _position) {
-    skybox->SetPositionCentre(_position);
-    skybox->UpdateModelMatrix();
+    glm::vec3 originFromCentre{_position - (skyboxTransformation.GetLocalScale() / 2.0f)};
+    originFromCentre.y += skyboxTransformation.GetLocalScale().y;
+    skyboxTransformation.SetPosition(originFromCentre);
+
+    skyboxTransformation.UpdateModelMatrix();
 }
 
 

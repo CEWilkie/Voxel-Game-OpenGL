@@ -19,14 +19,17 @@ static const int chunkVolume = chunkArea * chunkSize;
 // Either the subchunk vector is populated with further, smaller subchunks, or the Cube object is instantiated
 // A SubChunk with a valid cube object is considered to be a terminating point of the subchunk tree.
 
+class Chunk;
+
 class ChunkNode {
     protected:
         // Tree objects
+        Chunk* rootChunk {};
         std::vector<std::unique_ptr<ChunkNode>> subNodes {};
-        std::shared_ptr<Block> nodeBlock {};
+        BlockData nodeBlockData {};
 
         // SubChunk positioning + scale
-        std::unique_ptr<Transformation> transformation {};
+        std::unique_ptr<Transformation> transformation = std::make_unique<Transformation>();
         glm::vec3 position{0.0f, 0.0f, 0.0f}; // Node position from minimum corner
         glm::vec3 scale{1.0f, 1.0f, 1.0f};    // x by y by z blocks within chunk
 
@@ -35,8 +38,8 @@ class ChunkNode {
         bool isCulled = false;
 
     public:
-        ChunkNode(std::unique_ptr<Block> _nodeBlock, glm::vec3  _position);
-        explicit ChunkNode(std::vector<std::unique_ptr<ChunkNode>> _subNodes);
+        ChunkNode(BlockData _nodeBlockData, glm::vec3  _position, Chunk* _root);
+        ChunkNode(std::vector<std::unique_ptr<ChunkNode>> _subNodes, Chunk* _root);
         ~ChunkNode();
 
         void Display();
@@ -67,7 +70,7 @@ class Chunk {
         std::vector<std::unique_ptr<BoxBounds>> boxBounds {};
 
         // Block Data
-        std::vector<BlockData> materials {};
+        std::vector<std::unique_ptr<Block>> uniqueBlocks {};
         std::unique_ptr<ChunkNode> rootNode {};
 
     public:
@@ -76,6 +79,7 @@ class Chunk {
         // Display and Culling
         void Display();
         void CheckCulling(const Camera& _camera);
+        Block* GetBlockFromData(BlockData _data);
 
         // Chunk Generation
         std::array<int, chunkArea> CreateHeightMap();

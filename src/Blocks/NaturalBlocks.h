@@ -14,7 +14,7 @@ class Stone : public Block {
     private:
 
     public:
-        explicit Stone(glm::vec3 _position);
+        explicit Stone(int _variant);
 };
 
 
@@ -23,7 +23,7 @@ class Dirt : public Block {
 
 
     public:
-        explicit Dirt(glm::vec3 _position);
+        explicit Dirt(int _variant);
 };
 
 class Grass : public Block {
@@ -31,21 +31,21 @@ class Grass : public Block {
 
 
     public:
-        explicit Grass(glm::vec3 _position);
+        explicit Grass(int _variant);
 };
 
 class Water : public Block {
     private:
 
     public:
-        explicit Water(glm::vec3 _position);
+        explicit Water(int _variant);
 };
 
 class Air : public Block {
     private:
 
     public:
-        explicit Air(glm::vec3 _position);
+        explicit Air();
 };
 
 

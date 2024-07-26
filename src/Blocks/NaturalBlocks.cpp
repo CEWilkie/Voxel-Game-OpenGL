@@ -10,45 +10,29 @@
  * STONE
  */
 
-Stone::Stone(glm::vec3 _position) {
-    // set the position of the cube
-    SetPositionOrigin(_position);
-    UpdateModelMatrix();
-
-    SetBlockData({TEXTURESHEET::NATURAL, BLOCKID::STONE, 0});
+Stone::Stone(int _variant) {
+    SetBlockData({BLOCKID::STONE, _variant});
 
     // Set the texture and texture origin
     SetTexture(TEXTURESHEET::NATURAL, {1,1});
 }
 
-Dirt::Dirt(glm::vec3 _position) {
-    // set the position of the cube
-    SetPositionOrigin(_position);
-    UpdateModelMatrix();
-
-    SetBlockData({TEXTURESHEET::NATURAL, BLOCKID::DIRT, 0});
+Dirt::Dirt(int _variant) {
+    SetBlockData({BLOCKID::DIRT, _variant});
 
     // Set the texture and texture origin
     SetTexture(TEXTURESHEET::NATURAL, {4,2});
 }
 
-Grass::Grass(glm::vec3 _position) {
-    // set the position of the cube
-    SetPositionOrigin(_position);
-    UpdateModelMatrix();
-
-    SetBlockData({TEXTURESHEET::NATURAL, BLOCKID::GRASS, 0});
+Grass::Grass(int _variant) {
+    SetBlockData({BLOCKID::GRASS, _variant});
 
     // Set the texture and texture origin
     SetTexture(TEXTURESHEET::NATURAL, {7,1});
 }
 
-Water::Water(glm::vec3 _position) {
-    // set the position of the cube
-    SetPositionOrigin(_position);
-    UpdateModelMatrix();
-
-    SetBlockData({TEXTURESHEET::NATURAL, BLOCKID::WATER, 0});
+Water::Water(int _variant) {
+    SetBlockData({BLOCKID::WATER, _variant});
 
     // Set the texture and texture origin
     SetTexture(TEXTURESHEET::NATURAL, {10,2});
@@ -57,12 +41,8 @@ Water::Water(glm::vec3 _position) {
     transparent = true;
 }
 
-Air::Air(glm::vec3 _position) {
-    // set the position of the cube
-    SetPositionOrigin(_position);
-    UpdateModelMatrix();
-
-    SetBlockData({TEXTURESHEET::NATURAL, BLOCKID::AIR, 0});
+Air::Air() {
+    SetBlockData({BLOCKID::AIR, 0});
 
     // Set the texture and texture origin
     SetTexture(TEXTURESHEET::NATURAL, {12,1});

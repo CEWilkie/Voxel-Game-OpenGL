@@ -117,7 +117,7 @@ void Block::BindCube() const {
 
 
 
-void Block::Display() const {
+void Block::Display(const Transformation& _transformation) const {
     if (isCulled) return;
 
     if (blockData.blockID == BLOCKID::AIR) return;
@@ -128,16 +128,16 @@ void Block::Display() const {
     // Update model matrix to uniform
     GLint modelMatrixLocation = glGetUniformLocation(window.GetShader(), "uModelMatrix");
     if (modelMatrixLocation < 0) printf("location not found [uModelMatrix]");
-    if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &transformation->GetModelMatrix()[0][0]);
+    if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &_transformation.GetModelMatrix()[0][0]);
 
-    textureManager->EnableTextureSheet(blockData.textureSheet);
+    textureManager->EnableTextureSheet(textureSheet);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
 
     glBindVertexArray(0);
 }
 
-bool Block::CheckCulling(const Camera& _camera) {
-    isCulled = !blockBounds->InFrustrum(_camera.GetCameraFrustrum(), *transformation);
+bool Block::CheckCulling(const Camera& _camera, const Transformation& _transformation) {
+    isCulled = !blockBounds->InFrustrum(_camera.GetCameraFrustrum(), _transformation);
     return isCulled;
 }
 
@@ -156,7 +156,7 @@ std::vector<Vertex> Block::GetTrueTextureCoords(TEXTURESHEET _sheetID, glm::vec2
 void Block::SetTexture(TEXTURESHEET _textureID, glm::vec2 _origin) {
     // Update stored texture data
     std::vector<Vertex> vertexArray = GetTrueTextureCoords(_textureID, _origin);
-    blockData.textureSheet = _textureID;
+    textureSheet = _textureID;
 
     // Update buffer
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
@@ -164,31 +164,31 @@ void Block::SetTexture(TEXTURESHEET _textureID, glm::vec2 _origin) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void Block::SetPositionOrigin(glm::vec3 _originPosition) {
-    // set transformation to move to the new origin position
-    transformation->SetPosition(_originPosition);
-}
-
-void Block::SetPositionCentre(glm::vec3 _centre) {
-    // set transformation to move to the new origin position, but offset by half the scale of the cube
-    glm::vec3 originFromCentre{_centre - (transformation->GetLocalScale() / 2.0f)};
-    originFromCentre.y += transformation->GetLocalScale().y;
-
-    transformation->SetPosition(originFromCentre);
-}
-
-void Block::SetScale(glm::vec3 _scale) {
-    transformation->SetScale(_scale);
-}
-
-void Block::SetRotation(glm::vec3 _rotation) {
-    transformation->SetRotation(_rotation);
-}
-
-void Block::UpdateModelMatrix() {
-    transformation->UpdateModelMatrix();
-}
-
-void Block::UpdateModelMatrix(const glm::mat4 &_parentTransformationMatrix) {
-    transformation->UpdateModelMatrix(_parentTransformationMatrix);
-}
+//void Block::SetPositionOrigin(glm::vec3 _originPosition) {
+//    // set transformation to move to the new origin position
+//    transformation->SetPosition(_originPosition);
+//}
+//
+//void Block::SetPositionCentre(glm::vec3 _centre) {
+//    // set transformation to move to the new origin position, but offset by half the scale of the cube
+//    glm::vec3 originFromCentre{_centre - (transformation->GetLocalScale() / 2.0f)};
+//    originFromCentre.y += transformation->GetLocalScale().y;
+//
+//    transformation->SetPosition(originFromCentre);
+//}
+//
+//void Block::SetScale(glm::vec3 _scale) {
+//    transformation->SetScale(_scale);
+//}
+//
+//void Block::SetRotation(glm::vec3 _rotation) {
+//    transformation->SetRotation(_rotation);
+//}
+//
+//void Block::UpdateModelMatrix() {
+//    transformation->UpdateModelMatrix();
+//}
+//
+//void Block::UpdateModelMatrix(const glm::mat4 &_parentTransformationMatrix) {
+//    transformation->UpdateModelMatrix(_parentTransformationMatrix);
+//}

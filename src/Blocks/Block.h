@@ -23,9 +23,6 @@ enum class BLOCKID {
 };
 
 struct BlockData {
-    // Determines correct texture sheet to draw texture from
-    TEXTURESHEET textureSheet = TEXTURESHEET::WORLD;
-
     // Used to identify what the actual block object is of
     BLOCKID blockID {BLOCKID::AIR};
     int variantID {0};
@@ -43,9 +40,6 @@ class Block {
         unsigned int vertexBufferObject {};
         unsigned int indexBufferObject {};
 
-        // Block Transformation
-        std::unique_ptr<Transformation> transformation = std::make_unique<Transformation>();
-
         // Culling Information
         bool transparent = false;
         bool isCulled = false;
@@ -53,6 +47,9 @@ class Block {
 
         // Block Data
         BlockData blockData {};
+
+        // Determines correct texture sheet to draw texture from
+        TEXTURESHEET textureSheet = TEXTURESHEET::WORLD;
 
     public:
         Block();
@@ -65,23 +62,22 @@ class Block {
         void BindCube() const;
 
         // Display
-        void Display() const;
-        bool CheckCulling(const Camera& _camera);
+        void Display(const Transformation& _transformation) const;
+        bool CheckCulling(const Camera& _camera, const Transformation& _transformation);
 
         // Textures
         void SetTexture(TEXTURESHEET _textureID, glm::vec2 _origin);
         static std::vector<Vertex> GetTrueTextureCoords(TEXTURESHEET _sheetID, glm::vec2 _textureOrigin);
 
         // Transformations
-        void SetPositionOrigin(glm::vec3 _originPosition);
-        void SetPositionCentre(glm::vec3 _centre);
-        void SetScale(glm::vec3 _scale);
-        void SetRotation(glm::vec3 _rotation);
-        void UpdateModelMatrix();
-        void UpdateModelMatrix(const glm::mat4& _parentTransformationMatrix);
+//        void SetPositionOrigin(glm::vec3 _originPosition);
+//        void SetPositionCentre(glm::vec3 _centre);
+//        void SetScale(glm::vec3 _scale);
+//        void SetRotation(glm::vec3 _rotation);
+//        void UpdateModelMatrix();
+//        void UpdateModelMatrix(const glm::mat4& _parentTransformationMatrix);
 
         // Getters
-        [[nodiscard]] glm::vec3 GetDimensions() { return transformation->GetLocalScale(); }
         [[nodiscard]] bool IsTransparent() const { return transparent; }
         [[nodiscard]] BlockData GetBlockData() const { return blockData; }
 };
