@@ -82,8 +82,10 @@ void ChunkNode::Display() {
     if (isSingleType) {
         Block* displayBlock = rootChunk->GetBlockFromData(nodeBlockData);
         if (displayBlock != nullptr) {
-//            displayBlock->DisplayFace(FRONT, *transformation);
-            displayBlock->Display(*transformation);
+            displayBlock->DisplayFace(FRONT, *transformation);
+            displayBlock->DisplayFace(TOP, *transformation);
+            displayBlock->DisplayFace(RIGHT, *transformation);
+//            displayBlock->Display(*transformation);
         }
     }
     else {

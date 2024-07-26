@@ -144,7 +144,9 @@ void Block::DisplayFace(BLOCKFACE _face, const Transformation &_transformation) 
     if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &_transformation.GetModelMatrix()[0][0]);
 
     textureManager->EnableTextureSheet(textureSheet);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(sizeof(GLuint)*_face));
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(sizeof(GLuint)*6*_face));
+
+    glBindVertexArray(0);
 }
 
 
