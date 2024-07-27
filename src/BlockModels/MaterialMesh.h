@@ -2,13 +2,13 @@
 // Created by cew05 on 26/07/2024.
 //
 
-#ifndef UNTITLED7_CHUNKMESH_H
-#define UNTITLED7_CHUNKMESH_H
+#ifndef UNTITLED7_MATERIALMESH_H
+#define UNTITLED7_MATERIALMESH_H
 
 #include <glew.h>
 #include "Block.h"
 
-class ChunkMesh {
+class MaterialMesh {
     private:
         // Buffer objects
         unsigned int vertexArrayObject {};
@@ -22,8 +22,8 @@ class ChunkMesh {
         TEXTURESHEET texturesheet = TEXTURESHEET::NATURAL;
 
     public:
-        ChunkMesh();
-        ~ChunkMesh();
+        MaterialMesh();
+        ~MaterialMesh();
 
         void AddBlockFaceVertex(BLOCKFACE _faceID, glm::vec3 _position);
         void RemoveBlockFaceVertex(BLOCKFACE _faceID, glm::vec3 _position);
@@ -33,4 +33,4 @@ class ChunkMesh {
 };
 
 
-#endif //UNTITLED7_CHUNKMESH_H
+#endif //UNTITLED7_MATERIALMESH_H

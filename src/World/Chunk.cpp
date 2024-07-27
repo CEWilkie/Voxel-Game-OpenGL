@@ -20,6 +20,10 @@ ChunkNode::ChunkNode(Block* _nodeBlock, glm::vec3 _position, Chunk* _root) {
 
     // Create transformation matrix
     transformation->SetPosition(_position);
+    if (nodeBlock->GetBlockData().blockID == WATER) {
+        transformation->SetPosition(_position - glm::vec3(0.0f, 0.2f, 0.0f));
+        transformation->SetScale({1, 0.8f, 1});
+    };
     transformation->UpdateModelMatrix();
     nodeBlock->SetTransformation(transformation.get());
 }
@@ -42,32 +46,32 @@ ChunkNode::ChunkNode(std::vector<std::unique_ptr<ChunkNode>> _subNodes, Chunk* _
     transformation->SetPosition(position);
 
     // Check if all subnodes are of the same block type
-    if (subNodes.front()->isSingleType) {
-        BlockData firstNodeData = subNodes.front()->nodeBlock->GetBlockData();
-        for (const auto& subNode : subNodes) {
-            // sub node is not of a singular block type, cannot merge
-            if (!subNode->isSingleType) {
-                isSingleType = false;
-                break;
-            }
-
-            // sub node block type is not the same as the first node, cannot merge
-            if (!BlockData::Compare(subNode->nodeBlock->GetBlockData(), firstNodeData)) {
-                isSingleType = false;
-                break;
-            }
-        }
-    }
-    else isSingleType = false;
+//    if (subNodes.front()->isSingleType) {
+//        BlockData firstNodeData = subNodes.front()->nodeBlock->GetBlockData();
+//        for (const auto& subNode : subNodes) {
+//            // sub node is not of a singular block type, cannot merge
+//            if (!subNode->isSingleType) {
+//                isSingleType = false;
+//                break;
+//            }
+//
+//            // sub node block type is not the same as the first node, cannot merge
+//            if (!BlockData::Compare(subNode->nodeBlock->GetBlockData(), firstNodeData)) {
+//                isSingleType = false;
+//                break;
+//            }
+//        }
+//    }
+//    else isSingleType = false;
 
     // If they are the same, use their blockData for the chunk
     if (isSingleType) {
-        nodeBlock = subNodes.front()->nodeBlock;
-        transformation->UpdateModelMatrix();
-        nodeBlock->SetTransformation(transformation.get());
-
-        // drop subnodes
-        subNodes.clear();
+//        nodeBlock = subNodes.front()->nodeBlock;
+//        transformation->UpdateModelMatrix();
+//        nodeBlock->SetTransformation(transformation.get());
+//
+//        // drop subnodes
+//        subNodes.clear();
     }
 }
 ChunkNode::~ChunkNode() = default;
@@ -77,7 +81,7 @@ void ChunkNode::Display() {
     if (isCulled) return;
 
     // draw  block
-    if (isSingleType) {
+    if (nodeBlock != nullptr) {
 //        displayBlock->DisplayFace(FRONT, *transformation);
 //        displayBlock->DisplayFace(TOP, *transformation);
 //        displayBlock->DisplayFace(RIGHT, *transformation);
@@ -97,6 +101,18 @@ void ChunkNode::CheckCulling(const Camera& _camera) {
         for (auto& node : subNodes) node->CheckCulling(_camera);
 }
 
+void ChunkNode::CheckNodeCulled() {
+    // Update Culled Status in subNodes
+    for (auto& subNode : subNodes ) subNode->CheckNodeCulled();
+
+    // If any subNodes are not culled, then this parent node is considered not culled
+    isCulled = !std::any_of(subNodes.begin(), subNodes.end(), [](const std::unique_ptr<ChunkNode>& subNode){
+        return !subNode->isCulled;
+    });
+
+    // if there are no subNodes, check the node block's cull status
+    if (nodeBlock != nullptr && subNodes.empty()) isCulled = nodeBlock->IsCulled();
+}
 
 
 
@@ -125,7 +141,7 @@ Chunk::Chunk(const glm::vec3& _chunkPosition) {
 
     // Measure of face culling
     st = SDL_GetTicks64();
-    CreateChunkMesh();
+    CheckExposedFaces();
     et = SDL_GetTicks64();
 
     printf("CHUNK FACE CULLING : %llu TICKS TAKEN\n", et-st);
@@ -134,6 +150,11 @@ Chunk::Chunk(const glm::vec3& _chunkPosition) {
 
 void Chunk::Display() {
 //    chunkMesh->DrawMesh(*transformation);
+
+//    for (int x = 0; x < chunkSize; x++)
+//        for (int y = 0; y < chunkSize; y++)
+//            for (int z = 0; z < chunkSize; z++)
+//                terrain[x][y][z]->Display();
 
     rootNode->Display();
 }
@@ -154,30 +175,53 @@ void Chunk::CheckCulling(const Camera& _camera) {
 }
 
 Block* Chunk::GetBlockAtPosition(glm::vec3 _position) {
-    if (_position.x < 0 || _position.x > chunkSize - 1) return nullptr;
-    if (_position.y < 0 || _position.y > chunkSize - 1) return nullptr;
-    if (_position.z < 0 || _position.z > chunkSize - 1) return nullptr;
+    if (_position.x < 0 || _position.x >= chunkSize) return nullptr;
+    if (_position.y < 0 || _position.y >= chunkSize) return nullptr;
+    if (_position.z < 0 || _position.z >= chunkSize) return nullptr;
 
     return terrain[(int)_position.x][(int)_position.y][(int)_position.z].get();
 }
 
 std::vector<BLOCKFACE> Chunk::CheckFaceCulling(glm::vec3 _position) {
-    std::vector<BLOCKFACE> visibleFaces {};
-    std::vector<BLOCKFACE> faces {RIGHT, LEFT, TOP, BOTTOM, FRONT, BACK};
+    std::vector<BLOCKFACE> hiddenFaces {};
+    std::vector<BLOCKFACE> faces {TOP, BOTTOM, FRONT, BACK, RIGHT, LEFT};
     std::vector<glm::vec3> positionOffsets {
-        glm::vec3{1, 0, 0}, glm::vec3{-1, 0, 0}, glm::vec3{0, 1, 0},
-        glm::vec3{0, -1, 0}, glm::vec3{0, 0, 1}, glm::vec3{0, 0, -1}};
+        glm::vec3{0, 1, 0}, glm::vec3{0, -1, 0}, glm::vec3{-1, 0, 0},
+        glm::vec3{1,0,0}, glm::vec3{0, 0, 1}, glm::vec3{0, 0, -1}};
 
-    for (int i = 0; i < 6; i++) {
+    Block* checkingBlock = GetBlockAtPosition(_position);
+
+    for (int i = 0; i < faces.size(); i++) {
         Block* block = GetBlockAtPosition(_position + positionOffsets[i]);
 
-        if (block == nullptr)
-            visibleFaces.push_back(faces[i]);
-        else if (BlockData::Compare(block->GetBlockData(), {AIR, 0}))
-            visibleFaces.push_back(faces[i]);
+        // Edge of chunk, so assume the block is visible
+        if (block == nullptr) continue;
+
+        // Block found
+        if (checkingBlock->GetBlockData().blockID == WATER) {
+            if (!BlockData::Compare(block->GetBlockData(), {AIR, 0}))
+                hiddenFaces.push_back(faces[i]);
+        }
+        else {
+            if (!BlockData::Compare(block->GetBlockData(), {AIR, 0}) &&
+                !BlockData::Compare(block->GetBlockData(), {WATER, 0}))
+                hiddenFaces.push_back(faces[i]);
+        }
+
     }
 
-    return visibleFaces;
+    return hiddenFaces;
+}
+
+void Chunk::CheckExposedFaces() {
+    for (int x = 0; x < chunkSize; x++)
+        for (int y = 0; y < chunkSize; y++)
+            for (int z = 0; z < chunkSize; z++)
+                if (terrain[x][y][z]->GetBlockData().blockID != AIR){
+                    terrain[x][y][z]->HideFaces(CheckFaceCulling({x,y,z}));
+                }
+
+    rootNode->CheckNodeCulled();
 }
 
 void Chunk::CreateChunkMesh() {
@@ -208,7 +252,7 @@ std::array<int, chunkArea> Chunk::CreateHeightMap() {
             // Get positive noise value
             float simplexNoise = glm::simplex(glm::vec2(cubeX / 16.0, cubeZ / 16.0));
             simplexNoise = (simplexNoise + 1) / 2;
-            simplexNoise *= 3;
+            simplexNoise *= 4;
 
             // Apply to height map
             heightMap[x + z*chunkSize] += (int)simplexNoise + 32;
@@ -234,7 +278,8 @@ std::array<std::array<std::array<std::unique_ptr<ChunkNode>, chunkSize>, chunkSi
                 BlockData newBlockData;
 
                 // Determine block type
-                if (blockPos.y > height) newBlockData = {BLOCKID::AIR, 0};
+                if (blockPos.y < 34 && blockPos.y > height) newBlockData = {WATER, 0};
+                else if (blockPos.y > height) newBlockData = {AIR, 0};
                 else if (blockPos.y == height) newBlockData = {BLOCKID::GRASS, 0};
                 else if (blockPos.y > height -4) newBlockData = {BLOCKID::DIRT, 0};
                 else newBlockData = {BLOCKID::STONE, 0};
@@ -252,7 +297,6 @@ std::array<std::array<std::array<std::unique_ptr<ChunkNode>, chunkSize>, chunkSi
 //                }
 
                 terrain[x][y][z] = std::move(CreateBlock(newBlockData));
-
                 chunkBlocks[x][y][z] = std::make_unique<ChunkNode>(terrain[x][y][z].get(), blockPos, this);
             }
         }

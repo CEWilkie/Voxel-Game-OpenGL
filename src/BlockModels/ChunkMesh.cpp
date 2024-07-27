@@ -2,23 +2,23 @@
 // Created by cew05 on 26/07/2024.
 //
 
-#include "ChunkMesh.h"
+#include "MaterialMesh.h"
 
 #include "../Window.h"
 
-ChunkMesh::ChunkMesh() {
+MaterialMesh::MaterialMesh() {
     glGenVertexArrays(1, &vertexArrayObject);
     glGenBuffers(1, &vertexBufferObject);
     glGenBuffers(1, &indexBufferObject);
 }
 
-ChunkMesh::~ChunkMesh() {
+MaterialMesh::~MaterialMesh() {
     glDeleteBuffers(1, &vertexBufferObject);
     glDeleteBuffers(1, &indexBufferObject);
     glDeleteVertexArrays(1, &vertexArrayObject);
 }
 
-void ChunkMesh::AddBlockFaceVertex(BLOCKFACE _faceID, glm::vec3 _position) {
+void MaterialMesh::AddBlockFaceVertex(BLOCKFACE _faceID, glm::vec3 _position) {
 //    std::vector<Vertex> faceVerticies = BlockVAOs::GetFaceVerticies(_faceID);
 //
 //    // Iter over all verticies to find unique and update data
@@ -38,11 +38,11 @@ void ChunkMesh::AddBlockFaceVertex(BLOCKFACE _faceID, glm::vec3 _position) {
 //    for (int i = 0; i < 4; i++) indexArray.push_back(i+vertexArray.size());
 }
 
-void ChunkMesh::RemoveBlockFaceVertex(BLOCKFACE _faceID, glm::vec3 _position) {
+void MaterialMesh::RemoveBlockFaceVertex(BLOCKFACE _faceID, glm::vec3 _position) {
     // ...
 }
 
-void ChunkMesh::BindMesh() {
+void MaterialMesh::BindMesh() {
     glBindVertexArray(vertexArrayObject);
 
     // bind vertex buffer object
@@ -70,7 +70,7 @@ void ChunkMesh::BindMesh() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void ChunkMesh::DrawMesh(const Transformation& _transformation) {
+void MaterialMesh::DrawMesh(const Transformation& _transformation) {
     // Bind object
     glBindVertexArray(vertexArrayObject);
 

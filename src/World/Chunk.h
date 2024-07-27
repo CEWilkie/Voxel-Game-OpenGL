@@ -10,7 +10,7 @@
 
 #include "../Blocks/NaturalBlocks.h"
 #include "../BlockModels/ModelTransformations.h"
-#include "../BlockModels/ChunkMesh.h"
+#include "../BlockModels/MaterialMesh.h"
 
 static const int chunkSize = 16; // must be power of 2 for subchunk division ie 2, 4, 8, 16 | 32, 64, 128, ... ( too big)
 static const int chunkArea = chunkSize * chunkSize;
@@ -44,6 +44,7 @@ class ChunkNode {
 
         void Display();
         void CheckCulling(const Camera& _camera);
+        void CheckNodeCulled();
 };
 
 
@@ -76,7 +77,7 @@ class Chunk {
 
         // Block Data
         std::array<std::array<std::array<std::unique_ptr<Block>, chunkSize>, chunkSize>, chunkSize> terrain {};
-        std::unique_ptr<ChunkMesh> chunkMesh = std::make_unique<ChunkMesh>();
+        std::unique_ptr<MaterialMesh> chunkMesh = std::make_unique<MaterialMesh>();
 
 
         std::vector<Block*> blocks;
@@ -86,12 +87,13 @@ class Chunk {
 
         // Display
         void Display();
-        Block* GetBlockFromData(BlockData _data);
+
 
         // Object Culling / Mesh Creation
         void CheckCulling(const Camera& _camera);
-        Block* GetBlockAtPosition(glm::vec3 _position);
         std::vector<BLOCKFACE> CheckFaceCulling(glm::vec3 _position);
+        void CheckExposedFaces();
+
         void CreateChunkMesh();
 
         // Chunk Generation
@@ -101,6 +103,10 @@ class Chunk {
 
         // temp testing
         void MoveChunk(glm::vec3 move);
+
+        // Getters
+        Block* GetBlockFromData(BlockData _data);
+        Block* GetBlockAtPosition(glm::vec3 _position);
 };
 
 

@@ -11,6 +11,7 @@ out vec2 v_vertexTextureCoord;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 uniform mat4 uModelMatrix;
+
 uniform vec2 uVertexTextureCoordOffset = vec2(0.0f, 0.0f);
 
 void main() {

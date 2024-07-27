@@ -291,7 +291,7 @@ void Block::UpdateIndexBuffer() {
 }
 
 void Block::Display() {
-    if (!inCamera) return;
+    if (!inCamera || culled) return;
     if (blockData.blockID == BLOCKID::AIR && blockData.variantID == 0) return;
 
     // Bind VAO
@@ -325,9 +325,7 @@ void Block::CheckCulling(const Camera &_camera) {
 }
 
 void Block::HideFace(BLOCKFACE _face) {
-    if (_face == ALL) {
-        visibleFaces.clear();
-    }
+    if (_face == ALL) visibleFaces.clear();
 
     for (auto face = visibleFaces.begin(); face != visibleFaces.end(); ) {
         if (*face == _face)
@@ -336,7 +334,9 @@ void Block::HideFace(BLOCKFACE _face) {
             face++; // check next
     }
 
-    UpdateIndexBuffer();
+    // If no faces remain, dont update the indexBuffer now, just mark as culled and dont display
+    if (visibleFaces.empty()) culled = true;
+    else UpdateIndexBuffer();
 }
 
 void Block::HideFaces(const std::vector<BLOCKFACE> &_faces) {

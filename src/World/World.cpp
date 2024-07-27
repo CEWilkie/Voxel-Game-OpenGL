@@ -15,15 +15,14 @@ World::~World() = default;
 
 void World::Display() {
     glEnable(GL_DEPTH_TEST);
+//    glDepthFunc(GL_NEVER);
 
     // First draw in the skybox and decorations
     skybox->Display();
 
     // Now draw the world terrain / objecst
     glEnable(GL_CULL_FACE);
-
     for (const auto& chunk : worldChunks) chunk->Display();
-
     glDisable(GL_CULL_FACE);
 
     worldChunks[0]->MoveChunk({0.0f, 0.001f, 0.0f});

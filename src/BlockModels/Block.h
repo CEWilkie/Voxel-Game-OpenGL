@@ -73,7 +73,7 @@ class Block {
         unsigned int indexBufferObject {};
 
         // Block Culling
-        bool inCamera = true;
+        bool inCamera = true, culled = false;
         std::vector<BLOCKFACE> visibleFaces {TOP, BOTTOM, FRONT, BACK, LEFT, RIGHT};
 
         // Block Display
@@ -102,6 +102,7 @@ class Block {
 
         // Getters
         [[nodiscard]] BlockData GetBlockData() const { return blockData; }
+        [[nodiscard]] bool IsCulled() const {return culled; }
 };
 
 
