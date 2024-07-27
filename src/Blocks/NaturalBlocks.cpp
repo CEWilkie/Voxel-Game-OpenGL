@@ -11,42 +11,39 @@
  */
 
 Stone::Stone(int _variant) {
-    SetBlockData({BLOCKID::STONE, _variant});
+    blockData = {BLOCKID::STONE, _variant};
 
     // Set the texture and texture origin
-    SetTexture(TEXTURESHEET::NATURAL, {1,1});
+    sheet = TEXTURESHEET::NATURAL;
+    origin = {1,1};
 }
 
 Dirt::Dirt(int _variant) {
-    SetBlockData({BLOCKID::DIRT, _variant});
+    blockData = {BLOCKID::DIRT, _variant};
 
     // Set the texture and texture origin
-    SetTexture(TEXTURESHEET::NATURAL, {4,2});
+    sheet = TEXTURESHEET::NATURAL;
+    origin = {4,2};
 }
 
 Grass::Grass(int _variant) {
-    SetBlockData({BLOCKID::GRASS, _variant});
+    blockData = {BLOCKID::GRASS, _variant};
 
     // Set the texture and texture origin
-    SetTexture(TEXTURESHEET::NATURAL, {7,1});
+    sheet = TEXTURESHEET::NATURAL;
+    origin = {7,1};
 }
 
 Water::Water(int _variant) {
-    SetBlockData({BLOCKID::WATER, _variant});
+    blockData = {BLOCKID::WATER, _variant};
 
     // Set the texture and texture origin
-    SetTexture(TEXTURESHEET::NATURAL, {10,2});
+    sheet = TEXTURESHEET::NATURAL;
+    origin = {10,2};
 
-    // Set transparency
-    transparent = true;
 }
 
 Air::Air(int _variant) {
-    SetBlockData({BLOCKID::AIR, _variant});
+    blockData = {BLOCKID::AIR, _variant};
 
-    // Set the texture and texture origin
-    SetTexture(TEXTURESHEET::WORLD, {12,1});
-
-    // Set transparency
-    transparent = true;
 }

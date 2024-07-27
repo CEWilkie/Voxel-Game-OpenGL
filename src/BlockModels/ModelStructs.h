@@ -37,13 +37,14 @@ struct Frustrum {
     Plane planes[6] {};
 };
 
+enum FRUSTRUM : int{
+    OUTSIDE, INTERSECTING, INSIDE,
+};
+
 struct BoundingVolume {
-    enum FRUSTRUM : int{
-        OUTSIDE, INTERSECTING, IN,
-    };
 
     [[nodiscard]] virtual int InFrustrum(const Frustrum& _frustrum, const Transformation& _transformation) const {
-        return IN;
+        return INSIDE;
     }
 };
 
@@ -84,7 +85,7 @@ struct SphereBounds : public BoundingVolume {
         }
 
         // no checks failed
-        return IN;
+        return INSIDE;
     }
 };
 
@@ -143,7 +144,7 @@ struct BoxBounds : public BoundingVolume {
         }
 
         // no checks failed
-        return IN;
+        return INSIDE;
     }
 };
 

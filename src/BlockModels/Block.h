@@ -23,7 +23,7 @@ enum BLOCKID : unsigned int {
 };
 
 enum BLOCKFACE : int{
-        FRONT, BACK, LEFT, RIGHT, TOP, BOTTOM
+        FRONT, BACK, LEFT, RIGHT, TOP, BOTTOM, ALL
 };
 
 struct BlockData {
@@ -38,59 +38,74 @@ struct BlockData {
     }
 };
 
+enum BLOCKMODEL {
+    FULL, nModels
+};
+
+struct BlockVAOs {
+    // Buffer objects
+    std::array<GLuint, nModels> vertexArrayObject {};
+    std::array<GLuint, nModels> vertexBufferObject {};
+
+    BlockVAOs();
+    ~BlockVAOs();
+
+    // VAO Creation for FullBlock
+    static std::vector<Vertex> FullblockVA();
+    static std::vector<GLuint> FullblockIA();
+
+    // ...
+
+    // Bind the block vertex data
+    void BindBlockModels() const;
+
+    // Getters for unchanged IndexArrays
+    [[nodiscard]] std::vector<GLuint> GetBaseIndexArray(BLOCKMODEL _model);
+};
+
+inline std::unique_ptr<BlockVAOs> blockVAOmanager {};
+
 
 
 class Block {
     protected:
-        // Buffer objects
-        unsigned int vertexArrayObject {};
-        unsigned int vertexBufferObject {};
+        // Block Buffers
         unsigned int indexBufferObject {};
 
-        // Culling Information
-        bool transparent = false;
-        bool isCulled = false;
+        // Block Culling
+        bool inCamera = true;
+        std::vector<BLOCKFACE> visibleFaces {TOP, BOTTOM, FRONT, BACK, LEFT, RIGHT};
+
+        // Block Display
+        Transformation* blockTransformation {};
+        TEXTURESHEET sheet {TEXTURESHEET::WORLD};
+        glm::vec2 origin {1,1};
 
         // Block Data
-        BlockData blockData {};
-
-        // Determines correct texture sheet to draw texture from
-        TEXTURESHEET textureSheet = TEXTURESHEET::WORLD;
-        glm::vec2 textureOrigin {1,1};
+        BlockData blockData {AIR, 0};
+        BLOCKMODEL blockModel {FULL};
 
     public:
         Block();
         ~Block();
 
-        // Object Creation
-        static std::vector<Vertex> BaseVertexArray();
-        static std::vector<GLuint> BaseIndexArray();
-        void SetBlockData(BlockData _data);
-        void BindCube() const;
+        void UpdateIndexBuffer();
 
-        // Display
-        void Display(const Transformation& _transformation) const;
-        void DisplayFace(BLOCKFACE _face, const Transformation& _transformation) const;
-        bool CheckCulling(const Camera& _camera, const Transformation& _transformation);
+        // Model Display and Transformation
+        void Display();
+        void SetTransformation(Transformation* _t);
 
-        // Textures
-        void SetTexture(TEXTURESHEET _textureID, glm::vec2 _origin);
-        static std::vector<Vertex> GetTrueTextureCoords(TEXTURESHEET _sheetID, glm::vec2 _textureOrigin);
-
-        // Transformations
-//        void SetPositionOrigin(glm::vec3 _originPosition);
-//        void SetPositionCentre(glm::vec3 _centre);
-//        void SetScale(glm::vec3 _scale);
-//        void SetRotation(glm::vec3 _rotation);
-//        void UpdateModelMatrix();
-//        void UpdateModelMatrix(const glm::mat4& _parentTransformationMatrix);
+        // Culling
+        void CheckCulling(const Camera& _camera);
+        void HideFace(BLOCKFACE _face);
+        void HideFaces(const std::vector<BLOCKFACE>& _faces);
 
         // Getters
-        [[nodiscard]] bool IsTransparent() const { return transparent; }
         [[nodiscard]] BlockData GetBlockData() const { return blockData; }
-        [[nodiscard]] static std::vector<Vertex> GetFaceVerticies(BLOCKFACE _faceID);
-        [[nodiscard]] static std::vector<GLuint> GetFaceVertexIndexes(BLOCKFACE _faceID);
 };
+
+
+
 
 
 

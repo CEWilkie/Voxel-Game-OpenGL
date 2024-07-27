@@ -19,23 +19,23 @@ ChunkMesh::~ChunkMesh() {
 }
 
 void ChunkMesh::AddBlockFaceVertex(BLOCKFACE _faceID, glm::vec3 _position) {
-    std::vector<Vertex> faceVerticies = Block::GetFaceVerticies(_faceID);
-
-    // Iter over all verticies to find unique and update data
-    for (auto& vertex : faceVerticies) {
-
-        // Update vertex data
-        vertex.textureCoord = textureManager->GetTextureData(texturesheet)->GetTextureSheetTile(vertex.textureCoord);
-        vertex.position += _position;
-
-        // Add to vertex array
-        vertexArray.push_back(vertex);
-    }
-
-    nFaces += 1;
-
-    // Add indexes
-    for (auto& i : Block::GetFaceVertexIndexes(_faceID)) indexArray.push_back(i+vertexArray.size());
+//    std::vector<Vertex> faceVerticies = BlockVAOs::GetFaceVerticies(_faceID);
+//
+//    // Iter over all verticies to find unique and update data
+//    for (auto& vertex : faceVerticies) {
+//
+//        // Update vertex data
+//        vertex.textureCoord = textureManager->GetTextureData(texturesheet)->GetTextureSheetTile(vertex.textureCoord);
+//        vertex.position += _position;
+//
+//        // Add to vertex array
+//        vertexArray.push_back(vertex);
+//    }
+//
+//    nFaces += 1;
+//
+//    // Add indexes
+//    for (int i = 0; i < 4; i++) indexArray.push_back(i+vertexArray.size());
 }
 
 void ChunkMesh::RemoveBlockFaceVertex(BLOCKFACE _faceID, glm::vec3 _position) {
@@ -79,8 +79,13 @@ void ChunkMesh::DrawMesh(const Transformation& _transformation) {
     if (modelMatrixLocation < 0) printf("mesh location not found [uModelMatrix]\n");
     if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &_transformation.GetModelMatrix()[0][0]);
 
+    modelMatrixLocation = glGetUniformLocation(window.GetShader(), "uVertexTextureCoordOffset");
+    if (modelMatrixLocation < 0) printf("sun location not found [uVertexTextureCoordOffset]\n");
+    glm::vec2 o(1.0f, 1.0f);
+    if (modelMatrixLocation >= 0) glUniform2fv(modelMatrixLocation, 1, &o[0]);
+
     textureManager->EnableTextureSheet(texturesheet);
-    glDrawElements(GL_TRIANGLES, 6*nFaces, GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_QUADS, 4*nFaces, GL_UNSIGNED_INT, nullptr);
 
     glBindVertexArray(0);
 }

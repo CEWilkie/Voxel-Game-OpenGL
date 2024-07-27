@@ -27,7 +27,7 @@ class ChunkNode {
         // Tree objects
         Chunk* rootChunk {};
         std::vector<std::unique_ptr<ChunkNode>> subNodes {};
-        BlockData nodeBlockData {};
+        Block* nodeBlock {};
 
         // SubChunk positioning + scale
         std::unique_ptr<Transformation> transformation = std::make_unique<Transformation>();
@@ -38,7 +38,7 @@ class ChunkNode {
         bool visible = false;
 
     public:
-        ChunkNode(BlockData _nodeBlockData, glm::vec3  _position, Chunk* _root);
+        ChunkNode(Block* _nodeBlock, glm::vec3  _position, Chunk* _root);
         ChunkNode(std::vector<std::unique_ptr<ChunkNode>> _subNodes, Chunk* _root);
         ~ChunkNode();
 
@@ -52,6 +52,9 @@ class ChunkNode {
 
 
 
+inline int nChunksCreated;
+inline Uint64 averageTicksTaken = 0;
+inline Uint64 sumTicksTaken = 0;
 
 /*
  * Parent node to ChunkNodes
@@ -71,10 +74,12 @@ class Chunk {
         std::vector<std::pair<std::unique_ptr<Block>, int>> uniqueBlocks {}; // block, count
         std::unique_ptr<ChunkNode> rootNode {};
 
-        // Block Mesh
-        std::array<std::array<std::array<BLOCKID, chunkSize>, chunkSize>, chunkSize> terrain {};
+        // Block Data
+        std::array<std::array<std::array<std::unique_ptr<Block>, chunkSize>, chunkSize>, chunkSize> terrain {};
         std::unique_ptr<ChunkMesh> chunkMesh = std::make_unique<ChunkMesh>();
 
+
+        std::vector<Block*> blocks;
 
     public:
         explicit Chunk(const glm::vec3& _chunkPosition);
@@ -85,7 +90,7 @@ class Chunk {
 
         // Object Culling / Mesh Creation
         void CheckCulling(const Camera& _camera);
-        BLOCKID GetBlockAtPosition(glm::vec3 _position);
+        Block* GetBlockAtPosition(glm::vec3 _position);
         std::vector<BLOCKFACE> CheckFaceCulling(glm::vec3 _position);
         void CreateChunkMesh();
 

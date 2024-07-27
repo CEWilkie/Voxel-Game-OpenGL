@@ -7,10 +7,8 @@
 
 World::World() {
     // Create skybox
-    skybox = CreateBlock(BLOCKID::AIR, 1);
-    skybox->SetTexture(TEXTURESHEET::WORLD, {1,1}); // Set skybox texture
-    skyboxTransformation = Transformation();
-
+    skybox = CreateBlock({BLOCKID::AIR, 1});
+    skybox->SetTransformation(&skyboxTransformation);
 }
 
 World::~World() = default;
@@ -19,7 +17,7 @@ void World::Display() {
     glEnable(GL_DEPTH_TEST);
 
     // First draw in the skybox and decorations
-    skybox->Display(skyboxTransformation);
+    skybox->Display();
 
     // Now draw the world terrain / objecst
     glEnable(GL_CULL_FACE);
@@ -60,6 +58,7 @@ void World::SetSkyboxPosition(glm::vec3 _position) {
     skyboxTransformation.SetPosition(originFromCentre);
 
     skyboxTransformation.UpdateModelMatrix();
+    skybox->SetTransformation(&skyboxTransformation);
 }
 
 
@@ -70,6 +69,8 @@ void World::SetSkyboxPosition(glm::vec3 _position) {
 void World::GenerateWorld() {
     // First generate the world terrain
     GenerateTerrain();
+
+    printf("AVG CHUNK CREATION: %llu TICKS TAKEN\n", averageTicksTaken);
 }
 
 void World::GenerateTerrain() {

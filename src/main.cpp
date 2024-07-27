@@ -43,6 +43,10 @@ int main(int argc, char** argv){
     Camera secondaryCamera;
     Camera* curCam = &camera;
 
+    // LOAD BLOCK VAOs
+    blockVAOmanager = std::make_unique<BlockVAOs>();
+    blockVAOmanager->BindBlockModels();
+
     // LOAD TEXTURES
 
     // Create the texture manager
@@ -83,7 +87,7 @@ int main(int argc, char** argv){
     };
 
     std::vector<GLuint> indexArray {
-        0, 1, 2, 1, 3, 2
+        0, 1, 2, 3
     };
 
     // bind object id
@@ -188,7 +192,7 @@ int main(int argc, char** argv){
         if (modelMatrixLocation >= 0) glUniform2fv(modelMatrixLocation, 1, nullptr);
 
         textureManager->EnableTextureSheet(TEXTURESHEET::WORLD);
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_QUADS, 4, GL_UNSIGNED_INT, nullptr);
 
         glBindVertexArray(0);
 
