@@ -2,17 +2,16 @@
 
 // PIPE IN
 layout(location = 0) in vec3 position;
-//layout(location = 1) in vec4 vertexColour;
-layout(location = 2) in vec2 vertexTextureCoord;
+layout(location = 1) in vec2 vertexTextureCoord;
 
 // PIPE OUT
-//out vec4 v_vertexColour;
 out vec2 v_vertexTextureCoord;
 
 // UNIFORMS
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 uniform mat4 uModelMatrix;
+uniform vec2 uVertexTextureCoordOffset = vec2(0.0f, 0.0f);
 
 void main() {
     // Turn position into vec4
@@ -31,6 +30,9 @@ void main() {
     // Colour
     //v_vertexColour = vertexColour;
 
-    // TextureData
-    v_vertexTextureCoord = vertexTextureCoord;
+    // Determine true texture coordinates for 16x16 texture grids
+//    v_vertexTextureCoord = vertexTextureCoord;
+    v_vertexTextureCoord = vec2(uVertexTextureCoordOffset.x + vertexTextureCoord.x,
+                                uVertexTextureCoordOffset.y + vertexTextureCoord.y) / 16.0f;
+
 }

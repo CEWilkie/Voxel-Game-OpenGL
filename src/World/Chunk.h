@@ -9,7 +9,8 @@
 #include <memory>
 
 #include "../Blocks/NaturalBlocks.h"
-#include "../Blocks/ModelTransformations.h"
+#include "../BlockModels/ModelTransformations.h"
+#include "../BlockModels/ChunkMesh.h"
 
 static const int chunkSize = 16; // must be power of 2 for subchunk division ie 2, 4, 8, 16 | 32, 64, 128, ... ( too big)
 static const int chunkArea = chunkSize * chunkSize;
@@ -30,12 +31,11 @@ class ChunkNode {
 
         // SubChunk positioning + scale
         std::unique_ptr<Transformation> transformation = std::make_unique<Transformation>();
-        glm::vec3 position{0.0f, 0.0f, 0.0f}; // Node position from minimum corner
-        glm::vec3 scale{1.0f, 1.0f, 1.0f};    // x by y by z blocks within chunk
 
         // Display of contents
         bool isSingleType = true;
         bool isCulled = false;
+        bool visible = false;
 
     public:
         ChunkNode(BlockData _nodeBlockData, glm::vec3  _position, Chunk* _root);
@@ -68,16 +68,26 @@ class Chunk {
         std::vector<std::unique_ptr<BoxBounds>> boxBounds {};
 
         // Block Data
-        std::vector<std::unique_ptr<Block>> uniqueBlocks {};
+        std::vector<std::pair<std::unique_ptr<Block>, int>> uniqueBlocks {}; // block, count
         std::unique_ptr<ChunkNode> rootNode {};
+
+        // Block Mesh
+        std::array<std::array<std::array<BLOCKID, chunkSize>, chunkSize>, chunkSize> terrain {};
+        std::unique_ptr<ChunkMesh> chunkMesh = std::make_unique<ChunkMesh>();
+
 
     public:
         explicit Chunk(const glm::vec3& _chunkPosition);
 
-        // Display and Culling
+        // Display
         void Display();
-        void CheckCulling(const Camera& _camera);
         Block* GetBlockFromData(BlockData _data);
+
+        // Object Culling / Mesh Creation
+        void CheckCulling(const Camera& _camera);
+        BLOCKID GetBlockAtPosition(glm::vec3 _position);
+        std::vector<BLOCKFACE> CheckFaceCulling(glm::vec3 _position);
+        void CreateChunkMesh();
 
         // Chunk Generation
         std::array<int, chunkArea> CreateHeightMap();

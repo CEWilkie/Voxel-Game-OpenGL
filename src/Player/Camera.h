@@ -11,7 +11,7 @@
 #include <SDL.h>
 #include <memory>
 
-#include "../Blocks/ModelStructs.h"
+#include "../BlockModels/ModelStructs.h"
 
 class Camera {
     private:

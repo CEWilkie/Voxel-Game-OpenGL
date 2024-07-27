@@ -66,6 +66,26 @@ std::vector<GLuint> Block::BaseIndexArray() {
     };
 }
 
+std::vector<Vertex> Block::GetFaceVerticies(BLOCKFACE _faceID) {
+    std::vector<Vertex> vertexArray = BaseVertexArray(), faceVerticies {};
+    std::vector<GLuint> indexArray = GetFaceVertexIndexes(_faceID);
+
+    for (int i = 0; i < 6; i++)
+        faceVerticies.push_back(vertexArray[indexArray[i]]);
+    return faceVerticies;
+}
+
+std::vector<GLuint> Block::GetFaceVertexIndexes(BLOCKFACE _faceID) {
+    std::vector<GLuint> indexArray = BaseIndexArray();
+    std::vector<GLuint> vi {};
+
+    for (int i = _faceID * 6; i < 6 + (_faceID * 6); i++) {
+        vi.push_back(indexArray[i]);
+    }
+
+    return vi;
+}
+
 void Block::SetBlockData(BlockData _data) {
     blockData = _data;
 }
@@ -83,8 +103,8 @@ void Block::BindCube() const {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, position));
 
     // Vertex TextureData attributes
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, textureCoord));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, textureCoord));
 
     // Bind index buffer
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
@@ -123,10 +143,14 @@ void Block::Display(const Transformation& _transformation) const {
 
     // Update uniform
     GLint modelMatrixLocation = glGetUniformLocation(window.GetShader(), "uModelMatrix");
-    if (modelMatrixLocation < 0) printf("location not found [uModelMatrix]");
+    if (modelMatrixLocation < 0) printf("block location not found [uModelMatrix]\n");
     if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &_transformation.GetModelMatrix()[0][0]);
 
     textureManager->EnableTextureSheet(textureSheet);
+    GLint uniformLocation = glGetUniformLocation(window.GetShader(), "uVertexTextureCoordOffset");
+    if (uniformLocation < 0) printf("block location not found [uVertexTextureCoordOffset]\n");
+    if (uniformLocation >= 0) glUniform2fv(uniformLocation, 1, &textureOrigin[0]);
+
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
 
     glBindVertexArray(0);
@@ -140,7 +164,7 @@ void Block::DisplayFace(BLOCKFACE _face, const Transformation &_transformation) 
 
     // Update uniform
     GLint modelMatrixLocation = glGetUniformLocation(window.GetShader(), "uModelMatrix");
-    if (modelMatrixLocation < 0) printf("location not found [uModelMatrix]");
+    if (modelMatrixLocation < 0) printf("block location not found [uModelMatrix]\n");
     if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &_transformation.GetModelMatrix()[0][0]);
 
     textureManager->EnableTextureSheet(textureSheet);
@@ -170,11 +194,12 @@ void Block::SetTexture(TEXTURESHEET _textureID, glm::vec2 _origin) {
     // Update stored texture data
     std::vector<Vertex> vertexArray = GetTrueTextureCoords(_textureID, _origin);
     textureSheet = _textureID;
+    textureOrigin = _origin;
 
     // Update buffer
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(vertexArray.size() * sizeof(struct Vertex)), vertexArray.data());
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+//    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+//    glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(vertexArray.size() * sizeof(struct Vertex)), vertexArray.data());
+//    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 //void Block::SetPositionOrigin(glm::vec3 _originPosition) {
@@ -218,6 +243,7 @@ TestBlock::TestBlock(int _variant) {
         case 3: textureOrigin = {7,1}; break;
         case 4: textureOrigin = {10,2}; break;
         case 5: textureOrigin = {13,1};
+        default: break;
     }
 
     SetTexture(TEXTURESHEET::TEST16, textureOrigin);

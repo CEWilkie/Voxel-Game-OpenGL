@@ -18,7 +18,7 @@
 #include "../Player/Camera.h"
 #include "../Textures/TextureManager.h"
 
-enum class BLOCKID {
+enum BLOCKID : unsigned int {
         TEST, GRASS, DIRT, STONE, WATER, AIR,
 };
 
@@ -30,11 +30,14 @@ struct BlockData {
     // Used to identify what the actual block object is of
     BLOCKID blockID {BLOCKID::AIR};
     int variantID {0};
+//    glm::vec3 position;
+//    std::array<BLOCKFACE, 6> visibleFaces;
 
     static bool Compare(BlockData A, BlockData B) {
         return A.blockID == B.blockID && A.variantID == B.variantID;
     }
 };
+
 
 
 class Block {
@@ -53,6 +56,7 @@ class Block {
 
         // Determines correct texture sheet to draw texture from
         TEXTURESHEET textureSheet = TEXTURESHEET::WORLD;
+        glm::vec2 textureOrigin {1,1};
 
     public:
         Block();
@@ -84,7 +88,12 @@ class Block {
         // Getters
         [[nodiscard]] bool IsTransparent() const { return transparent; }
         [[nodiscard]] BlockData GetBlockData() const { return blockData; }
+        [[nodiscard]] static std::vector<Vertex> GetFaceVerticies(BLOCKFACE _faceID);
+        [[nodiscard]] static std::vector<GLuint> GetFaceVertexIndexes(BLOCKFACE _faceID);
 };
+
+
+
 
 
 class TestBlock : public Block {

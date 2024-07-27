@@ -1,7 +1,6 @@
 #version 410 core
 
 // PIPE IN
-//in vec4 v_vertexColour;
 in vec2 v_vertexTextureCoord;
 
 uniform sampler2D tex0;
@@ -12,5 +11,5 @@ out vec4 color;
 void main() {
     color = texture(tex0, v_vertexTextureCoord);
 
-//    if (color.w < 1) color.a = 0.0f;
+    if (color.w < 1) color.a = 1.0f;
 }

@@ -5,7 +5,7 @@
 #ifndef UNTITLED7_NATURALBLOCKS_H
 #define UNTITLED7_NATURALBLOCKS_H
 
-#include "Block.h"
+#include "../BlockModels/Block.h"
 
 
 

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "../Blocks/Block.h"
+#include "../BlockModels/Block.h"
 #include "../Player/Camera.h"
 #include "../Textures/TextureData.h"
 #include "Chunk.h"

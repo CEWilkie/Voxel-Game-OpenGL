@@ -76,10 +76,10 @@ int main(int argc, char** argv){
     // Create vertex positions (two triangles
     std::vector<Vertex> vertexArray = {
             // bottom Left Triangle
-            { glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f/16)},
-            { glm::vec3(50.0f, 0.0f, 0.0f), glm::vec2(1.0f/16, 1.0f/16)},
-            { glm::vec3(0.0f, 50.0f, 0.0f), glm::vec2(0.0f, 0.0f/16)},
-            { glm::vec3(50.0f, 50.0f, 0.0f), glm::vec2(01.0f/16, 0.0f)},
+            { glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f)},
+            { glm::vec3(50.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)},
+            { glm::vec3(0.0f, 50.0f, 0.0f), glm::vec2(0.0f, 0.0f)},
+            { glm::vec3(50.0f, 50.0f, 0.0f), glm::vec2(01.0f, 0.0f)},
     };
 
     std::vector<GLuint> indexArray {
@@ -102,8 +102,8 @@ int main(int argc, char** argv){
 //    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, color));
 
     // Vertex TextureData attributes
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, textureCoord));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, textureCoord));
 
     // Bind index buffer
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
@@ -147,7 +147,6 @@ int main(int argc, char** argv){
 
         Uint64 frameStart = SDL_GetTicks64();
         deltaFrames = frameStart - lastFrame;
-        printf("FPS: %llu\n", 1000/(deltaFrames+1));
         lastFrame = frameStart;
 
         /*
@@ -181,8 +180,12 @@ int main(int argc, char** argv){
 
         // Update model matrix to uniform
         GLint modelMatrixLocation = glGetUniformLocation(window.GetShader(), "uModelMatrix");
-        if (modelMatrixLocation < 0) printf("location not found [uModelMatrix]");
+        if (modelMatrixLocation < 0) printf("sun location not found [uModelMatrix]\n");
         if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &t.GetModelMatrix()[0][0]);
+
+        modelMatrixLocation = glGetUniformLocation(window.GetShader(), "uVertexTextureCoordOffset");
+        if (modelMatrixLocation < 0) printf("sun location not found [uVertexTextureCoordOffset]\n");
+        if (modelMatrixLocation >= 0) glUniform2fv(modelMatrixLocation, 1, nullptr);
 
         textureManager->EnableTextureSheet(TEXTURESHEET::WORLD);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
@@ -240,6 +243,8 @@ int main(int argc, char** argv){
 
         if (state[SDL_SCANCODE_1]) curCam = &camera;
         if (state[SDL_SCANCODE_2]) curCam = &secondaryCamera;
+
+        if (state[SDL_SCANCODE_F]) printf("FPS: %llu\n", 1000/(deltaFrames+1));
 
         /*
          *  UDPATE OBJECTS
