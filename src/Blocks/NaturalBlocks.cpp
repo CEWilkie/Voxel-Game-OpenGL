@@ -41,9 +41,12 @@ Water::Water(int _variant) {
     sheet = TEXTURESHEET::NATURAL;
     origin = {10,2};
 
+    // Set attributes
+    transparent = 1;
 }
 
 Air::Air(int _variant) {
     blockData = {BLOCKID::AIR, _variant};
 
+    transparent = 1;
 }

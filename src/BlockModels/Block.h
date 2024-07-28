@@ -26,14 +26,12 @@ enum BLOCKFACE : int{
         FRONT, BACK, LEFT, RIGHT, TOP, BOTTOM, ALL
 };
 
-struct BlockData {
+struct BlockType {
     // Used to identify what the actual block object is of
     BLOCKID blockID {BLOCKID::AIR};
     int variantID {0};
-//    glm::vec3 position;
-//    std::array<BLOCKFACE, 6> visibleFaces;
 
-    static bool Compare(BlockData A, BlockData B) {
+    static bool Compare(BlockType A, BlockType B) {
         return A.blockID == B.blockID && A.variantID == B.variantID;
     }
 };
@@ -68,6 +66,13 @@ inline std::unique_ptr<BlockVAOs> blockVAOmanager {};
 
 
 
+
+
+
+enum class BLOCKATTRIBUTE {
+        TRANSPARENT, // ... other block attributes
+};
+
 class Block {
     protected:
         // Block Buffers
@@ -78,12 +83,14 @@ class Block {
         std::vector<BLOCKFACE> visibleFaces {TOP, BOTTOM, FRONT, BACK, LEFT, RIGHT};
 
         // Block Display
-        Transformation* blockTransformation {};
         TEXTURESHEET sheet {TEXTURESHEET::WORLD};
         glm::vec2 origin {1,1};
 
         // Block Data
-        BlockData blockData {AIR, 0};
+        int transparent = 0;
+
+        // BlockType info
+        BlockType blockData {AIR, 0};
         BLOCKMODEL blockModel {FULL};
 
     public:
@@ -93,7 +100,7 @@ class Block {
         void UpdateIndexBuffer();
 
         // Model Display and Transformation
-        void Display();
+        void Display(Transformation* _t);
         void SetTransformation(Transformation* _t);
 
         // Culling
@@ -102,12 +109,12 @@ class Block {
         void HideFaces(const std::vector<BLOCKFACE>& _faces);
 
         // Getters
-        [[nodiscard]] BlockData GetBlockData() const { return blockData; }
+        [[nodiscard]] BlockType GetBlockType() const { return blockData; }
         [[nodiscard]] bool IsCulled() const {return culled; }
-        [[nodiscard]] std::vector<Vertex> GetFaceVerticies(const std::vector<BLOCKFACE>& _faces) const;
-        [[nodiscard]] std::vector<BLOCKFACE> GetVisibleFaces() const { return visibleFaces; }
         [[nodiscard]] glm::vec2 GetTextureOrigin() const { return origin; }
         [[nodiscard]] TEXTURESHEET GetTextureSheet() const { return sheet; }
+        [[nodiscard]] std::vector<Vertex> GetFaceVerticies(const std::vector<BLOCKFACE>& _faces) const;
+        [[nodiscard]] int GetAttributeValue(BLOCKATTRIBUTE _attribute) const;
 };
 
 

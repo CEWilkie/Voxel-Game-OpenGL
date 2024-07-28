@@ -20,14 +20,15 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="Generates Water&#10;&#10;Nodes are currently unmerged, resulting in large numbers of draw calls -&gt; low fps">
+    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="Creates meshes of merged block types from merged nodes. Displays meshes instead of individual blocks. Only visible block faces are displayed.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/BlockModels/Block.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/BlockModels/Block.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/BlockModels/Block.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/BlockModels/Block.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/BlockModels/ChunkMesh.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/BlockModels/MaterialMesh.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/BlockModels/MaterialMesh.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/BlockModels/MaterialMesh.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Blocks/CreateBlock.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/CreateBlock.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/World/Chunk.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Chunk.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/World/Chunk.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Chunk.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/World/World.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/World.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -151,7 +152,8 @@
       <workItem from="1722072046006" duration="4678000" />
       <workItem from="1722076764959" duration="31407000" />
       <workItem from="1722162351461" duration="14998000" />
-      <workItem from="1722183408046" duration="8742000" />
+      <workItem from="1722183408046" duration="15276000" />
+      <workItem from="1722204763964" duration="470000" />
     </task>
     <task id="LOCAL-00001" summary="gitignore">
       <option name="closed" value="true" />
@@ -449,7 +451,23 @@
       <option name="project" value="LOCAL" />
       <updated>1722118705042</updated>
     </task>
-    <option name="localTasksCounter" value="38" />
+    <task id="LOCAL-00038" summary="Creates meshes of merged block types from merged nodes. Displays meshes instead of individual blocks. Only visible block faces are displayed.">
+      <option name="closed" value="true" />
+      <created>1722195101742</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1722195101742</updated>
+    </task>
+    <task id="LOCAL-00039" summary="Creates meshes of merged block types from merged nodes. Displays meshes instead of individual blocks. Only visible block faces are displayed.">
+      <option name="closed" value="true" />
+      <created>1722195143011</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1722195143011</updated>
+    </task>
+    <option name="localTasksCounter" value="40" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -461,7 +479,6 @@
     <isAutomaticReloadCMake value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="camera system implemented" />
     <MESSAGE value="Rudimentary mapping of texture onto cube faces. Now to map properly" />
     <MESSAGE value="Textures map correctly from file. Optimisations for texture loading/management are required. Optimisations for rendering geometry required (culling unseen objects and overlapping faces)." />
     <MESSAGE value="Texture objects implemented, creates texture data which a cube can map to." />
@@ -486,7 +503,8 @@
     <MESSAGE value="Attempt at creating cube mesh, failed. Alternative texture rendering provides offset of texture to shader, which calculates its true position assuming a 16x16 textureSheet. Could save memory" />
     <MESSAGE value="Can now toggle on/off specific block faces" />
     <MESSAGE value="Generates Water&#10;&#10;Nodes are currently unmerged, resulting in large numbers of draw calls -&gt; low fps" />
-    <option name="LAST_COMMIT_MESSAGE" value="Generates Water&#10;&#10;Nodes are currently unmerged, resulting in large numbers of draw calls -&gt; low fps" />
+    <MESSAGE value="Creates meshes of merged block types from merged nodes. Displays meshes instead of individual blocks. Only visible block faces are displayed." />
+    <option name="LAST_COMMIT_MESSAGE" value="Creates meshes of merged block types from merged nodes. Displays meshes instead of individual blocks. Only visible block faces are displayed." />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>

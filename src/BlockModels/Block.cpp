@@ -305,7 +305,7 @@ void Block::UpdateIndexBuffer() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void Block::Display() {
+void Block::Display(Transformation* _t) {
     if (!inCamera || culled) return;
     if (blockData.blockID == BLOCKID::AIR && blockData.variantID == 0) return;
 
@@ -316,7 +316,7 @@ void Block::Display() {
     // Update uniform
     GLint modelMatrixLocation = glGetUniformLocation(window.GetShader(), "uModelMatrix");
     if (modelMatrixLocation < 0) printf("block location not found [uModelMatrix]\n");
-    if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &blockTransformation->GetModelMatrix()[0][0]);
+    if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &_t->GetModelMatrix()[0][0]);
 
     // Apply Texture
     textureManager->EnableTextureSheet(sheet);
@@ -332,11 +332,11 @@ void Block::Display() {
 }
 
 void Block::SetTransformation(Transformation *_t) {
-    blockTransformation = _t;
+//    blockTransformation = _t;
 }
 
 void Block::CheckCulling(const Camera &_camera) {
-    inCamera = (blockBounds->InFrustrum(_camera.GetCameraFrustrum(), *blockTransformation) == FRUSTRUM::INSIDE);
+//    inCamera = (blockBounds->InFrustrum(_camera.GetCameraFrustrum(), *blockTransformation) == FRUSTRUM::INSIDE);
 }
 
 void Block::HideFace(BLOCKFACE _face) {
@@ -394,7 +394,15 @@ std::vector<Vertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &_faces
     return vertexArray;
 }
 
+int Block::GetAttributeValue(BLOCKATTRIBUTE _attribute) const {
+    switch (_attribute) {
+        case BLOCKATTRIBUTE::TRANSPARENT:
+            return transparent;
 
+        default:
+            return 0;
+    }
+}
 
 
 

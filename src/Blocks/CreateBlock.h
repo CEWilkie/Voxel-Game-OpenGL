@@ -8,7 +8,7 @@
 #include "NaturalBlocks.h"
 
 // Create a new block instance from a particular ID and Variant upon request
-inline std::unique_ptr<Block> CreateBlock(BlockData _blockData) {
+inline std::unique_ptr<Block> CreateBlock(BlockType _blockData) {
     std::unique_ptr<Block> newBlock {};
 
     BLOCKID _id = _blockData.blockID;

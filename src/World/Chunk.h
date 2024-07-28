@@ -36,7 +36,7 @@ class ChunkNode {
         // Display of contents
         std::unique_ptr<MaterialMesh> blockMesh {};
         bool isSingleType = true;
-        bool isCulled = false;
+        bool inCamera = true;
         bool visible = false;
 
     public:
@@ -65,6 +65,9 @@ inline int nChunksCreated;
 inline Uint64 averageTicksTaken = 0;
 inline Uint64 sumTicksTaken = 0;
 
+typedef std::array<std::array<std::array<std::unique_ptr<ChunkNode>, chunkSize>, chunkSize>, chunkSize> nodeArray;
+typedef std::array<std::array<std::array<BlockType, chunkSize>, chunkSize>, chunkSize> terrainArray;
+
 /*
  * Parent node to ChunkNodes
  */
@@ -80,13 +83,12 @@ class Chunk {
         std::vector<std::unique_ptr<BoxBounds>> boxBounds {};
 
         // Block Data
-        std::vector<std::pair<BlockData, int>> uniqueBlocks {}; // block, count
+        std::vector<std::pair<std::unique_ptr<Block>, int>> uniqueBlocks {}; // block, count
         std::unique_ptr<ChunkNode> rootNode {};
 
         // Block Data
-        std::array<std::array<std::array<std::unique_ptr<Block>, chunkSize>, chunkSize>, chunkSize> terrain {};
+        terrainArray terrain {};
         std::vector<MaterialMesh> chunkMesh{};
-
 
         std::vector<Block*> blocks;
 
@@ -96,27 +98,20 @@ class Chunk {
         // Display
         void Display();
 
-
-        // Object Culling / Mesh Creation
+        // Object Culling
         void CheckCulling(const Camera& _camera);
-        std::vector<BLOCKFACE> GetHiddenFaces(glm::vec3 _position);
-        std::vector<BLOCKFACE> GetShowingFaces(glm::vec3 _position);
-        void CheckExposedFaces();
-
-        void CreateChunkMesh();
+        std::vector<BLOCKFACE> GetHiddenFaces(glm::vec3 _position) const;
+        std::vector<BLOCKFACE> GetShowingFaces(glm::vec3 _position) const;
 
         // Chunk Generation
         std::array<int, chunkArea> CreateHeightMap();
-        std::array<std::array<std::array<std::unique_ptr<ChunkNode>, chunkSize>, chunkSize>, chunkSize> CreateTerrain();
-        void CreateNodeTree(std::array<std::array<std::array<std::unique_ptr<ChunkNode>, chunkSize>, chunkSize>, chunkSize> _chunkNodes);
-
-        // temp testing
-        void MoveChunk(glm::vec3 move);
+        nodeArray CreateTerrain();
+        void CreateNodeTree(nodeArray _chunkNodes);
 
         // Getters
-        Block* GetBlockFromData(BlockData _data);
-        Block* GetBlockAtPosition(glm::vec3 _position);
-        glm::vec3 GetPosition() const { return transformation->GetLocalPosition(); }
+        [[nodiscard]] BlockType GetBlockDataAtPosition(glm::vec3 _position) const;
+        [[nodiscard]] Block* GetBlockFromData(BlockType _blockData) const;
+        [[nodiscard]] glm::vec3 GetPosition() const { return transformation->GetLocalPosition(); }
 };
 
 

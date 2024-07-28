@@ -8,7 +8,6 @@
 World::World() {
     // Create skybox
     skybox = CreateBlock({BLOCKID::AIR, 1});
-    skybox->SetTransformation(&skyboxTransformation);
 }
 
 World::~World() = default;
@@ -18,14 +17,12 @@ void World::Display() {
 //    glDepthFunc(GL_NEVER);
 
     // First draw in the skybox and decorations
-    skybox->Display();
+    skybox->Display(&skyboxTransformation);
 
     // Now draw the world terrain / objecst
     glEnable(GL_CULL_FACE);
     for (const auto& chunk : worldChunks) chunk->Display();
     glDisable(GL_CULL_FACE);
-
-    worldChunks[0]->MoveChunk({0.0f, 0.001f, 0.0f});
 }
 
 void World::CheckCulling(const Camera &_camera) {
@@ -81,5 +78,8 @@ void World::GenerateTerrain() {
             }
         }
     }
+
+    // Assign neighbouring chunks to created chunks
+    // ...
 }
 
