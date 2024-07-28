@@ -31,18 +31,26 @@ class ChunkNode {
 
         // SubChunk positioning + scale
         std::unique_ptr<Transformation> transformation = std::make_unique<Transformation>();
+        float scale = 1;
 
         // Display of contents
+        std::unique_ptr<MaterialMesh> blockMesh {};
         bool isSingleType = true;
         bool isCulled = false;
         bool visible = false;
 
     public:
-        ChunkNode(Block* _nodeBlock, glm::vec3  _position, Chunk* _root);
+        ChunkNode(Block* _nodeBlock, glm::vec3  _blockPos, Chunk* _root);
         ChunkNode(std::vector<std::unique_ptr<ChunkNode>> _subNodes, Chunk* _root);
         ~ChunkNode();
 
+        // Node Display
         void Display();
+
+        // Node material mesh creation
+        void CreateMaterialMesh();
+
+        // Node Culling
         void CheckCulling(const Camera& _camera);
         void CheckNodeCulled();
 };
@@ -72,12 +80,12 @@ class Chunk {
         std::vector<std::unique_ptr<BoxBounds>> boxBounds {};
 
         // Block Data
-        std::vector<std::pair<std::unique_ptr<Block>, int>> uniqueBlocks {}; // block, count
+        std::vector<std::pair<BlockData, int>> uniqueBlocks {}; // block, count
         std::unique_ptr<ChunkNode> rootNode {};
 
         // Block Data
         std::array<std::array<std::array<std::unique_ptr<Block>, chunkSize>, chunkSize>, chunkSize> terrain {};
-        std::unique_ptr<MaterialMesh> chunkMesh = std::make_unique<MaterialMesh>();
+        std::vector<MaterialMesh> chunkMesh{};
 
 
         std::vector<Block*> blocks;
@@ -91,7 +99,8 @@ class Chunk {
 
         // Object Culling / Mesh Creation
         void CheckCulling(const Camera& _camera);
-        std::vector<BLOCKFACE> CheckFaceCulling(glm::vec3 _position);
+        std::vector<BLOCKFACE> GetHiddenFaces(glm::vec3 _position);
+        std::vector<BLOCKFACE> GetShowingFaces(glm::vec3 _position);
         void CheckExposedFaces();
 
         void CreateChunkMesh();
@@ -107,6 +116,7 @@ class Chunk {
         // Getters
         Block* GetBlockFromData(BlockData _data);
         Block* GetBlockAtPosition(glm::vec3 _position);
+        glm::vec3 GetPosition() const { return transformation->GetLocalPosition(); }
 };
 
 

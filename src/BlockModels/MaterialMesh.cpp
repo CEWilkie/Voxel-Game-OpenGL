@@ -6,10 +6,12 @@
 
 #include "../Window.h"
 
-MaterialMesh::MaterialMesh() {
+MaterialMesh::MaterialMesh(Block* _block) {
     glGenVertexArrays(1, &vertexArrayObject);
     glGenBuffers(1, &vertexBufferObject);
     glGenBuffers(1, &indexBufferObject);
+
+    block = _block;
 }
 
 MaterialMesh::~MaterialMesh() {
@@ -18,24 +20,12 @@ MaterialMesh::~MaterialMesh() {
     glDeleteVertexArrays(1, &vertexArrayObject);
 }
 
-void MaterialMesh::AddBlockFaceVertex(BLOCKFACE _faceID, glm::vec3 _position) {
-//    std::vector<Vertex> faceVerticies = BlockVAOs::GetFaceVerticies(_faceID);
-//
-//    // Iter over all verticies to find unique and update data
-//    for (auto& vertex : faceVerticies) {
-//
-//        // Update vertex data
-//        vertex.textureCoord = textureManager->GetTextureData(texturesheet)->GetTextureSheetTile(vertex.textureCoord);
-//        vertex.position += _position;
-//
-//        // Add to vertex array
-//        vertexArray.push_back(vertex);
-//    }
-//
-//    nFaces += 1;
-//
-//    // Add indexes
-//    for (int i = 0; i < 4; i++) indexArray.push_back(i+vertexArray.size());
+void MaterialMesh::AddVerticies(std::vector<Vertex> _verticies, glm::vec3 _position) {
+    for (auto& vertex : _verticies) {
+        // Update vertex position and add to vertex array
+        vertex.position += _position;
+        vertexArray.push_back(vertex);
+    }
 }
 
 void MaterialMesh::RemoveBlockFaceVertex(BLOCKFACE _faceID, glm::vec3 _position) {
@@ -44,6 +34,20 @@ void MaterialMesh::RemoveBlockFaceVertex(BLOCKFACE _faceID, glm::vec3 _position)
 
 void MaterialMesh::BindMesh() {
     glBindVertexArray(vertexArrayObject);
+
+    // populate indexArray
+    nFaces = (int)vertexArray.size() / 4;
+    for (int f = 0; f < nFaces; f++) {
+        indexArray.push_back(f*4 + 1);
+        indexArray.push_back(f*4 + 3);
+        indexArray.push_back(f*4 + 0);
+        indexArray.push_back(f*4 + 0);
+        indexArray.push_back(f*4 + 3);
+        indexArray.push_back(f*4 + 2);
+    }
+
+
+//    printf("v %zu i %zu\n", vertexArray.size(), indexArray.size());
 
     // bind vertex buffer object
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
@@ -71,6 +75,8 @@ void MaterialMesh::BindMesh() {
 }
 
 void MaterialMesh::DrawMesh(const Transformation& _transformation) {
+    if (vertexArray.empty()) return;
+
     // Bind object
     glBindVertexArray(vertexArrayObject);
 
@@ -79,13 +85,13 @@ void MaterialMesh::DrawMesh(const Transformation& _transformation) {
     if (modelMatrixLocation < 0) printf("mesh location not found [uModelMatrix]\n");
     if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &_transformation.GetModelMatrix()[0][0]);
 
-    modelMatrixLocation = glGetUniformLocation(window.GetShader(), "uVertexTextureCoordOffset");
-    if (modelMatrixLocation < 0) printf("sun location not found [uVertexTextureCoordOffset]\n");
-    glm::vec2 o(1.0f, 1.0f);
-    if (modelMatrixLocation >= 0) glUniform2fv(modelMatrixLocation, 1, &o[0]);
+    // Set texture information
+    textureManager->EnableTextureSheet(block->GetTextureSheet());
+    GLint vtcOffsetLocation = glGetUniformLocation(window.GetShader(), "uVertexTextureCoordOffset");
+    if (vtcOffsetLocation < 0) printf("sun location not found [uVertexTextureCoordOffset]\n");
+    if (vtcOffsetLocation >= 0) glUniform2fv(vtcOffsetLocation, 1, &block->GetTextureOrigin()[0]);
 
-    textureManager->EnableTextureSheet(texturesheet);
-    glDrawElements(GL_QUADS, 4*nFaces, GL_UNSIGNED_INT, nullptr);
-
+    // Draw block mesh
+    glDrawElements(GL_TRIANGLES, 6*nFaces, GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
 }

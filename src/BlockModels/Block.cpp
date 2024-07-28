@@ -139,6 +139,21 @@ std::vector<GLuint> BlockVAOs::GetBaseIndexArray(BLOCKMODEL _model) {
     return indexArray;
 }
 
+std::vector<Vertex> BlockVAOs::GetBaseVertexArray(BLOCKMODEL _model) {
+    std::vector<Vertex> vertexArray;
+    switch (_model) {
+        case FULL:
+            vertexArray = FullblockVA();
+            break;
+
+            // ...
+
+        default:
+            vertexArray = FullblockVA();
+    }
+
+    return vertexArray;
+}
 
 
 //void BlockVAOs::Display(const Transformation& _transformation) const {
@@ -355,6 +370,29 @@ void Block::HideFaces(const std::vector<BLOCKFACE> &_faces) {
 }
 
 
+std::vector<Vertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &_faces) const {
+    // Get base index and vertex arrays of the model. Create vector to store requested face verticies list in.
+    std::vector<GLuint> baseIndexArray = blockVAOmanager->GetBaseIndexArray(blockModel);
+    std::vector<Vertex> baseVertexArray = blockVAOmanager->GetBaseVertexArray(blockModel);
+    std::vector<Vertex> vertexArray {};
+
+    // For each requested face
+    for (auto& face : _faces) {
+        std::vector<GLuint> usedIndicies {};
+        for (int i = face*6; i < (face*6)+6; i++) {
+            // unique verticies for each face only
+            if (std::any_of(usedIndicies.begin(), usedIndicies.end(), [&](int index){
+                return index == baseIndexArray[i];
+            })) continue;
+
+            // Store Vertex and used Index
+            vertexArray.push_back(baseVertexArray[baseIndexArray[i]]);
+            usedIndicies.push_back(baseIndexArray[i]);
+        }
+    }
+
+    return vertexArray;
+}
 
 
 

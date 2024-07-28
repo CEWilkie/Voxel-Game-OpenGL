@@ -59,8 +59,9 @@ struct BlockVAOs {
     // Bind the block vertex data
     void BindBlockModels() const;
 
-    // Getters for unchanged IndexArrays
-    [[nodiscard]] std::vector<GLuint> GetBaseIndexArray(BLOCKMODEL _model);
+    // Getters for unchanged IndexArrays / VertexArrays
+    [[nodiscard]] static std::vector<GLuint> GetBaseIndexArray(BLOCKMODEL _model) ;
+    [[nodiscard]] static std::vector<Vertex> GetBaseVertexArray(BLOCKMODEL _model) ;
 };
 
 inline std::unique_ptr<BlockVAOs> blockVAOmanager {};
@@ -103,6 +104,10 @@ class Block {
         // Getters
         [[nodiscard]] BlockData GetBlockData() const { return blockData; }
         [[nodiscard]] bool IsCulled() const {return culled; }
+        [[nodiscard]] std::vector<Vertex> GetFaceVerticies(const std::vector<BLOCKFACE>& _faces) const;
+        [[nodiscard]] std::vector<BLOCKFACE> GetVisibleFaces() const { return visibleFaces; }
+        [[nodiscard]] glm::vec2 GetTextureOrigin() const { return origin; }
+        [[nodiscard]] TEXTURESHEET GetTextureSheet() const { return sheet; }
 };
 
 

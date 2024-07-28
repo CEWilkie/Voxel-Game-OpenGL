@@ -243,6 +243,7 @@ int main(int argc, char** argv){
         if (state[SDL_SCANCODE_C]) {
             secondaryCamera.MoveTo(camera.GetPosition());
             secondaryCamera.SetDirection(camera.GetDirection());
+            printf("campos %f %f %f\n", secondaryCamera.GetPosition().x, secondaryCamera.GetPosition().y, secondaryCamera.GetPosition().z);
         }
 
         if (state[SDL_SCANCODE_1]) curCam = &camera;
