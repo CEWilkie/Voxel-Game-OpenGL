@@ -78,6 +78,7 @@ class Chunk {
         std::unique_ptr<BoxBounds> boxBounds {};
         std::unique_ptr<Transformation> chunkTransformation = std::make_unique<Transformation>();
         glm::vec3 chunkPosition {0,0,0};
+        bool inCamera = true;
 
         // Chunk tree
         std::unique_ptr<ChunkNode> rootNode {};
@@ -92,7 +93,8 @@ class Chunk {
         ~Chunk();
 
         // Display
-        void Display();
+        void DisplaySolid();
+        void DisplayTransparent();
 
         // Object Culling
         void CheckCulling(const Camera& _camera);

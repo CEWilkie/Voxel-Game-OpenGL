@@ -149,9 +149,6 @@ struct BoxBounds : public BoundingVolume {
 };
 
 
-inline std::unique_ptr<BoxBounds> blockBounds {};
-
-
 /*
  * GENERATING BOUNDING OBJECTS
  */
@@ -180,11 +177,11 @@ inline SphereBounds GenerateSphere(const std::vector<Vertex>& _verticies) {
 
 
 
-inline BoxBounds GenerateBoxBounds(const std::vector<Vertex>& _verticies) {
+inline std::unique_ptr<BoxBounds> GenerateBoxBounds(const std::vector<Vertex>& _verticies) {
     auto [minVertex, maxVertex] = minMaxVertex(_verticies);
 
     auto centre = (maxVertex + minVertex) * 0.5f;
-    return {centre, glm::length(maxVertex - centre)};
+    return std::make_unique<BoxBounds>(centre, glm::length(maxVertex - centre));
 }
 
 #endif //UNTITLED7_MODELSTRUCTS_H

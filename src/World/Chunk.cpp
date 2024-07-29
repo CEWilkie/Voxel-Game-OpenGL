@@ -120,11 +120,14 @@ Chunk::Chunk(const glm::vec3& _chunkPosition) {
     // Set chunk position
     chunkPosition = _chunkPosition * (float)chunkSize;
 
+    // Create bounding box for the chunk (assume max 16x16x16 volume)
+    boxBounds = std::move(GenerateBoxBounds({{glm::vec3(0,0,0)},
+                                             {glm::vec3(1,1,1)*(float)chunkSize}}));
+
     // Guarantee Air Block
     uniqueBlocks.emplace_back(CreateBlock({AIR, 0}), 1);
 
-
-    // Measure of chunk creation time
+    // Create height map for chunk
     auto st = SDL_GetTicks64();
     CreateHeightMap();
 
@@ -159,25 +162,37 @@ Chunk::Chunk(const glm::vec3& _chunkPosition) {
 //    printf("CHUNK MESH CREATION : %llu TICKS TAKEN\n", et-st);
 }
 
-Chunk::~Chunk() {
-
-}
+Chunk::~Chunk() = default;
 
 
 
 
 
-void Chunk::Display() {
-    for (const auto& mesh : blockMeshes)
+void Chunk::DisplaySolid() {
+    if (!inCamera) return;
+
+    // Draw only the blocks that are solid
+    for (const auto& mesh : blockMeshes) {
+        if (mesh->GetBlock()->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 1) continue;
         mesh->DrawMesh(*chunkTransformation);
+    }
 }
 
+void Chunk::DisplayTransparent() {
+    if (!inCamera) return;
+
+    // Draw only the blocks that are transparent
+    for (const auto& mesh : blockMeshes) {
+        if (mesh->GetBlock()->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 0) continue;
+        mesh->DrawMesh(*chunkTransformation);
+    }
+}
 
 
 
 
 void Chunk::CheckCulling(const Camera& _camera) {
-
+    inCamera = boxBounds->InFrustrum(_camera.GetCameraFrustrum(), *chunkTransformation);
 }
 
 std::vector<BLOCKFACE> Chunk::GetHiddenFaces(glm::vec3 _position) const {

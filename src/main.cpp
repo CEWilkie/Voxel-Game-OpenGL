@@ -56,10 +56,6 @@ int main(int argc, char** argv){
      *  WORLD CREATION
      */
 
-    // Create bounding box for world objects (transformed to necessary size when used)
-    blockBounds = std::make_unique<BoxBounds>(
-            GenerateBoxBounds({{{0.0f, 0.0f, 0.0f}}, {{1.0f, 1.0f, 1.0f}}}));
-
     // Create world
     world = std::make_unique<World>();
     world->SetSkyboxProperties(&camera);
@@ -172,7 +168,7 @@ int main(int argc, char** argv){
             lastViewMatrix = camera.GetViewMatrix();
             camera.UpdateViewFrustrum();
 
-//            world->CheckCulling(camera);
+            world->CheckCulling(camera);
         }
 
 
@@ -200,7 +196,6 @@ int main(int argc, char** argv){
         glBindVertexArray(0);
 
         // 2D OVERLAY
-        glDisable(GL_DEPTH_TEST);
 
         /*
          * INPUT MANAGEMENT

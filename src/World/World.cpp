@@ -8,25 +8,33 @@
 World::World() {
     // Create skybox
     skybox = CreateBlock({BLOCKID::AIR, 1});
+
+    glEnable(GL_DEPTH_TEST);
 }
 
 World::~World() = default;
 
 void World::Display() {
-    glEnable(GL_DEPTH_TEST);
-//    glDepthFunc(GL_NEVER);
-
     // First draw in the skybox and decorations
     skybox->Display(&skyboxTransformation);
 
-    // Now draw the world terrain / objecst
     glEnable(GL_CULL_FACE);
+    // Draw solid objects
     for (int chunkX = 0; chunkX < worldSize; chunkX++)
         for (int chunkY = 0; chunkY < worldHeight; chunkY++)
             for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
-                worldChunks[chunkX][chunkY][chunkZ]->Display();
+                worldChunks[chunkX][chunkY][chunkZ]->DisplaySolid();
             }
+
+    // Draw transparent objects
+    for (int chunkX = 0; chunkX < worldSize; chunkX++)
+        for (int chunkY = 0; chunkY < worldHeight; chunkY++)
+            for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
+                worldChunks[chunkX][chunkY][chunkZ]->DisplayTransparent();
+            }
+
     glDisable(GL_CULL_FACE);
+
 }
 
 void World::CheckCulling(const Camera &_camera) {
@@ -35,9 +43,6 @@ void World::CheckCulling(const Camera &_camera) {
             for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
                 worldChunks[chunkX][chunkY][chunkZ]->CheckCulling(_camera);
             }
-
-
-
 }
 
 
@@ -77,6 +82,9 @@ void World::GenerateWorld() {
 
     printf("AVG CHUNK CREATION: %llu TICKS TAKEN\n", chunkAvgTicksTaken);
     printf("AVG MESH CREATION: %llu TICKS TAKEN\n", meshAvgTicksTaken);
+
+    printf("SUM CHUNK CREATION: %llu TICKS TAKEN\n", chunkSumTicksTaken);
+    printf("SUM MESH CREATION: %llu TICKS TAKEN\n", meshSumTicksTaken);
 }
 
 void World::GenerateTerrain() {

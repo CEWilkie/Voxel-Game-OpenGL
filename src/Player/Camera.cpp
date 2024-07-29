@@ -8,9 +8,6 @@
 #include "../Window.h"
 
 Camera::Camera() {
-    // Generate normal direction display buffers
-
-
     // Set the perspective of the camera and update the uniform matrix in the shader
     perspective = glm::perspective(glm::radians(fovAngleY), window.GetAspectRatio(),
                                    minDistance, maxDistance);
