@@ -17,6 +17,10 @@ static const int worldHeight = 4; // from 0 to n chunks high
 static const int worldArea = worldSize * worldSize;
 static const int worldVolume = worldArea * worldHeight;
 
+namespace WorldDataTypes {
+    typedef std::array<std::array<std::array<std::unique_ptr<Chunk>, worldSize>, worldHeight>, worldSize> chunkArray;
+}
+
 class World {
     private:
         Transformation skyboxTransformation;
@@ -24,7 +28,7 @@ class World {
 
         // Sky decos: clouds, sun, moon, stars, night, etc
 
-        std::vector<std::unique_ptr<Chunk>> worldChunks {};
+        WorldDataTypes::chunkArray worldChunks {};
 
     public:
         World();

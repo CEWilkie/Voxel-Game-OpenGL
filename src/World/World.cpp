@@ -21,13 +21,18 @@ void World::Display() {
 
     // Now draw the world terrain / objecst
     glEnable(GL_CULL_FACE);
-    for (const auto& chunk : worldChunks) chunk->Display();
-    glDisable(GL_CULL_FACE);
+    for (int chunkX = -worldSize/2; chunkX < worldSize/2; chunkX++) {
+        for (int chunkZ = -worldSize/2; chunkZ < worldSize/2; chunkZ++) {
+            for (int chunkY = 0; chunkY < worldHeight; chunkY++) {
+                worldChunks[chunkX+worldSize/2][chunkY][chunkZ+worldSize/2]->Display();
+            }
+        }
+    }
 }
 
 void World::CheckCulling(const Camera &_camera) {
-    for (auto& chunk : worldChunks)
-        chunk->CheckCulling(_camera);
+//    for (auto& chunk : worldChunks)
+//        chunk->CheckCulling(_camera);
 }
 
 
@@ -74,12 +79,12 @@ void World::GenerateTerrain() {
         for (int chunkZ = -worldSize/2; chunkZ < worldSize/2; chunkZ++) {
             for (int chunkY = 0; chunkY < worldHeight; chunkY++) {
                 glm::vec3 chunkPos{chunkX, chunkY, chunkZ};
-                worldChunks.push_back(std::make_unique<Chunk>(chunkPos));
+                worldChunks[chunkX+worldSize/2][chunkY][chunkZ+worldSize/2] = std::make_unique<Chunk>(chunkPos);
             }
         }
     }
 
     // Assign neighbouring chunks to created chunks
-    // ...
+
 }
 

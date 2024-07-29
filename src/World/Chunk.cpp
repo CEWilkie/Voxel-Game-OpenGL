@@ -181,6 +181,13 @@ Chunk::Chunk(const glm::vec3& _chunkPosition) {
     printf("CHUNK MESH CREATION : %llu TICKS TAKEN\n", et-st);
 }
 
+Chunk::~Chunk() {
+
+}
+
+
+
+
 
 void Chunk::Display() {
     rootNode->Display();
@@ -292,10 +299,10 @@ std::array<int, chunkArea> Chunk::CreateHeightMap() {
     return heightMap;
 }
 
-nodeArray Chunk::CreateTerrain() {
+ChunkDataTypes::nodeArray Chunk::CreateTerrain() {
     auto heightMap = CreateHeightMap();
 
-    nodeArray chunkBlocks {};
+    ChunkDataTypes::nodeArray chunkBlocks {};
 
     for (int x = 0; x < chunkSize; x++) {
         for (int z = 0; z < chunkSize; z++) {
@@ -343,7 +350,7 @@ nodeArray Chunk::CreateTerrain() {
 
 
 
-void Chunk::CreateNodeTree(nodeArray _chunkNodes) {
+void Chunk::CreateNodeTree(ChunkDataTypes::nodeArray _chunkNodes) {
     int nodesToTraverse = chunkSize;
     int offset;
     int nodes;

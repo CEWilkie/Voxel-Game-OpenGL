@@ -65,8 +65,11 @@ inline int nChunksCreated;
 inline Uint64 averageTicksTaken = 0;
 inline Uint64 sumTicksTaken = 0;
 
-typedef std::array<std::array<std::array<std::unique_ptr<ChunkNode>, chunkSize>, chunkSize>, chunkSize> nodeArray;
-typedef std::array<std::array<std::array<BlockType, chunkSize>, chunkSize>, chunkSize> terrainArray;
+namespace ChunkDataTypes {
+    typedef std::array<std::array<std::array<std::unique_ptr<ChunkNode>, chunkSize>, chunkSize>, chunkSize> nodeArray;
+    typedef std::array<std::array<std::array<BlockType, chunkSize>, chunkSize>, chunkSize> terrainArray;
+}
+
 
 /*
  * Parent node to ChunkNodes
@@ -74,39 +77,36 @@ typedef std::array<std::array<std::array<BlockType, chunkSize>, chunkSize>, chun
 
 class Chunk {
     private:
-        glm::vec3 chunkOrigin {0.0f, 0.0f, 0.0f};
-
-        // Transformation matrix for the chunk
+        // Chunk Display
         std::unique_ptr<Transformation> transformation {};
+        std::vector<MaterialMesh> chunkMesh{};
 
-        // Culling Bounds
+        // Culling Bounds and OctTree
         std::vector<std::unique_ptr<BoxBounds>> boxBounds {};
+        std::unique_ptr<ChunkNode> rootNode {};
+        std::vector<Chunk*> adjacentChunks {};
 
         // Block Data
         std::vector<std::pair<std::unique_ptr<Block>, int>> uniqueBlocks {}; // block, count
-        std::unique_ptr<ChunkNode> rootNode {};
-
-        // Block Data
-        terrainArray terrain {};
-        std::vector<MaterialMesh> chunkMesh{};
-
-        std::vector<Block*> blocks;
+        ChunkDataTypes::terrainArray terrain {};
 
     public:
         explicit Chunk(const glm::vec3& _chunkPosition);
+        ~Chunk();
 
         // Display
         void Display();
 
         // Object Culling
         void CheckCulling(const Camera& _camera);
-        std::vector<BLOCKFACE> GetHiddenFaces(glm::vec3 _position) const;
-        std::vector<BLOCKFACE> GetShowingFaces(glm::vec3 _position) const;
+        [[nodiscard]] std::vector<BLOCKFACE> GetHiddenFaces(glm::vec3 _position) const;
+        [[nodiscard]] std::vector<BLOCKFACE> GetShowingFaces(glm::vec3 _position) const;
 
         // Chunk Generation
         std::array<int, chunkArea> CreateHeightMap();
-        nodeArray CreateTerrain();
-        void CreateNodeTree(nodeArray _chunkNodes);
+        ChunkDataTypes::nodeArray CreateTerrain();
+        void CreateNodeTree(ChunkDataTypes::nodeArray _chunkNodes);
+        void SetAdjacentChunks(const std::vector<Chunk*>& _chunks);
 
         // Getters
         [[nodiscard]] BlockType GetBlockDataAtPosition(glm::vec3 _position) const;

@@ -142,16 +142,19 @@ int main(int argc, char** argv){
     bool running = true;
     bool escToggled = false;
     SDL_bool grabMouse = SDL_TRUE;
-    Uint64 deltaFrames, lastFrame = SDL_GetTicks64();
+    Uint64 deltaTicks, endTick = SDL_GetTicks64();
     glm::mat4 lastViewMatrix {};
     while (running) {
         /*
          * START OF FRAME
          */
 
-        Uint64 frameStart = SDL_GetTicks64();
-        deltaFrames = frameStart - lastFrame;
-        lastFrame = frameStart;
+        Uint64 startTick = SDL_GetTicks64();
+        deltaTicks = startTick - endTick;
+        if (deltaTicks < 1000 / 120) {
+            SDL_Delay(Uint32((1000 / 120) - deltaTicks));
+        }
+        endTick = startTick;
 
         /*
          *  CLEAR SCREEN
@@ -236,7 +239,7 @@ int main(int argc, char** argv){
         // CAMERA
 
         if (grabMouse == SDL_TRUE) {
-            camera.Move(deltaFrames);
+            camera.Move(deltaTicks);
             camera.MouseLook(grabMouse);
         }
 
@@ -249,7 +252,7 @@ int main(int argc, char** argv){
         if (state[SDL_SCANCODE_1]) curCam = &camera;
         if (state[SDL_SCANCODE_2]) curCam = &secondaryCamera;
 
-        if (state[SDL_SCANCODE_F]) printf("FPS: %llu\n", 1000/(deltaFrames+1));
+        if (state[SDL_SCANCODE_F]) printf("FPS: %llu\n", 1000/(deltaTicks + 1));
 
         /*
          *  UDPATE OBJECTS
@@ -267,8 +270,6 @@ int main(int argc, char** argv){
         /*
          *  END OF FRAME
          */
-
-
 
     }
 
