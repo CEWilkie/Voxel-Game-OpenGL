@@ -40,10 +40,16 @@ enum BLOCKMODEL {
     FULL, nModels
 };
 
+/*
+ * A struct that binds the block models into memory, and permits the fetching / retrieving of a particular model's
+ * VAO for display, or the base verticies / indexes of a model
+ */
+
 struct BlockVAOs {
     // Buffer objects
     std::array<GLuint, nModels> vertexArrayObject {};
     std::array<GLuint, nModels> vertexBufferObject {};
+    std::array<GLuint, nModels> indexBufferObject {};
 
     BlockVAOs();
     ~BlockVAOs();
@@ -75,9 +81,6 @@ enum class BLOCKATTRIBUTE {
 
 class Block {
     protected:
-        // Block Buffers
-        unsigned int indexBufferObject {};
-
         // Block Culling
         bool inCamera = true, culled = false;
         std::vector<BLOCKFACE> visibleFaces {TOP, BOTTOM, FRONT, BACK, LEFT, RIGHT};
@@ -97,16 +100,9 @@ class Block {
         Block();
         ~Block();
 
-        void UpdateIndexBuffer();
-
         // Model Display and Transformation
         void Display(Transformation* _t);
         void SetTransformation(Transformation* _t);
-
-        // Culling
-        void CheckCulling(const Camera& _camera);
-        void HideFace(BLOCKFACE _face);
-        void HideFaces(const std::vector<BLOCKFACE>& _faces);
 
         // Getters
         [[nodiscard]] BlockType GetBlockType() const { return blockData; }

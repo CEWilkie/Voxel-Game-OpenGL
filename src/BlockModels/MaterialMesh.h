@@ -16,7 +16,6 @@ class MaterialMesh {
         unsigned int indexBufferObject {};
 
         std::vector<Vertex> vertexArray {};
-        std::vector<GLuint> indexArray {};
         int nFaces = 0;
 
         Block* block;
@@ -29,7 +28,7 @@ class MaterialMesh {
         void RemoveBlockFaceVertex(BLOCKFACE _faceID, glm::vec3 _position);
 
         void BindMesh();
-        void DrawMesh(const Transformation& _transformation);
+        void DrawMesh(const Transformation& _transformation) const;
 
 
 

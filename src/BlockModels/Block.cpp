@@ -12,10 +12,12 @@ BlockVAOs::BlockVAOs() {
     // Generate objectIDs
     glGenVertexArrays(nModels, (GLuint*)&vertexArrayObject[0]);
     glGenBuffers(nModels, (GLuint*)&vertexBufferObject[0]);
+    glGenBuffers(nModels, (GLuint*)&indexBufferObject[0]);
 }
 
 BlockVAOs::~BlockVAOs() {
     glDeleteBuffers(nModels, (GLuint*)&vertexBufferObject[0]);
+    glDeleteBuffers(nModels, (GLuint*)&indexBufferObject[0]);
     glDeleteVertexArrays(nModels, (GLuint*)&vertexArrayObject[0]);
 }
 
@@ -81,18 +83,9 @@ void BlockVAOs::BindBlockModels() const {
         // Bind VAO
         glBindVertexArray(vertexArrayObject[model]);
 
-        // Fetch VertexArray
-        std::vector<Vertex> vertexArray;
-        switch (model) {
-            case FULL:
-                vertexArray = FullblockVA();
-                break;
-
-            // ...
-
-            default:
-                vertexArray = FullblockVA();
-        }
+        // Fetch model's VertexArray and IndexArray
+        std::vector<Vertex> vertexArray = GetBaseVertexArray((BLOCKMODEL)model);
+        std::vector<GLuint> indexArray = GetBaseIndexArray((BLOCKMODEL)model);
 
         // Bind VertexBuffer
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject[model]);
@@ -106,18 +99,11 @@ void BlockVAOs::BindBlockModels() const {
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, textureCoord));
 
-//        GLuint ibo;
-//        glGenBuffers(1, &ibo);
-//        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-//        glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(FullblockIA().size() * sizeof(GLuint)), FullblockIA().data(), GL_STATIC_DRAW);
-
-        GLint tex0Location = glGetUniformLocation(window.GetShader(), "tex0");
-        glUniform1i(tex0Location, 0);
-
-
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject[model]);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(indexArray.size() * sizeof(GLuint)), indexArray.data(), GL_STATIC_DRAW);
     }
 
-    // Unbind arrays / buffers
+    // Unbind arrays and buffers
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -156,162 +142,25 @@ std::vector<Vertex> BlockVAOs::GetBaseVertexArray(BLOCKMODEL _model) {
 }
 
 
-//void BlockVAOs::Display(const Transformation& _transformation) const {
-//    if (isCulled) return;
-//
-//    if (blockData.blockID == BLOCKID::AIR && blockData.variantID == 0) return;
-//
-//    // Bind object
-//    glBindVertexArray(vertexArrayObject);
-//
-//    // Update uniform
-//    GLint modelMatrixLocation = glGetUniformLocation(window.GetShader(), "uModelMatrix");
-//    if (modelMatrixLocation < 0) printf("block location not found [uModelMatrix]\n");
-//    if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &_transformation.GetModelMatrix()[0][0]);
-//
-//    textureManager->EnableTextureSheet(textureSheet);
-//    GLint uniformLocation = glGetUniformLocation(window.GetShader(), "uVertexTextureCoordOffset");
-//    if (uniformLocation < 0) printf("block location not found [uVertexTextureCoordOffset]\n");
-//    if (uniformLocation >= 0) glUniform2fv(uniformLocation, 1, &textureOrigin[0]);
-//
-//    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
-//
-//    glBindVertexArray(0);
-//}
-
-//void BlockVAOs::DisplayFace(BLOCKFACE _face, const Transformation &_transformation) const {
-//    if (isCulled) return;
-//    if (blockData.blockID == BLOCKID::AIR && blockData.variantID == 0) return;
-//
-//    glBindVertexArray(vertexArrayObject);
-//
-//    // Update uniform
-//    GLint modelMatrixLocation = glGetUniformLocation(window.GetShader(), "uModelMatrix");
-//    if (modelMatrixLocation < 0) printf("block location not found [uModelMatrix]\n");
-//    if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &_transformation.GetModelMatrix()[0][0]);
-//
-//    textureManager->EnableTextureSheet(textureSheet);
-//    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(sizeof(GLuint)*6*_face));
-//
-//    glBindVertexArray(0);
-//}
-//
-//
-//bool BlockVAOs::CheckCulling(const Camera& _camera, const Transformation& _transformation) {
-//    isCulled = !blockBounds->InFrustrum(_camera.GetCameraFrustrum(), _transformation);
-//    return isCulled;
-//}
-//
-//std::vector<Vertex> BlockVAOs::GetTrueTextureCoords(TEXTURESHEET _sheetID, glm::vec2 _textureOrigin) {
-//    std::vector<Vertex> vertexArray = FullblockVA();
-//    auto textureData = textureManager->GetTextureData(_sheetID);
-//
-//    for (auto& vertex : vertexArray) {
-//        vertex.textureCoord = textureData->GetTextureSheetTile(_textureOrigin + vertex.textureCoord);
-//    }
-//
-//    return vertexArray;
-//}
-//
-//void BlockVAOs::UpdateBoundFaces() const {
-//    auto indexArray = GetFaceVertexIndexes(TOP);
-//
-//    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
-//    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, GLsizeiptr(indexArray.size()*sizeof(GLuint)), indexArray.data());
-//    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-//}
-//
-//
-//void BlockVAOs::SetTexture(TEXTURESHEET _textureID, glm::vec2 _origin) {
-//    // Update stored texture data
-//    std::vector<Vertex> vertexArray = GetTrueTextureCoords(_textureID, _origin);
-//    textureSheet = _textureID;
-//    textureOrigin = _origin;
-
-    // Update buffer
-//    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-//    glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(vertexArray.size() * sizeof(struct Vertex)), vertexArray.data());
-//    glBindBuffer(GL_ARRAY_BUFFER, 0);
-//}
-
-//void Block::SetPositionOrigin(glm::vec3 _originPosition) {
-//    // set transformation to move to the new origin position
-//    transformation->SetPosition(_originPosition);
-//}
-//
-//void Block::SetPositionCentre(glm::vec3 _centre) {
-//    // set transformation to move to the new origin position, but offset by half the scale of the cube
-//    glm::vec3 originFromCentre{_centre - (transformation->GetLocalScale() / 2.0f)};
-//    originFromCentre.y += transformation->GetLocalScale().y;
-//
-//    transformation->SetPosition(originFromCentre);
-//}
-//
-//void Block::SetScale(glm::vec3 _scale) {
-//    transformation->SetScale(_scale);
-//}
-//
-//void Block::SetRotation(glm::vec3 _rotation) {
-//    transformation->SetRotation(_rotation);
-//}
-//
-//void Block::UpdateModelMatrix() {
-//    transformation->UpdateModelMatrix();
-//}
-//
-//void Block::UpdateModelMatrix(const glm::mat4 &_parentTransformationMatrix) {
-//    transformation->UpdateModelMatrix(_parentTransformationMatrix);
-//}
-
 
 
 
 
 
 Block::Block() {
-    // Generate and bind buffer with default index array
-    glGenBuffers(1, &indexBufferObject);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
 
-    // Fetch default index array
-    auto indexArray = blockVAOmanager->GetBaseIndexArray(FULL);
-
-    // Bind index array
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(indexArray.size() * sizeof(GLuint)), indexArray.data(), GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-    /*
-     *
-     */
 }
 
 Block::~Block() {
-    glDeleteBuffers(1, &indexBufferObject);
-}
 
-void Block::UpdateIndexBuffer() {
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
-
-    // Get base index array for a model, and a secondary indexArray to store approved indexes
-    std::vector<GLuint> baseIndexArray = blockVAOmanager->GetBaseIndexArray(blockModel);
-    std::vector<GLuint> indexArray {};
-    for (auto& face : visibleFaces) {
-        for (int i = face*6; i < (face*6)+6; i++) {
-            indexArray.push_back(baseIndexArray[i]);
-        }
-    }
-
-    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, GLsizeiptr(indexArray.size()*sizeof(GLuint)), indexArray.data());
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void Block::Display(Transformation* _t) {
     if (!inCamera || culled) return;
     if (blockData.blockID == BLOCKID::AIR && blockData.variantID == 0) return;
 
-    // Bind VAO
+    // Bind to the model
     glBindVertexArray(blockVAOmanager->vertexArrayObject[blockModel]);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
 
     // Update uniform
     GLint modelMatrixLocation = glGetUniformLocation(window.GetShader(), "uModelMatrix");
@@ -326,8 +175,6 @@ void Block::Display(Transformation* _t) {
 
     // Draw Block (max count = 36)
     glDrawElements(GL_TRIANGLES, 6*(int)visibleFaces.size(), GL_UNSIGNED_INT, nullptr);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 }
 
@@ -335,39 +182,8 @@ void Block::SetTransformation(Transformation *_t) {
 //    blockTransformation = _t;
 }
 
-void Block::CheckCulling(const Camera &_camera) {
-//    inCamera = (blockBounds->InFrustrum(_camera.GetCameraFrustrum(), *blockTransformation) == FRUSTRUM::INSIDE);
-}
 
-void Block::HideFace(BLOCKFACE _face) {
-    if (_face == ALL) visibleFaces.clear();
 
-    for (auto face = visibleFaces.begin(); face != visibleFaces.end(); ) {
-        if (*face == _face)
-            face = visibleFaces.erase(face);
-        else
-            face++; // check next
-    }
-
-    // If no faces remain, dont update the indexBuffer now, just mark as culled and dont display
-    if (visibleFaces.empty()) culled = true;
-    else UpdateIndexBuffer();
-}
-
-void Block::HideFaces(const std::vector<BLOCKFACE> &_faces) {
-    // If any face is in the list of hidden faces, remove face from visibleFaces;
-    for (auto face = visibleFaces.begin(); face != visibleFaces.end(); ) {
-        if (std::any_of(_faces.begin(), _faces.end(), [&](BLOCKFACE hiddenFace) {
-            return hiddenFace == *face;
-        })) {
-            face = visibleFaces.erase(face);
-        }
-        else
-            face++; // check next
-    }
-
-    UpdateIndexBuffer();
-}
 
 
 std::vector<Vertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &_faces) const {

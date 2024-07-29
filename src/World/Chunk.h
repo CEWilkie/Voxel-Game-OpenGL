@@ -29,30 +29,20 @@ class ChunkNode {
         std::vector<std::unique_ptr<ChunkNode>> subNodes {};
         Block* nodeBlock {};
 
-        // SubChunk positioning + scale
-        std::unique_ptr<Transformation> transformation = std::make_unique<Transformation>();
+        // Positioning
         float scale = 1;
+        glm::vec3 position {0,0,0};
 
-        // Display of contents
-        std::unique_ptr<MaterialMesh> blockMesh {};
+        // Merge nodes
         bool isSingleType = true;
-        bool inCamera = true;
-        bool visible = false;
 
     public:
         ChunkNode(Block* _nodeBlock, glm::vec3  _blockPos, Chunk* _root);
         ChunkNode(std::vector<std::unique_ptr<ChunkNode>> _subNodes, Chunk* _root);
         ~ChunkNode();
 
-        // Node Display
-        void Display();
-
         // Node material mesh creation
-        void CreateMaterialMesh();
-
-        // Node Culling
-        void CheckCulling(const Camera& _camera);
-        void CheckNodeCulled();
+        void UpdateMaterialMesh(MaterialMesh* _mesh);
 };
 
 
@@ -62,8 +52,12 @@ class ChunkNode {
 
 
 inline int nChunksCreated;
-inline Uint64 averageTicksTaken = 0;
-inline Uint64 sumTicksTaken = 0;
+inline Uint64 chunkAvgTicksTaken = 0;
+inline Uint64 chunkSumTicksTaken = 0;
+
+inline int nMeshesCreated;
+inline Uint64 meshAvgTicksTaken = 0;
+inline Uint64 meshSumTicksTaken = 0;
 
 namespace ChunkDataTypes {
     typedef std::array<std::array<std::array<std::unique_ptr<ChunkNode>, chunkSize>, chunkSize>, chunkSize> nodeArray;
@@ -78,11 +72,14 @@ namespace ChunkDataTypes {
 class Chunk {
     private:
         // Chunk Display
-        std::unique_ptr<Transformation> transformation {};
-        std::vector<MaterialMesh> chunkMesh{};
+        std::vector<std::unique_ptr<MaterialMesh>> blockMeshes {};
 
-        // Culling Bounds and OctTree
-        std::vector<std::unique_ptr<BoxBounds>> boxBounds {};
+        // Chunk Culling and positioning
+        std::unique_ptr<BoxBounds> boxBounds {};
+        std::unique_ptr<Transformation> chunkTransformation = std::make_unique<Transformation>();
+        glm::vec3 chunkPosition {0,0,0};
+
+        // Chunk tree
         std::unique_ptr<ChunkNode> rootNode {};
         std::vector<Chunk*> adjacentChunks {};
 
@@ -111,7 +108,7 @@ class Chunk {
         // Getters
         [[nodiscard]] BlockType GetBlockDataAtPosition(glm::vec3 _position) const;
         [[nodiscard]] Block* GetBlockFromData(BlockType _blockData) const;
-        [[nodiscard]] glm::vec3 GetPosition() const { return transformation->GetLocalPosition(); }
+        [[nodiscard]] glm::vec3 GetPosition() const { return chunkPosition; }
 };
 
 

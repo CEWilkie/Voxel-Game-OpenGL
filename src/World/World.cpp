@@ -21,18 +21,23 @@ void World::Display() {
 
     // Now draw the world terrain / objecst
     glEnable(GL_CULL_FACE);
-    for (int chunkX = -worldSize/2; chunkX < worldSize/2; chunkX++) {
-        for (int chunkZ = -worldSize/2; chunkZ < worldSize/2; chunkZ++) {
-            for (int chunkY = 0; chunkY < worldHeight; chunkY++) {
-                worldChunks[chunkX+worldSize/2][chunkY][chunkZ+worldSize/2]->Display();
+    for (int chunkX = 0; chunkX < worldSize; chunkX++)
+        for (int chunkY = 0; chunkY < worldHeight; chunkY++)
+            for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
+                worldChunks[chunkX][chunkY][chunkZ]->Display();
             }
-        }
-    }
+    glDisable(GL_CULL_FACE);
 }
 
 void World::CheckCulling(const Camera &_camera) {
-//    for (auto& chunk : worldChunks)
-//        chunk->CheckCulling(_camera);
+    for (int chunkX = 0; chunkX < worldSize; chunkX++)
+        for (int chunkY = 0; chunkY < worldHeight; chunkY++)
+            for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
+                worldChunks[chunkX][chunkY][chunkZ]->CheckCulling(_camera);
+            }
+
+
+
 }
 
 
@@ -59,7 +64,6 @@ void World::SetSkyboxPosition(glm::vec3 _position) {
     skyboxTransformation.SetPosition(originFromCentre);
 
     skyboxTransformation.UpdateModelMatrix();
-    skybox->SetTransformation(&skyboxTransformation);
 }
 
 
@@ -71,20 +75,28 @@ void World::GenerateWorld() {
     // First generate the world terrain
     GenerateTerrain();
 
-    printf("AVG CHUNK CREATION: %llu TICKS TAKEN\n", averageTicksTaken);
+    printf("AVG CHUNK CREATION: %llu TICKS TAKEN\n", chunkAvgTicksTaken);
+    printf("AVG MESH CREATION: %llu TICKS TAKEN\n", meshAvgTicksTaken);
 }
 
 void World::GenerateTerrain() {
-    for (int chunkX = -worldSize/2; chunkX < worldSize/2; chunkX++) {
-        for (int chunkZ = -worldSize/2; chunkZ < worldSize/2; chunkZ++) {
-            for (int chunkY = 0; chunkY < worldHeight; chunkY++) {
-                glm::vec3 chunkPos{chunkX, chunkY, chunkZ};
-                worldChunks[chunkX+worldSize/2][chunkY][chunkZ+worldSize/2] = std::make_unique<Chunk>(chunkPos);
+    for (int chunkX = 0; chunkX < worldSize; chunkX++)
+        for (int chunkY = 0; chunkY < worldHeight; chunkY++)
+            for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
+                glm::vec3 chunkPos{chunkX - worldSize/2, chunkY, chunkZ - worldSize/2};
+                worldChunks[chunkX][chunkY][chunkZ] = std::make_unique<Chunk>(chunkPos);
             }
-        }
-    }
 
     // Assign neighbouring chunks to created chunks
-
+//    for (int chunkX = 0; chunkX < worldSize; chunkX++)
+//        for (int chunkY = 0; chunkY < worldHeight; chunkY++)
+//            for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
+//                std::vector<Chunk*> adjacentChunks {};
+//
+//
+//
+//
+//
+//            }
 }
 

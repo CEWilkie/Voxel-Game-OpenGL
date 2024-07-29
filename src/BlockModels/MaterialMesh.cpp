@@ -37,6 +37,7 @@ void MaterialMesh::BindMesh() {
 
     // populate indexArray
     nFaces = (int)vertexArray.size() / 4;
+    std::vector<GLuint> indexArray {};
     for (int f = 0; f < nFaces; f++) {
         indexArray.push_back(f*4 + 1);
         indexArray.push_back(f*4 + 3);
@@ -45,7 +46,6 @@ void MaterialMesh::BindMesh() {
         indexArray.push_back(f*4 + 3);
         indexArray.push_back(f*4 + 2);
     }
-
 
 //    printf("v %zu i %zu\n", vertexArray.size(), indexArray.size());
 
@@ -65,16 +65,13 @@ void MaterialMesh::BindMesh() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(indexArray.size()*sizeof(GLuint)), indexArray.data(), GL_STATIC_DRAW);
 
-    GLint tex0Location = glGetUniformLocation(window.GetShader(), "tex0");
-    glUniform1i(tex0Location, 0);
-
     // Unbind arrays / buffers
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void MaterialMesh::DrawMesh(const Transformation& _transformation) {
+void MaterialMesh::DrawMesh(const Transformation& _transformation) const {
     if (vertexArray.empty()) return;
 
     // Bind object

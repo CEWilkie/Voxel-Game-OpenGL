@@ -48,5 +48,10 @@ Water::Water(int _variant) {
 Air::Air(int _variant) {
     blockData = {BLOCKID::AIR, _variant};
 
+    if (_variant == 1) {
+        sheet = TEXTURESHEET::WORLD;
+        origin = {1,1};
+    }
+
     transparent = 1;
 }
