@@ -19,6 +19,7 @@ static const int worldVolume = worldArea * worldHeight;
 
 namespace WorldDataTypes {
     typedef std::array<std::array<std::array<std::unique_ptr<Chunk>, worldSize>, worldHeight>, worldSize> chunkArray;
+    typedef std::array<std::array<std::array<int, worldSize>, worldHeight>, worldSize> biomeMap;
 }
 
 class World {
@@ -29,6 +30,7 @@ class World {
         // Sky decos: clouds, sun, moon, stars, night, etc
 
         WorldDataTypes::chunkArray worldChunks {};
+        WorldDataTypes::biomeMap biomeMap {};
 
     public:
         World();
@@ -46,6 +48,8 @@ class World {
         void GenerateWorld();
         void GenerateTerrain();
 
+        // Getters
+        [[nodiscard]] Chunk* GetChunkAtPosition(glm::vec3 _position) const;
 };
 
 inline std::unique_ptr<World> world {};

@@ -60,8 +60,20 @@ inline Uint64 meshAvgTicksTaken = 0;
 inline Uint64 meshSumTicksTaken = 0;
 
 namespace ChunkDataTypes {
+    // Long arrays
     typedef std::array<std::array<std::array<std::unique_ptr<ChunkNode>, chunkSize>, chunkSize>, chunkSize> nodeArray;
     typedef std::array<std::array<std::array<BlockType, chunkSize>, chunkSize>, chunkSize> terrainArray;
+
+    // Directions for checking adjacent chunks / blocks
+    inline glm::vec3 adjTop{0,1,0};
+    inline glm::vec3 adjBottom{0, -1, 0};
+    inline glm::vec3 adjFront{-1, 0, 0};
+    inline glm::vec3 adjBack{1,0,0};
+    inline glm::vec3 adjRight{0, 0, 1};
+    inline glm::vec3 adjLeft{0, 0, -1};
+
+
+
 }
 
 
@@ -82,7 +94,7 @@ class Chunk {
 
         // Chunk tree
         std::unique_ptr<ChunkNode> rootNode {};
-        std::vector<Chunk*> adjacentChunks {};
+        std::array<Chunk*, 6> adjacentChunks {};
 
         // Block Data
         std::vector<std::pair<std::unique_ptr<Block>, int>> uniqueBlocks {}; // block, count
@@ -93,6 +105,7 @@ class Chunk {
         ~Chunk();
 
         // Display
+        void CreateBlockMeshes();
         void DisplaySolid();
         void DisplayTransparent();
 
@@ -105,10 +118,10 @@ class Chunk {
         std::array<int, chunkArea> CreateHeightMap();
         ChunkDataTypes::nodeArray CreateTerrain();
         void CreateNodeTree(ChunkDataTypes::nodeArray _chunkNodes);
-        void SetAdjacentChunks(const std::vector<Chunk*>& _chunks);
+        void SetAdjacentChunks(const std::array<Chunk*, 6>& _chunks);
 
         // Getters
-        [[nodiscard]] BlockType GetBlockDataAtPosition(glm::vec3 _position) const;
+        [[nodiscard]] Block* GetBlockAtPosition(glm::vec3 _position, int _depth) const;
         [[nodiscard]] Block* GetBlockFromData(BlockType _blockData) const;
         [[nodiscard]] glm::vec3 GetPosition() const { return chunkPosition; }
 };

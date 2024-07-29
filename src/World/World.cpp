@@ -80,6 +80,7 @@ void World::GenerateWorld() {
     // First generate the world terrain
     GenerateTerrain();
 
+
     printf("AVG CHUNK CREATION: %llu TICKS TAKEN\n", chunkAvgTicksTaken);
     printf("AVG MESH CREATION: %llu TICKS TAKEN\n", meshAvgTicksTaken);
 
@@ -96,15 +97,28 @@ void World::GenerateTerrain() {
             }
 
     // Assign neighbouring chunks to created chunks
-//    for (int chunkX = 0; chunkX < worldSize; chunkX++)
-//        for (int chunkY = 0; chunkY < worldHeight; chunkY++)
-//            for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
-//                std::vector<Chunk*> adjacentChunks {};
-//
-//
-//
-//
-//
-//            }
+    for (int chunkX = 0; chunkX < worldSize; chunkX++)
+        for (int chunkY = 0; chunkY < worldHeight; chunkY++)
+            for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
+                // TOP, BOTTOM, FRONT, BACK, RIGHT, LEFT
+                std::array<Chunk*, 6> adjacentChunks {nullptr};
+                std::vector<glm::vec3> positionOffsets {
+                        ChunkDataTypes::adjTop, ChunkDataTypes::adjBottom, ChunkDataTypes::adjFront,
+                        ChunkDataTypes::adjBack, ChunkDataTypes::adjRight, ChunkDataTypes::adjLeft};
+
+                for (int f = 0; f < 6; f++) {
+                    adjacentChunks[f] = GetChunkAtPosition(glm::vec3{chunkX, chunkY, chunkZ} + positionOffsets[f]);
+                }
+
+                worldChunks[chunkX][chunkY][chunkZ]->SetAdjacentChunks(adjacentChunks);
+                worldChunks[chunkX][chunkY][chunkZ]->CreateBlockMeshes();
+            }
 }
 
+Chunk* World::GetChunkAtPosition(glm::vec3 _position) const {
+    if (_position.x < 0 || _position.x >= worldSize) return nullptr;
+    if (_position.y < 0 || _position.y >= worldHeight) return nullptr;
+    if (_position.z < 0 || _position.z >= worldSize) return nullptr;
+
+    return worldChunks[(int)_position.x][(int)_position.y][(int)_position.z].get();
+}

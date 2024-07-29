@@ -141,9 +141,14 @@ Chunk::Chunk(const glm::vec3& _chunkPosition) {
     chunkSumTicksTaken += et - st;
     nChunksCreated++;
     chunkAvgTicksTaken = chunkSumTicksTaken / nChunksCreated;
+}
 
+Chunk::~Chunk() = default;
+
+
+void Chunk::CreateBlockMeshes() {
     // Create block meshes for each unique block
-    st = SDL_GetTicks64();
+    auto st = SDL_GetTicks64();
     for (const auto& block : uniqueBlocks) {
         // Create mesh for non-air blocks
         if (BlockType::Compare(block.first->GetBlockType(), {AIR, 0})) continue;
@@ -153,7 +158,7 @@ Chunk::Chunk(const glm::vec3& _chunkPosition) {
         rootNode->UpdateMaterialMesh(blockMeshes.back().get());
         blockMeshes.back()->BindMesh();
     }
-    et = SDL_GetTicks64();
+    auto et = SDL_GetTicks64();
 
     meshSumTicksTaken += et - st;
     nMeshesCreated++;
@@ -161,12 +166,6 @@ Chunk::Chunk(const glm::vec3& _chunkPosition) {
 
 //    printf("CHUNK MESH CREATION : %llu TICKS TAKEN\n", et-st);
 }
-
-Chunk::~Chunk() = default;
-
-
-
-
 
 void Chunk::DisplaySolid() {
     if (!inCamera) return;
@@ -202,12 +201,12 @@ std::vector<BLOCKFACE> Chunk::GetHiddenFaces(glm::vec3 _position) const {
         glm::vec3{0, 1, 0}, glm::vec3{0, -1, 0}, glm::vec3{-1, 0, 0},
         glm::vec3{1,0,0}, glm::vec3{0, 0, 1}, glm::vec3{0, 0, -1}};
 
-    Block* checkingBlock = GetBlockFromData(GetBlockDataAtPosition(_position));
+    Block* checkingBlock = GetBlockAtPosition(_position, 0);
     if (checkingBlock == nullptr) return faces; // Could not find block
     if (BlockType::Compare(checkingBlock->GetBlockType(), {AIR, 0})) return faces; // Air block
 
     for (int i = 0; i < faces.size(); i++) {
-        Block* blockAtFace = GetBlockFromData(GetBlockDataAtPosition(_position + positionOffsets[i]));
+        Block* blockAtFace = GetBlockAtPosition(_position + positionOffsets[i], 0);
         if (blockAtFace == nullptr) { // could not obtain block data
             continue;
         }
@@ -235,19 +234,18 @@ std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _position) const {
     std::vector<BLOCKFACE> showingFaces {};
     std::vector<BLOCKFACE> faces {TOP, BOTTOM, FRONT, BACK, RIGHT, LEFT};
     std::vector<glm::vec3> positionOffsets {
-            glm::vec3{0, 1, 0}, glm::vec3{0, -1, 0}, glm::vec3{-1, 0, 0},
-            glm::vec3{1,0,0}, glm::vec3{0, 0, 1}, glm::vec3{0, 0, -1}};
+            ChunkDataTypes::adjTop, ChunkDataTypes::adjBottom, ChunkDataTypes::adjFront,
+            ChunkDataTypes::adjBack, ChunkDataTypes::adjRight, ChunkDataTypes::adjLeft};
 
     // Get block being checked
-    Block* checkingBlock = GetBlockFromData(GetBlockDataAtPosition(_position));
+    Block* checkingBlock = GetBlockAtPosition(_position, 0);
     if (checkingBlock == nullptr) return {}; // Could not find block
     if (BlockType::Compare(checkingBlock->GetBlockType(), {AIR, 0})) return {}; // Air block
 
     // Check for non-transparent block on each face (or non-same transparent block for a transparent block)
     for (int i = 0; i < faces.size(); i++) {
-        Block* blockAtFace = GetBlockFromData(GetBlockDataAtPosition(_position + positionOffsets[i]));
-        if (blockAtFace == nullptr) { // could not obtain block data, enable the face
-            showingFaces.push_back(faces[i]);
+        Block* blockAtFace = GetBlockAtPosition(_position + positionOffsets[i], 0);
+        if (blockAtFace == nullptr) { // could not obtain block data, hide the face
             continue;
         }
 
@@ -376,17 +374,75 @@ void Chunk::CreateNodeTree(ChunkDataTypes::nodeArray _chunkNodes) {
 
 }
 
+void Chunk::SetAdjacentChunks(const std::array<Chunk*, 6> &_chunks) {
+    // TOP, BOTTOM, FRONT, BACK, RIGHT, LEFT
+    adjacentChunks = _chunks;
+}
 
 
 
-BlockType Chunk::GetBlockDataAtPosition(glm::vec3 _position) const {
-    // provided position is outside the bounds of the chunk, defaults to {AIR, 0}
-    BlockType outsideChunk{AIR, 0};
-    if (_position.x < 0 || _position.x >= chunkSize) return outsideChunk;
-    if (_position.y < 0 || _position.y >= chunkSize) return outsideChunk;
-    if (_position.z < 0 || _position.z >= chunkSize) return outsideChunk;
 
-    return terrain[(int)_position.x][(int)_position.y][(int)_position.z];
+
+
+Block* Chunk::GetBlockAtPosition(glm::vec3 _position, int _depth) const {
+    // provided position is outside the bounds of the chunk, check adjacent chunk. Do not check adjacent chunk's
+    // adjacent chunks
+//    Block* defaultReturn = GetBlockFromData({AIR, 0});
+    Block* defaultReturn = nullptr;
+    if (_depth > 1) return defaultReturn;
+    _depth += 1;
+
+    // TOP, BOTTOM, FRONT, BACK, RIGHT, LEFT
+    if (_position.x < 0) {
+        if (adjacentChunks[2] != nullptr) {
+            _position.x += chunkSize;
+            return adjacentChunks[2]->GetBlockAtPosition(_position, _depth);
+        }
+        else
+            return defaultReturn;
+    }
+    if ( _position.x >= chunkSize) {
+        if (adjacentChunks[3] != nullptr) {
+            _position.x -= chunkSize;
+            return adjacentChunks[3]->GetBlockAtPosition(_position,_depth);
+        }
+        else
+            return defaultReturn;
+    }
+    if (_position.y < 0) {
+        if (adjacentChunks[0] != nullptr) {
+            _position.y -= chunkSize;
+            return adjacentChunks[0]->GetBlockAtPosition(_position,_depth);
+        }
+        else
+            return defaultReturn;
+    }
+    if ( _position.y >= chunkSize) {
+        if (adjacentChunks[1] != nullptr) {
+            _position.y += chunkSize;
+            return adjacentChunks[1]->GetBlockAtPosition(_position,_depth);
+        }
+        else
+            return defaultReturn;
+    }
+    if (_position.z < 0) {
+        if (adjacentChunks[5] != nullptr) {
+            _position.z += chunkSize;
+            return adjacentChunks[5]->GetBlockAtPosition(_position,_depth);
+        }
+        else
+            return defaultReturn;
+    }
+    if ( _position.z >= chunkSize) {
+        if (adjacentChunks[4] != nullptr) {
+            _position.z -= chunkSize;
+            return adjacentChunks[4]->GetBlockAtPosition(_position,_depth);
+        }
+        else
+            return defaultReturn;
+    }
+
+    return GetBlockFromData(terrain[(int)_position.x][(int)_position.y][(int)_position.z]);
 }
 
 Block* Chunk::GetBlockFromData(BlockType _data) const {
