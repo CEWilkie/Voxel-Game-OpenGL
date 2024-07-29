@@ -12,9 +12,11 @@
 #include "../BlockModels/ModelTransformations.h"
 #include "../BlockModels/MaterialMesh.h"
 
-static const int chunkSize = 16; // must be power of 2 for subchunk division ie 2, 4, 8, 16 | 32, 64, 128, ... ( too big)
-static const int chunkArea = chunkSize * chunkSize;
-static const int chunkVolume = chunkArea * chunkSize;
+#include "Biome.h"
+
+//static const int chunkSize = 16; // must be power of 2 for subchunk division ie 2, 4, 8, 16 | 32, 64, 128, ... ( too big)
+//static const int chunkArea = chunkSize * chunkSize;
+//static const int chunkVolume = chunkArea * chunkSize;
 
 class Chunk;
 
@@ -97,11 +99,12 @@ class Chunk {
         std::array<Chunk*, 6> adjacentChunks {};
 
         // Block Data
+        Biome* chunkBiome {};
         std::vector<std::pair<std::unique_ptr<Block>, int>> uniqueBlocks {}; // block, count
         ChunkDataTypes::terrainArray terrain {};
 
     public:
-        explicit Chunk(const glm::vec3& _chunkPosition);
+        Chunk(const glm::vec3& _chunkPosition, Biome* _biome);
         ~Chunk();
 
         // Display
@@ -115,7 +118,7 @@ class Chunk {
         [[nodiscard]] std::vector<BLOCKFACE> GetShowingFaces(glm::vec3 _position) const;
 
         // Chunk Generation
-        std::array<int, chunkArea> CreateHeightMap();
+        std::array<int, chunkArea> CreateHeightMap() const;
         ChunkDataTypes::nodeArray CreateTerrain();
         void CreateNodeTree(ChunkDataTypes::nodeArray _chunkNodes);
         void SetAdjacentChunks(const std::array<Chunk*, 6>& _chunks);

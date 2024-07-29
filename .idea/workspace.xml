@@ -21,6 +21,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="Fixed water display, chunk culling fixed to prevent non-visible chunks from attempting to render.">
+      <change afterPath="$PROJECT_DIR$/src/World/Biome.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/World/Biome.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/World/Chunk.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Chunk.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/World/Chunk.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Chunk.h" afterDir="false" />
@@ -151,7 +153,10 @@
       <workItem from="1722183408046" duration="15276000" />
       <workItem from="1722204763964" duration="4285000" />
       <workItem from="1722244152223" duration="16290000" />
-      <workItem from="1722263582194" duration="10972000" />
+      <workItem from="1722263582194" duration="12265000" />
+      <workItem from="1722277508784" duration="11073000" />
+      <workItem from="1722291320694" duration="3335000" />
+      <workItem from="1722294673261" duration="750000" />
     </task>
     <task id="LOCAL-00001" summary="gitignore">
       <option name="closed" value="true" />
@@ -497,7 +502,23 @@
       <option name="project" value="LOCAL" />
       <updated>1722267480557</updated>
     </task>
-    <option name="localTasksCounter" value="44" />
+    <task id="LOCAL-00044" summary="Fixed water display, chunk culling fixed to prevent non-visible chunks from attempting to render.">
+      <option name="closed" value="true" />
+      <created>1722276455154</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1722276455154</updated>
+    </task>
+    <task id="LOCAL-00045" summary="Fixed water display, chunk culling fixed to prevent non-visible chunks from attempting to render.">
+      <option name="closed" value="true" />
+      <created>1722276468287</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1722276468287</updated>
+    </task>
+    <option name="localTasksCounter" value="46" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -535,24 +556,6 @@
     <MESSAGE value="Chunks now manage meshes, creates a mesh for each unique block in the chunk." />
     <MESSAGE value="Fixed water display, chunk culling fixed to prevent non-visible chunks from attempting to render." />
     <option name="LAST_COMMIT_MESSAGE" value="Fixed water display, chunk culling fixed to prevent non-visible chunks from attempting to render." />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/src/World/Chunk.cpp</url>
-          <line>247</line>
-          <option name="timeStamp" value="9" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
-    <watches-manager>
-      <configuration name="CMakeRunConfiguration">
-        <watch expression="cMax" />
-        <watch expression="scale" />
-        <watch expression="chunkPosition" />
-      </configuration>
-    </watches-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

@@ -2,6 +2,8 @@
 // Created by cew05 on 10/07/2024.
 //
 
+#include "glm/gtc/noise.hpp"
+
 #include "World.h"
 #include "../Blocks/CreateBlock.h"
 
@@ -77,6 +79,9 @@ void World::SetSkyboxPosition(glm::vec3 _position) {
  */
 
 void World::GenerateWorld() {
+    // Generate Biome Map
+    GenerateBiomeMap();
+
     // First generate the world terrain
     GenerateTerrain();
 
@@ -88,13 +93,55 @@ void World::GenerateWorld() {
     printf("SUM MESH CREATION: %llu TICKS TAKEN\n", meshSumTicksTaken);
 }
 
-void World::GenerateTerrain() {
-    for (int chunkX = 0; chunkX < worldSize; chunkX++)
-        for (int chunkY = 0; chunkY < worldHeight; chunkY++)
-            for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
-                glm::vec3 chunkPos{chunkX - worldSize/2, chunkY, chunkZ - worldSize/2};
-                worldChunks[chunkX][chunkY][chunkZ] = std::make_unique<Chunk>(chunkPos);
+
+void World::GenerateBiomeMap() {
+    for (int chunkX = 0; chunkX < worldSize; chunkX++) {
+        for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
+            // Get positive noise value between 0 and 2
+            float biomeID = glm::simplex(glm::vec2(chunkX / 8.0, chunkZ / 8.0));
+            biomeID = (biomeID + 1) / 2;
+            biomeID *= 2;
+
+            biomeID = std::round(biomeID);
+            // Check if biome is new to the world
+            if (!std::any_of(uniqueBiomes.begin(), uniqueBiomes.end(),
+            [&](std::pair<std::unique_ptr<Biome>, int> &uniqueBiome) {
+                // Biome is different
+                if (uniqueBiome.first->GetBiomeID() != (BIOMEID)biomeID) return false;
+
+                // Already exists, increment count
+                uniqueBiome.second += 1;
+                return true;
+            })) {
+                // create a new block of the specified type, and create mesh for block
+                if (biomeID == HILLS) uniqueBiomes.emplace_back(std::make_unique<Biome>(), 1);
+                if (biomeID == MARSHLANDS) uniqueBiomes.emplace_back(std::make_unique<Marshlands>(), 1);
             }
+
+            // Apply to height map
+            biomeMap[chunkX + chunkZ*worldSize] = (BIOMEID)biomeID;
+        }
+    }
+}
+
+
+
+void World::GenerateTerrain() {
+    for (int chunkX = 0; chunkX < worldSize; chunkX++) {
+        for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
+            auto biomeID = (BIOMEID) biomeMap[chunkX + chunkZ * worldSize];
+            Biome* biome;
+            for (const auto& biomePair : uniqueBiomes) {
+                if (biomePair.first->GetBiomeID() == biomeID) biome = biomePair.first.get();
+            }
+
+            for (int chunkY = 0; chunkY < worldHeight; chunkY++) {
+                glm::vec3 chunkPos{chunkX - worldSize / 2, chunkY, chunkZ - worldSize / 2};
+
+                worldChunks[chunkX][chunkY][chunkZ] = std::make_unique<Chunk>(chunkPos, biome);
+            }
+        }
+    }
 
     // Assign neighbouring chunks to created chunks
     for (int chunkX = 0; chunkX < worldSize; chunkX++)

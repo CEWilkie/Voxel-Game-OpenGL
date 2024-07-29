@@ -111,9 +111,8 @@ void ChunkNode::UpdateMaterialMesh(MaterialMesh* _mesh) {
  * CHUNK
  */
 
-Chunk::Chunk(const glm::vec3& _chunkPosition) {
+Chunk::Chunk(const glm::vec3& _chunkPosition, Biome* _biome) {
     // Update the chunk bounds matrix
-    chunkTransformation = std::make_unique<Transformation>();
     chunkTransformation->SetPosition(_chunkPosition * (float)chunkSize);
     chunkTransformation->UpdateModelMatrix();
 
@@ -127,9 +126,10 @@ Chunk::Chunk(const glm::vec3& _chunkPosition) {
     // Guarantee Air Block
     uniqueBlocks.emplace_back(CreateBlock({AIR, 0}), 1);
 
-    // Create height map for chunk
+    // Set chunk Biome
+    chunkBiome = _biome;
+
     auto st = SDL_GetTicks64();
-    CreateHeightMap();
 
     // Creates blocks in chunk and Put blocks into octTree
     CreateNodeTree(CreateTerrain());
@@ -245,7 +245,8 @@ std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _position) const {
     // Check for non-transparent block on each face (or non-same transparent block for a transparent block)
     for (int i = 0; i < faces.size(); i++) {
         Block* blockAtFace = GetBlockAtPosition(_position + positionOffsets[i], 0);
-        if (blockAtFace == nullptr) { // could not obtain block data, hide the face
+        if (blockAtFace == nullptr) { // could not obtain block data
+//            showingFaces.push_back(faces[i]);
             continue;
         }
 
@@ -270,21 +271,21 @@ std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _position) const {
 
 
 
-std::array<int, chunkArea> Chunk::CreateHeightMap() {
+std::array<int, chunkArea> Chunk::CreateHeightMap() const {
     std::array<int, chunkArea> heightMap {};
     // Take a flat xz plane of the chunk, and determine height values for each xz pillar
     for (int x = 0; x < chunkSize; x++) {
         for (int z = 0; z < chunkSize; z++) {
-            int cubeX = x + (int)chunkTransformation->GetLocalPosition().x;
-            int cubeZ = z + (int)chunkTransformation->GetLocalPosition().z;
+            int cubeX = x + (int)chunkPosition.x;
+            int cubeZ = z + (int)chunkPosition.z;
 
             // Get positive noise value
-            float simplexNoise = glm::simplex(glm::vec2(cubeX / 16.0, cubeZ / 16.0));
+            float simplexNoise = glm::simplex(glm::vec2(cubeX / 64.0, cubeZ / 64.0));
             simplexNoise = (simplexNoise + 1) / 2;
-            simplexNoise *= 4;
+            simplexNoise *= 16;
 
             // Apply to height map
-            heightMap[x + z*chunkSize] += (int)simplexNoise + 32;
+            heightMap[x + z*chunkSize] += (int)simplexNoise + 35;
         }
     }
 
@@ -292,7 +293,7 @@ std::array<int, chunkArea> Chunk::CreateHeightMap() {
 }
 
 ChunkDataTypes::nodeArray Chunk::CreateTerrain() {
-    auto heightMap = CreateHeightMap();
+    auto heightMap = chunkBiome->ChunkHeightMap(chunkPosition);
 
     ChunkDataTypes::nodeArray chunkBlocks {};
 
@@ -304,14 +305,7 @@ ChunkDataTypes::nodeArray Chunk::CreateTerrain() {
             for (int y = 0; y < chunkSize; y++) {
                 glm::vec3 blockPos = glm::vec3(x, y, z) + chunkTransformation->GetLocalPosition();
 
-                BlockType newBlockData;
-
-                // Determine block type
-                if (blockPos.y < 34 && blockPos.y > height) newBlockData = {WATER, 0};
-                else if (blockPos.y > height) newBlockData = {AIR, 0};
-                else if (blockPos.y == height) newBlockData = {BLOCKID::GRASS, 0};
-                else if (blockPos.y > height - 4) newBlockData = {BLOCKID::DIRT, 0};
-                else newBlockData = {BLOCKID::STONE, 0};
+                BlockType newBlockData = chunkBiome->GetBlockType(height, blockPos.y);
 
                 // Check if material is new to the chunk
                 if (!std::any_of(uniqueBlocks.begin(), uniqueBlocks.end(),
@@ -410,17 +404,17 @@ Block* Chunk::GetBlockAtPosition(glm::vec3 _position, int _depth) const {
             return defaultReturn;
     }
     if (_position.y < 0) {
-        if (adjacentChunks[0] != nullptr) {
-            _position.y -= chunkSize;
-            return adjacentChunks[0]->GetBlockAtPosition(_position,_depth);
+        if (adjacentChunks[1] != nullptr) {
+            _position.y += chunkSize;
+            return adjacentChunks[1]->GetBlockAtPosition(_position,_depth);
         }
         else
             return defaultReturn;
     }
     if ( _position.y >= chunkSize) {
-        if (adjacentChunks[1] != nullptr) {
-            _position.y += chunkSize;
-            return adjacentChunks[1]->GetBlockAtPosition(_position,_depth);
+        if (adjacentChunks[0] != nullptr) {
+            _position.y -= chunkSize;
+            return adjacentChunks[0]->GetBlockAtPosition(_position,_depth);
         }
         else
             return defaultReturn;
