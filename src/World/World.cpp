@@ -56,7 +56,7 @@ void World::CheckCulling(const Camera &_camera) {
 void World::SetSkyboxProperties(const Camera *camera) {
     // Determine max distance for skybox
     std::pair<float, float> minMax = camera->GetMinMaxDistance();
-    double maxSqrd = std::pow(minMax.second-1, 2.0);
+    double maxSqrd = std::pow(minMax.second*2, 2.0);
 
     // Set skybox scale
     skyboxTransformation.SetScale({float(sqrt(maxSqrd / 3)), float(sqrt(maxSqrd / 3)), float(sqrt(maxSqrd / 3))});
@@ -97,10 +97,11 @@ void World::GenerateWorld() {
 void World::GenerateBiomeMap() {
     for (int chunkX = 0; chunkX < worldSize; chunkX++) {
         for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
-            // Get positive noise value between 0 and 2
+            // Get positive noise value between 0 and nBiomes
             float biomeID = glm::simplex(glm::vec2(chunkX / 8.0, chunkZ / 8.0));
             biomeID = (biomeID + 1) / 2;
-            biomeID *= 2;
+            biomeID *= MOUNTAINS;
+//            biomeID = MOUNTAINS;
 
             biomeID = std::round(biomeID);
             // Check if biome is new to the world
@@ -116,6 +117,7 @@ void World::GenerateBiomeMap() {
                 // create a new block of the specified type, and create mesh for block
                 if (biomeID == HILLS) uniqueBiomes.emplace_back(std::make_unique<Biome>(), 1);
                 if (biomeID == MARSHLANDS) uniqueBiomes.emplace_back(std::make_unique<Marshlands>(), 1);
+                if (biomeID == MOUNTAINS) uniqueBiomes.emplace_back(std::make_unique<Mountains>(), 1);
             }
 
             // Apply to height map

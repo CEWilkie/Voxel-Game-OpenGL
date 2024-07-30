@@ -31,6 +31,9 @@ class Biome {
         double scaleX = 64.0f;
         double scaleY = 64.0f;
 
+        // Secondary Generation values
+
+
         // BlockType height ranges
 
     public:

@@ -14,7 +14,7 @@
 #include "Chunk.h"
 #include "Biome.h"
 
-static const int worldSize = 16; // n chunks
+static const int worldSize = 8; // n chunks
 static const int worldHeight = 8; // from 0 to n chunks high
 static const int worldArea = worldSize * worldSize;
 static const int worldVolume = worldArea * worldHeight;

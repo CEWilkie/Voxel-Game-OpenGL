@@ -19,13 +19,21 @@ std::array<int, chunkArea> Biome::ChunkHeightMap(glm::vec3 _chunkOrigin) const {
             int cubeX = x + (int)_chunkOrigin.x;
             int cubeZ = z + (int)_chunkOrigin.z;
 
-            // Get positive noise value between 0 and noiseMultiplier
-            float simplexNoise = glm::simplex(glm::vec2(cubeX / scaleX, cubeZ / scaleY));
-            simplexNoise = (simplexNoise + 1) / 2;
-            simplexNoise *= noiseMultiplier;
+            // Get main biome noise value between 0 and noiseMultiplier
+            float biomeNoise = glm::simplex(glm::vec2(cubeX / scaleX, cubeZ / scaleY));
+            biomeNoise = (biomeNoise + 1) / 2;
+            biomeNoise *= noiseMultiplier;
 
             // Apply to height map
-            heightMap[x + z*chunkSize] += (int)simplexNoise + minHeight;
+            heightMap[x + z*chunkSize] = (int)biomeNoise + minHeight;
+
+            // secondary noise value
+            float secondaryNoise = glm::simplex(glm::vec2(cubeX / 16, cubeZ / 16));
+            secondaryNoise = (secondaryNoise + 1) / 2;
+            secondaryNoise *= 2;
+
+            // Apply to height map
+            heightMap[x + z*chunkSize] += (int)secondaryNoise;
         }
     }
 
@@ -65,8 +73,8 @@ Marshlands::Marshlands() {
 Mountains::Mountains() {
     biomeID = MOUNTAINS;
 
-    noiseMultiplier = 16.0f;
+    noiseMultiplier = 64.0f;
     minHeight = 45;
-    scaleX = 64.0f;
-    scaleY = 64.0f;
+    scaleX = 128.0f;
+    scaleY = 128.0f;
 }
