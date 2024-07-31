@@ -20,16 +20,18 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="additional biomes">
-      <change afterPath="$PROJECT_DIR$/src/World/CreateBiome.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/World/WorldGenConsts.h" afterDir="false" />
+    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="Changed biome generation.&#10;&#10;World now generates height maps, etc for the chunks, and a chunks biome is then determined by its various attributes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/asepriteFiles/terrainSheet.aseprite" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/terrainSheet.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/BlockModels/Block.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/BlockModels/Block.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Blocks/CreateBlock.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/CreateBlock.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Textures/TextureManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Textures/TextureManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/World/Biome.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Biome.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/World/Biome.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Biome.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/World/Chunk.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Chunk.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/World/Chunk.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Chunk.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/World/World.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/World.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/World/World.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/World.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -169,7 +171,7 @@
       <workItem from="1722362864967" duration="2426000" />
       <workItem from="1722371372885" duration="4177000" />
       <workItem from="1722418867536" duration="18063000" />
-      <workItem from="1722442863689" duration="9354000" />
+      <workItem from="1722442863689" duration="10483000" />
     </task>
     <task id="LOCAL-00001" summary="gitignore">
       <option name="closed" value="true" />
@@ -547,7 +549,15 @@
       <option name="project" value="LOCAL" />
       <updated>1722334869955</updated>
     </task>
-    <option name="localTasksCounter" value="48" />
+    <task id="LOCAL-00048" summary="Changed biome generation.&#10;&#10;World now generates height maps, etc for the chunks, and a chunks biome is then determined by its various attributes">
+      <option name="closed" value="true" />
+      <created>1722452299310</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1722452299310</updated>
+    </task>
+    <option name="localTasksCounter" value="49" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -570,7 +580,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="implemented a secondary camera. swap between cameras using 1 and 2 buttons, allows visuals of objects being culled as primary camera turns away" />
     <MESSAGE value="Reorganised files" />
     <MESSAGE value="starting to implement a global texture manager to manage the texture sheets in use by the program" />
     <MESSAGE value="Created first true block which inherits from the Cube class" />
@@ -595,7 +604,8 @@
     <MESSAGE value="Fixed water display, chunk culling fixed to prevent non-visible chunks from attempting to render." />
     <MESSAGE value="Basic implementation of biomes." />
     <MESSAGE value="additional biomes" />
-    <option name="LAST_COMMIT_MESSAGE" value="additional biomes" />
+    <MESSAGE value="Changed biome generation.&#10;&#10;World now generates height maps, etc for the chunks, and a chunks biome is then determined by its various attributes" />
+    <option name="LAST_COMMIT_MESSAGE" value="Changed biome generation.&#10;&#10;World now generates height maps, etc for the chunks, and a chunks biome is then determined by its various attributes" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

@@ -34,6 +34,14 @@ Grass::Grass(int _variant) {
     origin = {7,1};
 }
 
+Sand::Sand(int _variant) {
+    blockData = {BLOCKID::SAND, _variant};
+
+    // Set texture and texture origin
+    sheet = TEXTURESHEET::NATURAL;
+    origin = {13, 1};
+}
+
 Water::Water(int _variant) {
     blockData = {BLOCKID::WATER, _variant};
 

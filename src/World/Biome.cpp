@@ -14,8 +14,9 @@ BlockType Biome::GetBlockType(float _hmTopLevel, float _blockY) {
     // Returns the type of block that generates at the given Y value in the biome
     BlockType newBlockData;
 
-    // Determine block type
+    // Determine block type from lowest to highest
     if (_blockY < WATERLEVEL && _blockY > _hmTopLevel) newBlockData = {WATER, 0};
+    else if (_blockY <= _hmTopLevel && _blockY > _hmTopLevel - 4 && _hmTopLevel < WATERLEVEL + 2)  newBlockData = {SAND, 0};
     else if (_blockY > _hmTopLevel) newBlockData = {AIR, 0};
     else if (_blockY == _hmTopLevel && _blockY >= WATERLEVEL + 30) newBlockData = {BLOCKID::STONE, 0};
     else if (_blockY == _hmTopLevel) newBlockData = {BLOCKID::GRASS, 0};

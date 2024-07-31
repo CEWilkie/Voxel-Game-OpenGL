@@ -271,16 +271,9 @@ std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _position) const {
 
 void Chunk::GenerateChunk() {
     // Creates blocks in chunk and Put blocks into octTree
-    auto st = SDL_GetTicks64();
     CreateNodeTree(CreateTerrain());
-    auto et = SDL_GetTicks64();
 
-//    printf("CHUNK CREATION : %llu TICKS TAKEN\n", et-st);
 //    printf("CHUNK HAS %zu UNIQUE BLOCKS\n", uniqueBlocks.size());
-
-    chunkSumTicksTaken += et - st;
-    nChunksCreated++;
-    chunkAvgTicksTaken = chunkSumTicksTaken / nChunksCreated;
 }
 
 

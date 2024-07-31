@@ -28,7 +28,7 @@ TextureManager::TextureManager() {
 
     // Natural block textures
 
-    textureData = new TextureData("../resources/terrainSheet.png");
+    textureData = new TextureData("../resources/terrainSheet16x.png");
     if (textureData->IsTextureValid()) {
         textureData->SetTextureSheetGrid({16, 16});
         textureSheetMap[TEXTURESHEET::NATURAL] = std::make_unique<TextureData>(*textureData);

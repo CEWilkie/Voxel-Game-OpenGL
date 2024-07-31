@@ -34,6 +34,13 @@ class Grass : public Block {
         explicit Grass(int _variant);
 };
 
+class Sand : public Block {
+    private:
+
+    public:
+        explicit Sand(int _variant);
+};
+
 class Water : public Block {
     private:
 

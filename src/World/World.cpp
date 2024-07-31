@@ -83,7 +83,6 @@ void World::GenerateWorld() {
     // Generate the world terrain, and map biomes to the chunks
     GenerateTerrain();
 
-
     printf("AVG CHUNK CREATION: %llu TICKS TAKEN\n", chunkAvgTicksTaken);
     printf("AVG MESH CREATION: %llu TICKS TAKEN\n", meshAvgTicksTaken);
 
@@ -188,10 +187,17 @@ void World::GenerateTerrain() {
             for (int y = 0; y < worldHeight; y++) {
                 glm::vec3 chunkPos{chunkX, y, chunkZ};
 
+                auto st = SDL_GetTicks64();
                 worldChunks[x][y][z] = std::make_unique<Chunk>(chunkPos, chunkData);
                 worldChunks[x][y][z]->GenerateChunk();
+                auto et = SDL_GetTicks64();
+
+                chunkSumTicksTaken += et - st;
+                nChunksCreated++;
+                chunkAvgTicksTaken = chunkSumTicksTaken / nChunksCreated;
             }
         }
+        printf("%d Chunk / %d Made. . . \n", nChunksCreated, worldVolume);
     }
 
     // Assign neighbouring chunks to created chunks and invoke terrain generation for non-edge chunks

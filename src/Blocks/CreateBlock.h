@@ -36,6 +36,10 @@ inline std::unique_ptr<Block> CreateBlock(BlockType _blockData) {
             newBlock = std::make_unique<Grass>(_variant);
             break;
 
+        case BLOCKID::SAND:
+            newBlock = std::make_unique<Sand>(_variant);
+            break;
+
         default:
             // Block not defined
             newBlock = std::make_unique<TestBlock>(_variant);

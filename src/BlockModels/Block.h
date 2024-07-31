@@ -19,7 +19,7 @@
 #include "../Textures/TextureManager.h"
 
 enum BLOCKID : unsigned int {
-        TEST, GRASS, DIRT, STONE, WATER, AIR,
+        TEST, GRASS, DIRT, STONE, WATER, AIR, SAND,
 };
 
 enum BLOCKFACE : int{
