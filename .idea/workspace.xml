@@ -20,18 +20,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="Changed biome generation.&#10;&#10;World now generates height maps, etc for the chunks, and a chunks biome is then determined by its various attributes">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/asepriteFiles/terrainSheet.aseprite" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/terrainSheet.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/BlockModels/Block.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/BlockModels/Block.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Blocks/CreateBlock.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/CreateBlock.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Blocks/NaturalBlocks.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Textures/TextureManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Textures/TextureManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/World/Biome.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Biome.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/World/Chunk.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Chunk.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/World/World.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/World.cpp" afterDir="false" />
+    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="Sand, renamed terrain sheet">
+      <change beforePath="$PROJECT_DIR$/resources/asepriteFiles/terrainSheet16x.aseprite" beforeDir="false" afterPath="$PROJECT_DIR$/resources/asepriteFiles/terrainSheet16x.aseprite" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/terrainSheet16x.png" beforeDir="false" afterPath="$PROJECT_DIR$/resources/terrainSheet16x.png" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -171,7 +162,7 @@
       <workItem from="1722362864967" duration="2426000" />
       <workItem from="1722371372885" duration="4177000" />
       <workItem from="1722418867536" duration="18063000" />
-      <workItem from="1722442863689" duration="10483000" />
+      <workItem from="1722442863689" duration="11306000" />
     </task>
     <task id="LOCAL-00001" summary="gitignore">
       <option name="closed" value="true" />
@@ -557,7 +548,15 @@
       <option name="project" value="LOCAL" />
       <updated>1722452299310</updated>
     </task>
-    <option name="localTasksCounter" value="49" />
+    <task id="LOCAL-00049" summary="Sand, renamed terrain sheet">
+      <option name="closed" value="true" />
+      <created>1722453581881</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1722453581881</updated>
+    </task>
+    <option name="localTasksCounter" value="50" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -580,7 +579,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Reorganised files" />
     <MESSAGE value="starting to implement a global texture manager to manage the texture sheets in use by the program" />
     <MESSAGE value="Created first true block which inherits from the Cube class" />
     <MESSAGE value="add in aseprite resources" />
@@ -605,7 +603,8 @@
     <MESSAGE value="Basic implementation of biomes." />
     <MESSAGE value="additional biomes" />
     <MESSAGE value="Changed biome generation.&#10;&#10;World now generates height maps, etc for the chunks, and a chunks biome is then determined by its various attributes" />
-    <option name="LAST_COMMIT_MESSAGE" value="Changed biome generation.&#10;&#10;World now generates height maps, etc for the chunks, and a chunks biome is then determined by its various attributes" />
+    <MESSAGE value="Sand, renamed terrain sheet" />
+    <option name="LAST_COMMIT_MESSAGE" value="Sand, renamed terrain sheet" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
