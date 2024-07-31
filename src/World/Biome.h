@@ -7,44 +7,46 @@
 
 #include "../BlockModels/Block.h"
 
-// UNIVERSAL CONSTANTS FOR GENERATION
-inline const int WATERLEVEL = 35;
-
-
-static const int chunkSize = 16; // must be power of 2 for subchunk division ie 2, 4, 8, 16 | 32, 64, 128, ... ( too big)
-static const int chunkArea = chunkSize * chunkSize;
-static const int chunkVolume = chunkArea * chunkSize;
-
+#include "WorldGenConsts.h"
 
 enum BIOMEID : int {
-        HILLS, MARSHLANDS, MOUNTAINS, SWAMP, PLAINS, // ...
-        numBiomes
+        HILLS, SWAMP, MOUNTAINS, MARSH, PLAINS, OCEAN, BEACH, // ...
+        UNSPEC, numBiomes
+};
+
+enum class BIOMEATTRIB {
+        HEIGHT, TEMP, // ...
 };
 
 class Biome {
     protected:
-        BIOMEID biomeID = HILLS;
+        BIOMEID biomeID = UNSPEC;
 
-        // Biome Generation values
-        float noiseMultiplier = 16.0f;
-        int minHeight = 35;
-        double scaleX = 64.0f;
-        double scaleY = 64.0f;
+        // Generation Requirements
+        float minHeight = 0;
+        float minTemp = 0;
 
-        // Secondary Generation values
+        // BlockType domains
+        // ...
 
-
-        // BlockType height ranges
 
     public:
         Biome();
         ~Biome();
 
-        [[nodiscard]] std::array<int, chunkArea> ChunkHeightMap(glm::vec3 _chunkOrigin) const;
-        BlockType GetBlockType(float _hmTopLevel, float _blockY);
-
+        // Getters
+        [[nodiscard]] BlockType GetBlockType(float _hmTopLevel, float _blockY);
         [[nodiscard]] BIOMEID GetBiomeID() const { return biomeID; }
+        [[nodiscard]] float GetAttribute(BIOMEATTRIB _attribute) const;
 };
+
+class Hills : public Biome {
+    private:
+
+    public:
+        Hills();
+};
+
 
 class Marshlands : public Biome {
     private:
@@ -59,6 +61,28 @@ class Mountains : public Biome {
     public:
         Mountains();
 };
+
+class Plains : public Biome {
+    private:
+
+    public:
+        Plains();
+};
+
+class Beach : public Biome {
+    private:
+
+    public:
+        Beach();
+};
+
+class OceanShores : public Biome {
+    private:
+
+    public:
+        OceanShores();
+};
+
 
 
 #endif //UNTITLED7_BIOME_H

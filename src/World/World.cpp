@@ -6,6 +6,7 @@
 
 #include "World.h"
 #include "../Blocks/CreateBlock.h"
+#include "CreateBiome.h"
 
 World::World() {
     // Create skybox
@@ -79,10 +80,7 @@ void World::SetSkyboxPosition(glm::vec3 _position) {
  */
 
 void World::GenerateWorld() {
-    // Generate Biome Map
-    GenerateBiomeMap();
-
-    // First generate the world terrain
+    // Generate the world terrain, and map biomes to the chunks
     GenerateTerrain();
 
 
@@ -94,69 +92,117 @@ void World::GenerateWorld() {
 }
 
 
-void World::GenerateBiomeMap() {
-    for (int chunkX = 0; chunkX < worldSize; chunkX++) {
-        for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
-            // Get positive noise value between 0 and nBiomes
-            float biomeID = glm::simplex(glm::vec2(chunkX / 8.0, chunkZ / 8.0));
-            biomeID = (biomeID + 1) / 2;
-            biomeID *= MOUNTAINS;
-//            biomeID = MOUNTAINS;
+float World::GenerateBlockHeight(glm::vec2 _blockPos) {
+    float height = 0;
 
-            biomeID = std::round(biomeID);
-            // Check if biome is new to the world
-            if (!std::any_of(uniqueBiomes.begin(), uniqueBiomes.end(),
-            [&](std::pair<std::unique_ptr<Biome>, int> &uniqueBiome) {
-                // Biome is different
-                if (uniqueBiome.first->GetBiomeID() != (BIOMEID)biomeID) return false;
+    /*
+     * PRIMARY TERRAIN LEVELS
+     */
 
-                // Already exists, increment count
-                uniqueBiome.second += 1;
-                return true;
-            })) {
-                // create a new block of the specified type, and create mesh for block
-                if (biomeID == HILLS) uniqueBiomes.emplace_back(std::make_unique<Biome>(), 1);
-                if (biomeID == MARSHLANDS) uniqueBiomes.emplace_back(std::make_unique<Marshlands>(), 1);
-                if (biomeID == MOUNTAINS) uniqueBiomes.emplace_back(std::make_unique<Mountains>(), 1);
-            }
+    // Primary Noise based around waterlevel
+    float baseHeight = glm::simplex(glm::vec2( _blockPos.x / 128.0, _blockPos.y / 128.0));
+    baseHeight *= 5;
 
-            // Apply to height map
-            biomeMap[chunkX + chunkZ*worldSize] = (BIOMEID)biomeID;
+    baseHeight += WATERLEVEL;  // Ensure minimum generation value for solid blocks
+    height = baseHeight;
+
+    // Secondary base level noise applied to provide more jaggedness
+    float secondHeight = glm::simplex(glm::vec2( _blockPos.x / 32.0, _blockPos.y / 32.0));
+    secondHeight *= 2;
+    height += secondHeight;
+
+    /*
+     *  MOUNTAIN GENERATION
+     */
+
+    // Produce noise values for mountain
+    float peakHeight = glm::simplex(glm::vec2( _blockPos.x / 128.0, _blockPos.y / 128.0));
+    peakHeight = (peakHeight + 1) / 2;
+    peakHeight *= 128.0;
+
+    // Determine if mountain should generate
+    float areaHeight = glm::simplex(glm::vec2( _blockPos.x / 500.0, _blockPos.y / 500.0));
+    areaHeight = (areaHeight + 1) / 2;
+
+    float mountainFreq = 10; // increase to reduce number of mountains
+    height += peakHeight * std::pow(areaHeight, mountainFreq);
+
+
+    return std::round(height);
+}
+
+// Generate the height and temp maps for the given chunk starting pos
+ChunkData World::GenerateChunkData(glm::vec2 _chunkPosition) {
+    int chunkX = (int)_chunkPosition.x * chunkSize;
+    int chunkZ = (int)_chunkPosition.y * chunkSize;
+    ChunkData chunkData {};
+
+    for (int x = 0; x < chunkSize; x++) {
+        for (int z = 0; z < chunkSize; z++) {
+            chunkData.heightMap[x + z * chunkSize] = GenerateBlockHeight({chunkX+x, chunkZ+z});
+
+            // get positive heat value between 0 and max heat
+            float heat = glm::simplex(glm::vec2(x / 64.0, z / 64.0));
+            heat = (heat + 1) / 2;
+            heat *= 20;
+
+            // Relate heat to height (higher = colder)
+            heat -= (chunkData.heightMap[x + z * chunkSize]/MAXCHUNKHEIGHT) * 10;
+
+            chunkData.heatMap[x + z * chunkSize] = heat;
         }
     }
+
+    return chunkData;
 }
 
 
 
+/*
+ * Ensure that a biome of type BIOMEID has been generated for the world
+ */
+
+Biome* World::GenerateBiome(BIOMEID _biomeID) {
+    // If the biome has been generated before then exit
+    for (auto& uniqueBiome : uniqueBiomes) {
+        if (uniqueBiome->GetBiomeID() == _biomeID) return uniqueBiome.get();
+    }
+
+    // Else required to create a new unique biome
+    uniqueBiomes.emplace_back(CreateBiome(_biomeID));
+    return uniqueBiomes.back().get();
+}
+
+
 void World::GenerateTerrain() {
-    for (int chunkX = 0; chunkX < worldSize; chunkX++) {
-        for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
-            auto biomeID = (BIOMEID) biomeMap[chunkX + chunkZ * worldSize];
-            Biome* biome;
-            for (const auto& biomePair : uniqueBiomes) {
-                if (biomePair.first->GetBiomeID() == biomeID) biome = biomePair.first.get();
-            }
+    // Ensure that a chunk is created for the whole world
+    for (int x = 0; x < worldSize; x++) {
+        for (int z = 0; z < worldSize; z++) {
+            float chunkX = (float)x - worldSize / 2.0f;
+            float chunkZ = (float)z - worldSize / 2.0f;
 
-            for (int chunkY = 0; chunkY < worldHeight; chunkY++) {
-                glm::vec3 chunkPos{chunkX - worldSize / 2, chunkY, chunkZ - worldSize / 2};
+            // Get Chunk ChunkData
+            ChunkData chunkData = GenerateChunkData({chunkX, chunkZ});
+            chunkData.biome = GenerateBiome(GetBiomeIDFromData(chunkData));
 
-                worldChunks[chunkX][chunkY][chunkZ] = std::make_unique<Chunk>(chunkPos, biome);
+            for (int y = 0; y < worldHeight; y++) {
+                glm::vec3 chunkPos{chunkX, y, chunkZ};
+
+                worldChunks[x][y][z] = std::make_unique<Chunk>(chunkPos, chunkData);
+                worldChunks[x][y][z]->GenerateChunk();
             }
         }
     }
 
-    // Assign neighbouring chunks to created chunks
-    for (int chunkX = 0; chunkX < worldSize; chunkX++)
+    // Assign neighbouring chunks to created chunks and invoke terrain generation for non-edge chunks
+    for (int chunkX = 1; chunkX < worldSize-1; chunkX++)
         for (int chunkY = 0; chunkY < worldHeight; chunkY++)
-            for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
-                // TOP, BOTTOM, FRONT, BACK, RIGHT, LEFT
-                std::array<Chunk*, 6> adjacentChunks {nullptr};
-                std::vector<glm::vec3> positionOffsets {
-                        ChunkDataTypes::adjTop, ChunkDataTypes::adjBottom, ChunkDataTypes::adjFront,
-                        ChunkDataTypes::adjBack, ChunkDataTypes::adjRight, ChunkDataTypes::adjLeft};
+            for (int chunkZ = 1; chunkZ < worldSize-1; chunkZ++) {
+                // TOP, BOTTOM, FRONT, FRONTLEFT, LEFT, BACKLEFT, BACK, BACKRIGHT, RIGHT, FRONTRIGHT
+                std::array<Chunk*, numDirections> adjacentChunks {nullptr};
 
-                for (int f = 0; f < 6; f++) {
-                    adjacentChunks[f] = GetChunkAtPosition(glm::vec3{chunkX, chunkY, chunkZ} + positionOffsets[f]);
+                for (int dir = 0; dir < numDirections; dir++) {
+                    adjacentChunks[dir] = GetChunkAtPosition(glm::vec3{chunkX, chunkY, chunkZ} + allDirections[dir]);
                 }
 
                 worldChunks[chunkX][chunkY][chunkZ]->SetAdjacentChunks(adjacentChunks);
@@ -170,4 +216,16 @@ Chunk* World::GetChunkAtPosition(glm::vec3 _position) const {
     if (_position.z < 0 || _position.z >= worldSize) return nullptr;
 
     return worldChunks[(int)_position.x][(int)_position.y][(int)_position.z].get();
+}
+
+Biome* World::GetBiome(BIOMEID _biomeID) {
+    // Fetch biome
+    for (auto& uniqueBiome : uniqueBiomes) {
+        if (uniqueBiome->GetBiomeID() == _biomeID) return uniqueBiome.get();
+    }
+
+    // Biome did not exist?
+    printf("WARNING : BIOME NOT CREATED BEFORE USAGE REQUEST\n");
+    uniqueBiomes.emplace_back(CreateBiome(_biomeID));
+    return uniqueBiomes.back().get();
 }

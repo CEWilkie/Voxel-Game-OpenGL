@@ -12,6 +12,7 @@
 #include "../BlockModels/ModelTransformations.h"
 #include "../BlockModels/MaterialMesh.h"
 
+#include "WorldGenConsts.h"
 #include "Biome.h"
 
 //static const int chunkSize = 16; // must be power of 2 for subchunk division ie 2, 4, 8, 16 | 32, 64, 128, ... ( too big)
@@ -51,33 +52,15 @@ class ChunkNode {
 
 
 
+// REDEF LONG VAR TYPES
+typedef std::array<std::array<std::array<std::unique_ptr<ChunkNode>, chunkSize>, chunkSize>, chunkSize> chunkNodeArray;
 
-
-inline int nChunksCreated;
-inline Uint64 chunkAvgTicksTaken = 0;
-inline Uint64 chunkSumTicksTaken = 0;
-
-inline int nMeshesCreated;
-inline Uint64 meshAvgTicksTaken = 0;
-inline Uint64 meshSumTicksTaken = 0;
-
-namespace ChunkDataTypes {
-    // Long arrays
-    typedef std::array<std::array<std::array<std::unique_ptr<ChunkNode>, chunkSize>, chunkSize>, chunkSize> nodeArray;
-    typedef std::array<std::array<std::array<BlockType, chunkSize>, chunkSize>, chunkSize> terrainArray;
-
-    // Directions for checking adjacent chunks / blocks
-    inline glm::vec3 adjTop{0,1,0};
-    inline glm::vec3 adjBottom{0, -1, 0};
-    inline glm::vec3 adjFront{-1, 0, 0};
-    inline glm::vec3 adjBack{1,0,0};
-    inline glm::vec3 adjRight{0, 0, 1};
-    inline glm::vec3 adjLeft{0, 0, -1};
-
-
-
-}
-
+// CHUNKDATA STRUCT
+struct ChunkData {
+    Biome* biome {};
+    ChunkDataMap heightMap {};
+    ChunkDataMap heatMap {};
+};
 
 /*
  * Parent node to ChunkNodes
@@ -86,25 +69,27 @@ namespace ChunkDataTypes {
 class Chunk {
     private:
         // Chunk Display
+        bool inCamera = true;
         std::vector<std::unique_ptr<MaterialMesh>> blockMeshes {};
 
         // Chunk Culling and positioning
         std::unique_ptr<BoxBounds> boxBounds {};
         std::unique_ptr<Transformation> chunkTransformation = std::make_unique<Transformation>();
         glm::vec3 chunkPosition {0,0,0};
-        bool inCamera = true;
 
         // Chunk tree
         std::unique_ptr<ChunkNode> rootNode {};
-        std::array<Chunk*, 6> adjacentChunks {};
+        std::array<Chunk*, 10> adjacentChunks {};
 
         // Block Data
-        Biome* chunkBiome {};
         std::vector<std::pair<std::unique_ptr<Block>, int>> uniqueBlocks {}; // block, count
-        ChunkDataTypes::terrainArray terrain {};
+        chunkTerrainArray terrain {};
+
+        // Biome Data and chunk Generation info
+        ChunkData chunkData;
 
     public:
-        Chunk(const glm::vec3& _chunkPosition, Biome* _biome);
+        Chunk(const glm::vec3& _chunkPosition, ChunkData _chunkData);
         ~Chunk();
 
         // Display
@@ -118,10 +103,10 @@ class Chunk {
         [[nodiscard]] std::vector<BLOCKFACE> GetShowingFaces(glm::vec3 _position) const;
 
         // Chunk Generation
-        std::array<int, chunkArea> CreateHeightMap() const;
-        ChunkDataTypes::nodeArray CreateTerrain();
-        void CreateNodeTree(ChunkDataTypes::nodeArray _chunkNodes);
-        void SetAdjacentChunks(const std::array<Chunk*, 6>& _chunks);
+        void GenerateChunk();
+        chunkNodeArray CreateTerrain();
+        void CreateNodeTree(chunkNodeArray _chunkNodes);
+        void SetAdjacentChunks(const std::array<Chunk*, 10>& _chunks);
 
         // Getters
         [[nodiscard]] Block* GetBlockAtPosition(glm::vec3 _position, int _depth) const;

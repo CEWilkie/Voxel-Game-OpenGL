@@ -14,14 +14,10 @@
 #include "Chunk.h"
 #include "Biome.h"
 
-static const int worldSize = 8; // n chunks
-static const int worldHeight = 8; // from 0 to n chunks high
-static const int worldArea = worldSize * worldSize;
-static const int worldVolume = worldArea * worldHeight;
-
 namespace WorldDataTypes {
     typedef std::array<std::array<std::array<std::unique_ptr<Chunk>, worldSize>, worldHeight>, worldSize> chunkArray;
-    typedef std::array<BIOMEID, worldArea> biomeMap;
+    typedef std::array<std::unique_ptr<Biome>, worldArea> biomeMap;
+    typedef std::array<float, worldArea> chunkDataMap;
 }
 
 class World {
@@ -33,9 +29,9 @@ class World {
         // ...
 
         // World Generation
-        WorldDataTypes::chunkArray worldChunks {nullptr};
-        std::vector<std::pair<std::unique_ptr<Biome>, int>> uniqueBiomes {};
-        WorldDataTypes::biomeMap biomeMap {(BIOMEID)0};
+        WorldDataTypes::chunkArray worldChunks {};
+        std::vector<std::unique_ptr<Biome>> uniqueBiomes {};
+        WorldDataTypes::biomeMap biomeMap {};
 
     public:
         World();
@@ -51,11 +47,14 @@ class World {
 
         // Generation
         void GenerateWorld();
-        void GenerateBiomeMap();
+        float GenerateBlockHeight(glm::vec2 _blockPos);
+        ChunkData GenerateChunkData(glm::vec2 _chunkPosition);
+        Biome* GenerateBiome(BIOMEID _biomeID);
         void GenerateTerrain();
 
         // Getters
         [[nodiscard]] Chunk* GetChunkAtPosition(glm::vec3 _position) const;
+        [[nodiscard]] Biome* GetBiome(BIOMEID _biomeID);
 };
 
 inline std::unique_ptr<World> world {};

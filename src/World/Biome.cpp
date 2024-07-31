@@ -10,38 +10,6 @@ Biome::Biome() = default;
 
 Biome::~Biome() = default;
 
-
-std::array<int, chunkArea> Biome::ChunkHeightMap(glm::vec3 _chunkOrigin) const {
-    std::array<int, chunkArea> heightMap {};
-    // Take a flat xz plane of the chunk, and determine height values for each xz pillar
-    for (int x = 0; x < chunkSize; x++) {
-        for (int z = 0; z < chunkSize; z++) {
-            int cubeX = x + (int)_chunkOrigin.x;
-            int cubeZ = z + (int)_chunkOrigin.z;
-
-            // Get main biome noise value between 0 and noiseMultiplier
-            float biomeNoise = glm::simplex(glm::vec2(cubeX / scaleX, cubeZ / scaleY));
-            biomeNoise = (biomeNoise + 1) / 2;
-            biomeNoise *= noiseMultiplier;
-
-            // Apply to height map
-            heightMap[x + z*chunkSize] = (int)biomeNoise + minHeight;
-
-            // secondary noise value
-            float secondaryNoise = glm::simplex(glm::vec2(cubeX / 16, cubeZ / 16));
-            secondaryNoise = (secondaryNoise + 1) / 2;
-            secondaryNoise *= 2;
-
-            // Apply to height map
-            heightMap[x + z*chunkSize] += (int)secondaryNoise;
-        }
-    }
-
-    return heightMap;
-}
-
-
-
 BlockType Biome::GetBlockType(float _hmTopLevel, float _blockY) {
     // Returns the type of block that generates at the given Y value in the biome
     BlockType newBlockData;
@@ -49,32 +17,73 @@ BlockType Biome::GetBlockType(float _hmTopLevel, float _blockY) {
     // Determine block type
     if (_blockY < WATERLEVEL && _blockY > _hmTopLevel) newBlockData = {WATER, 0};
     else if (_blockY > _hmTopLevel) newBlockData = {AIR, 0};
+    else if (_blockY == _hmTopLevel && _blockY >= WATERLEVEL + 30) newBlockData = {BLOCKID::STONE, 0};
     else if (_blockY == _hmTopLevel) newBlockData = {BLOCKID::GRASS, 0};
-    else if (_blockY > _hmTopLevel - 4) newBlockData = {BLOCKID::DIRT, 0};
+    else if (_blockY > _hmTopLevel - 4 && _hmTopLevel < WATERLEVEL + 30) newBlockData = {BLOCKID::DIRT, 0};
     else newBlockData = {BLOCKID::STONE, 0};
+
+    // For each domain, test if the given block y position is within it
+
+
+
 
     return newBlockData;
 }
 
+float Biome::GetAttribute(BIOMEATTRIB _attribute) const {
+    switch (_attribute) {
+        case BIOMEATTRIB::HEIGHT:
+            return minHeight;
+
+        case BIOMEATTRIB::TEMP:
+            return minTemp;
+
+        default:
+            return 0.0f;
+    }
+}
 
 
 
+Hills::Hills() {
+    biomeID = HILLS;
+
+    minHeight = WATERLEVEL + 10;
+
+}
 
 Marshlands::Marshlands() {
-    biomeID = MARSHLANDS;
+    biomeID = SWAMP;
 
-    noiseMultiplier = 4.0f;
-    minHeight = 32;
-    scaleX = 16.0f;
-    scaleY = 16.0f;
+    minHeight = WATERLEVEL + 1;
+
 }
 
 
 Mountains::Mountains() {
     biomeID = MOUNTAINS;
 
-    noiseMultiplier = 64.0f;
-    minHeight = 45;
-    scaleX = 128.0f;
-    scaleY = 128.0f;
+    minHeight = WATERLEVEL + 30;
+
+}
+
+Plains::Plains() {
+    biomeID = PLAINS;
+
+    minHeight = WATERLEVEL + 3;
+
+}
+
+Beach::Beach() {
+    biomeID = BEACH;
+
+    minHeight = WATERLEVEL;
+
+}
+
+OceanShores::OceanShores() {
+    biomeID = OCEAN;
+
+    minHeight = WATERLEVEL - 3;
+
 }

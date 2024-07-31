@@ -20,11 +20,14 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="Basic implementation of biomes.">
+    <list default="true" id="a9528609-18e1-42b1-9a1d-0fee6dd6fea5" name="Changes" comment="additional biomes">
+      <change afterPath="$PROJECT_DIR$/src/World/CreateBiome.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/World/WorldGenConsts.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Player/Camera.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Player/Camera.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/World/Biome.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Biome.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/World/Biome.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Biome.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/World/Chunk.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Chunk.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/World/Chunk.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/Chunk.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/World/World.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/World.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/World/World.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/World/World.h" afterDir="false" />
     </list>
@@ -95,6 +98,11 @@
     </key>
   </component>
   <component name="RunManager">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="untitled7" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="untitled7" TARGET_NAME="untitled7" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="untitled7" RUN_TARGET_NAME="untitled7">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -157,7 +165,11 @@
       <workItem from="1722277508784" duration="11073000" />
       <workItem from="1722291320694" duration="3335000" />
       <workItem from="1722294673261" duration="2507000" />
-      <workItem from="1722331417838" duration="599000" />
+      <workItem from="1722331417838" duration="24307000" />
+      <workItem from="1722362864967" duration="2426000" />
+      <workItem from="1722371372885" duration="4177000" />
+      <workItem from="1722418867536" duration="18063000" />
+      <workItem from="1722442863689" duration="9354000" />
     </task>
     <task id="LOCAL-00001" summary="gitignore">
       <option name="closed" value="true" />
@@ -527,7 +539,15 @@
       <option name="project" value="LOCAL" />
       <updated>1722295619024</updated>
     </task>
-    <option name="localTasksCounter" value="47" />
+    <task id="LOCAL-00047" summary="additional biomes">
+      <option name="closed" value="true" />
+      <created>1722334869955</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1722334869955</updated>
+    </task>
+    <option name="localTasksCounter" value="48" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -550,7 +570,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="object culling implemented using sphere approximations for cubes. Not maximally efficient, some issues exist i think" />
     <MESSAGE value="implemented a secondary camera. swap between cameras using 1 and 2 buttons, allows visuals of objects being culled as primary camera turns away" />
     <MESSAGE value="Reorganised files" />
     <MESSAGE value="starting to implement a global texture manager to manage the texture sheets in use by the program" />
@@ -575,7 +594,8 @@
     <MESSAGE value="Chunks now manage meshes, creates a mesh for each unique block in the chunk." />
     <MESSAGE value="Fixed water display, chunk culling fixed to prevent non-visible chunks from attempting to render." />
     <MESSAGE value="Basic implementation of biomes." />
-    <option name="LAST_COMMIT_MESSAGE" value="Basic implementation of biomes." />
+    <MESSAGE value="additional biomes" />
+    <option name="LAST_COMMIT_MESSAGE" value="additional biomes" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
