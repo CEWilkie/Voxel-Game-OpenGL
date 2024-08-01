@@ -43,7 +43,7 @@ class Camera {
         // Camera Movement
         void Move(Uint64 _deltaFrames);
         void MouseLook(SDL_bool _mouseGrabbed);
-        void UpdateUniform() const;
+        void UpdateLookatUniform() const;
 
         // Frustrum Culling with view clip planes
         void UpdateViewFrustrum();
@@ -51,12 +51,14 @@ class Camera {
         // Camera Setters
         void MoveTo(const glm::vec3& _position);
         void SetDirection(const glm::vec3& _direction);
+        void SetAngle(double _angleVert, double _angleHoriz);
 
         // Getters
         [[nodiscard]] glm::mat4 GetViewMatrix() const {
             return glm::lookAt(position, position+direction, normalUp);
         }
         [[nodiscard]] glm::vec3 GetDirection() const { return direction; }
+        [[nodiscard]] std::pair<double, double> GetAngle() { return {angleVert, angleHoriz}; }
         [[nodiscard]] std::pair<float, float> GetMinMaxDistance() const { return {minDistance, maxDistance}; }
         [[nodiscard]] glm::vec3 GetPosition() const { return position; }
         [[nodiscard]] Frustrum GetCameraFrustrum() const { return vf; }

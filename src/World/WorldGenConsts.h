@@ -17,7 +17,7 @@ static const int MINCHUNKHEIGHT = 25;
 static const int MAXCHUNKHEIGHT = 128;
 
 // SIZING OF THE INITIAL WORLD AREA GENERATED
-static const int worldSizeChunks = 16;
+static const int worldSizeChunks = 2;
 static const int worldSize = worldSizeChunks + 2; // n chunks + 2 so edges of world chunks can be given adjacent biome information
 static const int worldHeight = 16; // from 0 to n chunks high
 static const int worldArea = worldSize * worldSize;

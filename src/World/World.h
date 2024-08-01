@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "../BlockModels/Block.h"
-#include "../Player/Camera.h"
+#include "../Player/Player.h"
 #include "../Textures/TextureData.h"
 
 #include "Chunk.h"
@@ -42,7 +42,7 @@ class World {
         void CheckCulling(const Camera& _camera);
 
         // Skybox
-        void SetSkyboxProperties(const Camera* camera);
+        void SetSkyboxProperties(const Player& player);
         void SetSkyboxPosition(glm::vec3 _position);
 
         // Generation

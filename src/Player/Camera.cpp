@@ -41,6 +41,13 @@ void Camera::SetDirection(const glm::vec3 &_direction) {
     direction = _direction;
 }
 
+void Camera::SetAngle(double _angleVert, double _angleHoriz) {
+    angleVert = _angleVert;
+    angleHoriz = _angleHoriz;
+}
+
+
+
 void Camera::Move(Uint64 _deltaFrames) {
 //    printf("POS: %f %f %f\n", position.x, position.y, position.z);
 //    printf("FACING DIRECTION: %f %f %f\n", direction.x, direction.y, direction.z);
@@ -123,7 +130,7 @@ void Camera::MouseLook(SDL_bool _mouseGrabbed) {
 //    printf("FACING DIRECTION: %f %f %f\n", direction.x, direction.y, direction.z);
 }
 
-void Camera::UpdateUniform() const {
+void Camera::UpdateLookatUniform() const {
     GLint uLocation;
 
     uLocation = glGetUniformLocation(window.GetShader(), "uViewMatrix");

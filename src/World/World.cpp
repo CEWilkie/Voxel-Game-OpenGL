@@ -21,7 +21,7 @@ void World::Display() {
     // First draw in the skybox and decorations
     skybox->Display(&skyboxTransformation);
 
-    glEnable(GL_CULL_FACE);
+//    glEnable(GL_CULL_FACE);
     // Draw solid objects
     for (int chunkX = 0; chunkX < worldSize; chunkX++)
         for (int chunkY = 0; chunkY < worldHeight; chunkY++)
@@ -54,16 +54,16 @@ void World::CheckCulling(const Camera &_camera) {
  * SKYBOX
  */
 
-void World::SetSkyboxProperties(const Camera *camera) {
+void World::SetSkyboxProperties(const Player& player) {
     // Determine max distance for skybox
-    std::pair<float, float> minMax = camera->GetMinMaxDistance();
+    std::pair<float, float> minMax = player.GetUsingCamera()->GetMinMaxDistance();
     double maxSqrd = std::pow(minMax.second*2, 2.0);
 
     // Set skybox scale
     skyboxTransformation.SetScale({float(sqrt(maxSqrd / 3)), float(sqrt(maxSqrd / 3)), float(sqrt(maxSqrd / 3))});
 
     // Set skybox position centred on the player
-    SetSkyboxPosition(camera->GetPosition());
+    SetSkyboxPosition(player.GetPosition());
 }
 
 void World::SetSkyboxPosition(glm::vec3 _position) {
@@ -98,6 +98,10 @@ float World::GenerateBlockHeight(glm::vec2 _blockPos) {
      * PRIMARY TERRAIN LEVELS
      */
 
+    // Seabed / ContinentBed Generation
+    float continentiality = glm::simplex(glm::vec2( _blockPos.x / 500.0, _blockPos.y / 500.0));
+    continentiality = (continentiality + 1) / 2;
+
     // Primary Noise based around waterlevel
     float baseHeight = glm::simplex(glm::vec2( _blockPos.x / 128.0, _blockPos.y / 128.0));
     baseHeight *= 5;
@@ -123,7 +127,7 @@ float World::GenerateBlockHeight(glm::vec2 _blockPos) {
     float areaHeight = glm::simplex(glm::vec2( _blockPos.x / 500.0, _blockPos.y / 500.0));
     areaHeight = (areaHeight + 1) / 2;
 
-    float mountainFreq = 10; // increase to reduce number of mountains
+    float mountainFreq = 20; // increase to reduce number of mountains
     height += peakHeight * std::pow(areaHeight, mountainFreq);
 
 
