@@ -83,7 +83,6 @@ class Block {
     protected:
         // Block Culling
         bool inCamera = true, culled = false;
-        std::vector<BLOCKFACE> visibleFaces {TOP, BOTTOM, FRONT, BACK, LEFT, RIGHT};
 
         // Block Display
         TEXTURESHEET sheet {TEXTURESHEET::WORLD};

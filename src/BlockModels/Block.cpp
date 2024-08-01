@@ -173,8 +173,8 @@ void Block::Display(Transformation* _t) {
     if (uniformLocation < 0) printf("block location not found [uVertexTextureCoordOffset]\n");
     if (uniformLocation >= 0) glUniform2fv(uniformLocation, 1, &origin[0]);
 
-    // Draw Block (max count = 36)
-    glDrawElements(GL_TRIANGLES, 6*(int)visibleFaces.size(), GL_UNSIGNED_INT, nullptr);
+    // Draw Block
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
 }
 

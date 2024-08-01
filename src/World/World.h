@@ -14,6 +14,8 @@
 #include "Chunk.h"
 #include "Biome.h"
 
+class Player;
+
 namespace WorldDataTypes {
     typedef std::array<std::array<std::array<std::unique_ptr<Chunk>, worldSize>, worldHeight>, worldSize> chunkArray;
     typedef std::array<std::unique_ptr<Biome>, worldArea> biomeMap;

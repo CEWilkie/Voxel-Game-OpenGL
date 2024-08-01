@@ -7,11 +7,16 @@
 
 #include <glm/matrix.hpp>
 #include "Camera.h"
+#include "../World/World.h"
+
+class World;
 
 class Player {
     private:
         // Positioning info
         glm::vec3 position {};
+        float maxHorizSpeed {};
+        float maxVertSpeed {};
         float horizSpeed {};
         float vertSpeed {};
         glm::vec3 normalUp {};

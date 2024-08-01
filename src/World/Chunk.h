@@ -84,6 +84,7 @@ class Chunk {
         // Block Data
         std::vector<std::pair<std::unique_ptr<Block>, int>> uniqueBlocks {}; // block, count
         chunkTerrainArray terrain {};
+        bool generated = false;
 
         // Biome Data and chunk Generation info
         ChunkData chunkData;
@@ -110,6 +111,7 @@ class Chunk {
 
         // Getters
         [[nodiscard]] Block* GetBlockAtPosition(glm::vec3 _position, int _depth) const;
+        [[nodiscard]] float GetTopLevelAtPosition(glm::vec3 _position, float _radius);
         [[nodiscard]] Block* GetBlockFromData(BlockType _blockData) const;
         [[nodiscard]] glm::vec3 GetPosition() const { return chunkPosition; }
 };

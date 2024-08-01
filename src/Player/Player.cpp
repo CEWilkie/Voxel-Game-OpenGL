@@ -22,8 +22,8 @@ Player::Player(glm::vec3 _position, glm::vec3 _facingDirection) {
     usingCamera->UpdateLookatUniform();
 
     // Movement and input values
-    horizSpeed = 30.0f;
-    vertSpeed = 20.f;
+    maxHorizSpeed = 30.0f;
+    maxVertSpeed = 20.f;
     cameraSensitivity = 0.1f;
 }
 
@@ -32,8 +32,8 @@ void Player::Move(Uint64 _deltaFrames) {
     normalRight = glm::normalize(glm::cross(horizDirection, normalUp));
     auto [angleVert, angleHoriz] = usingCamera->GetAngle();
 
-    float hs = horizSpeed * float(_deltaFrames) / 1000.0f;
-    float vs = vertSpeed * float(_deltaFrames) / 1000.0f;
+    float hs = maxHorizSpeed * float(_deltaFrames) / 1000.0f;
+    float vs = maxVertSpeed * float(_deltaFrames) / 1000.0f;
 
     const std::uint8_t* state = SDL_GetKeyboardState(nullptr);
     if (state[SDL_SCANCODE_W]) {
@@ -52,10 +52,33 @@ void Player::Move(Uint64 _deltaFrames) {
     }
 
     if (state[SDL_SCANCODE_SPACE]) {
+        vertSpeed = vs;
         position.y += vs;
     }
     if (state[SDL_SCANCODE_LSHIFT]) {
-        position.y -= vs;
+        vertSpeed = vs;
+
+        // Check chunk to prevent falling beneath
+        glm::vec3 chunkPos = (position / (float)chunkSize);
+        chunkPos = {chunkPos.x + worldSize / 2.0f, chunkPos.y, chunkPos.z + worldSize/2.0f};
+        Chunk* playerChunk = world->GetChunkAtPosition(chunkPos);
+
+        glm::vec3 playerBlockPos = {chunkPos.x - (int)chunkPos.x, chunkPos.y - (int)chunkPos.y, chunkPos.z - (int)chunkPos.z};
+        playerBlockPos *= chunkSize;
+        playerBlockPos = {playerBlockPos.x, playerBlockPos.y - 1, playerBlockPos.z};
+        printf("pos %f %f %f\n", position.x, position.y, position.z);
+        printf("cpos %f %f %f\n", chunkPos.x, chunkPos.y, chunkPos.z);
+        printf("bpos %f %f %f\n", playerBlockPos.x, playerBlockPos.y, playerBlockPos.z);
+        // Get the highest ylevel that the player would reach first
+        float toplevel = playerChunk->GetTopLevelAtPosition(playerBlockPos, 0.8f);
+
+        // If it is a solid block, and y level of player within 0.2 then set to toplevel value
+        if (position.y - vs > toplevel) {
+            position.y -= vs;
+        }
+        else {
+            position.y = toplevel;
+        }
     }
 
     usingCamera->MoveTo({position.x, position.y + 1, position.z});

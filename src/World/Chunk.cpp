@@ -316,6 +316,8 @@ chunkNodeArray Chunk::CreateTerrain() {
         }
     }
 
+    generated = true;
+
     return chunkBlocks;
 }
 
@@ -433,4 +435,27 @@ Block* Chunk::GetBlockFromData(BlockType _data) const {
     // No block found with specified data
     printf("BLOCK NOT FOUND, ID %d VARIANT %d\n", _data.blockID, _data.variantID);
     return nullptr;
+}
+
+float Chunk::GetTopLevelAtPosition(glm::vec3 _position, float _radius) {
+    float topLevel = -20;
+    if (this == nullptr) return topLevel;
+
+    // if position y is 0.8 or above, round to int.
+    int y = (_position.y - (int)_position.y >= 0.8) ? (int)roundf(_position.y) : (int)_position.y;
+
+    for (int x = (int)(_position.x - _radius); x < (int)(_position.x + _radius); x++) {
+        for (int z = (int)(_position.z - _radius); z < (int)(_position.z + _radius); z++) {
+            printf("x %d, y %d, z %d\n", x, (int)_position.y, z);
+            Block* block = GetBlockAtPosition({x,y,z}, 0);
+            if (block == nullptr || block->GetBlockType().blockID == AIR || block->GetBlockType().blockID == WATER) continue;
+
+            float blockTL = 1 + y + chunkPosition.y*(float)chunkSize;
+            printf("topl %f\n", blockTL);
+            if (blockTL > topLevel) topLevel = blockTL;
+
+        }
+    }
+
+    return topLevel;
 }

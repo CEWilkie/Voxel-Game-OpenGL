@@ -21,8 +21,8 @@ void World::Display() {
     // First draw in the skybox and decorations
     skybox->Display(&skyboxTransformation);
 
-//    glEnable(GL_CULL_FACE);
-    // Draw solid objects
+    glEnable(GL_CULL_FACE);
+//     Draw solid objects
     for (int chunkX = 0; chunkX < worldSize; chunkX++)
         for (int chunkY = 0; chunkY < worldHeight; chunkY++)
             for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
