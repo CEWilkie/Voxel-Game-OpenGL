@@ -63,7 +63,9 @@ int main(int argc, char** argv){
      * PLAYER CREATION
      */
 
-    glm::vec3 startPos = {0, world->GenerateBlockHeight({0,0}) + 1, 0};
+    printf("SPAWN POS %f %f %f\n", 0.5f, world->GenerateBlockHeight({0,0}), 0.5f);
+
+    glm::vec3 startPos = {0.5f, world->GenerateBlockHeight({0,0}) + 3, 0.5f};
     Player player {startPos, {0,0,1.0f}};
 
     // Set skybox dimensions with player camera
@@ -159,7 +161,7 @@ int main(int argc, char** argv){
         // CAMERA
 
         if (grabMouse == SDL_TRUE) {
-            player.Move(deltaTicks);
+            player.HandleMovement(deltaTicks);
             player.MouseLook(grabMouse);
         }
 

@@ -18,7 +18,7 @@ BlockType Biome::GetBlockType(float _hmTopLevel, float _blockY) {
     if (_blockY < WATERLEVEL && _blockY > _hmTopLevel) newBlockData = {WATER, 0};
     else if (_blockY <= _hmTopLevel && _blockY > _hmTopLevel - 4 && _hmTopLevel < WATERLEVEL + 2)  newBlockData = {SAND, 0};
     else if (_blockY > _hmTopLevel) newBlockData = {AIR, 0};
-    else if (_blockY == _hmTopLevel && _blockY >= WATERLEVEL + 30) newBlockData = {BLOCKID::STONE, 0};
+    else if (_blockY == _hmTopLevel && _blockY >= WATERLEVEL + 120) newBlockData = {BLOCKID::STONE, 0};
     else if (_blockY == _hmTopLevel) newBlockData = {BLOCKID::GRASS, 0};
     else if (_blockY > _hmTopLevel - 4 && _hmTopLevel < WATERLEVEL + 30) newBlockData = {BLOCKID::DIRT, 0};
     else newBlockData = {BLOCKID::STONE, 0};

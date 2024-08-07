@@ -439,19 +439,21 @@ Block* Chunk::GetBlockFromData(BlockType _data) const {
 
 float Chunk::GetTopLevelAtPosition(glm::vec3 _position, float _radius) {
     float topLevel = -20;
-    if (this == nullptr) return topLevel;
 
-    // if position y is 0.8 or above, round to int.
+    // if position y is 0.8 or above, round to ciel
     int y = (_position.y - (int)_position.y >= 0.8) ? (int)roundf(_position.y) : (int)_position.y;
 
-    for (int x = (int)(_position.x - _radius); x < (int)(_position.x + _radius); x++) {
-        for (int z = (int)(_position.z - _radius); z < (int)(_position.z + _radius); z++) {
-            printf("x %d, y %d, z %d\n", x, (int)_position.y, z);
-            Block* block = GetBlockAtPosition({x,y,z}, 0);
+    // to 0.01 precision, convert to int to *maybe* stop some imprecision issues with looping through with floats
+    for (int x = int(100.0 * _position.x); x <= int(100.0 * (_position.x + _radius)); x += int(100.0 * _radius)) {
+        for (int z = int(100.0 * _position.z); z <= int(100.0 * (_position.z + _radius)); z += int(100.0 * _radius)) {
+            // Convert back to float position
+            glm::vec3 position{x/100.0, y, z/100.0};
+
+            Block* block = GetBlockAtPosition(position, 0);
             if (block == nullptr || block->GetBlockType().blockID == AIR || block->GetBlockType().blockID == WATER) continue;
 
-            float blockTL = 1 + y + chunkPosition.y*(float)chunkSize;
-            printf("topl %f\n", blockTL);
+            // blockHeight + y in chunk + chunkHeight
+            float blockTL = 1.0f + y + chunkPosition.y*(float)chunkSize;
             if (blockTL > topLevel) topLevel = blockTL;
 
         }

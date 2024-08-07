@@ -22,7 +22,7 @@ void World::Display() {
     skybox->Display(&skyboxTransformation);
 
     glEnable(GL_CULL_FACE);
-//     Draw solid objects
+    // Draw solid objects
     for (int chunkX = 0; chunkX < worldSize; chunkX++)
         for (int chunkY = 0; chunkY < worldHeight; chunkY++)
             for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
@@ -205,9 +205,9 @@ void World::GenerateTerrain() {
     }
 
     // Assign neighbouring chunks to created chunks and invoke terrain generation for non-edge chunks
-    for (int chunkX = 1; chunkX < worldSize-1; chunkX++)
+    for (int chunkX = 0; chunkX < worldSize; chunkX++)
         for (int chunkY = 0; chunkY < worldHeight; chunkY++)
-            for (int chunkZ = 1; chunkZ < worldSize-1; chunkZ++) {
+            for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
                 // TOP, BOTTOM, FRONT, FRONTLEFT, LEFT, BACKLEFT, BACK, BACKRIGHT, RIGHT, FRONTRIGHT
                 std::array<Chunk*, numDirections> adjacentChunks {nullptr};
 
