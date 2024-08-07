@@ -144,8 +144,7 @@ void Player::WalkingMovement(float _seconds) {
     vectorAcceleration.y = GRAVITY;
 
     // max speeds
-    float maxHorizSpeed = 5.0f;
-    float maxVertSpeed = 15.0f;
+    float maxHorizSpeed;
 
     // Determine direction of movement
     moveDirection = {0, 0, 0};
@@ -165,10 +164,10 @@ void Player::WalkingMovement(float _seconds) {
 
     // is player walking or running
     if (state[SDL_SCANCODE_LCTRL]) {
-        maxHorizSpeed = 15.0f;
+        maxHorizSpeed = 11.5f;
     }
     if (!state[SDL_SCANCODE_LCTRL]) {
-        maxHorizSpeed = 10.0f;
+        maxHorizSpeed = 7.5f;
     }
 
     // normalise direction to prevent diagonal movement being too fast
