@@ -76,20 +76,19 @@ inline std::unique_ptr<BlockVAOs> blockVAOmanager {};
 
 
 enum class BLOCKATTRIBUTE {
-        TRANSPARENT, // ... other block attributes
+        TRANSPARENT, LIQUID,
+        // ... other block attributes
 };
 
 class Block {
     protected:
-        // Block Culling
-        bool inCamera = true, culled = false;
-
         // Block Display
         TEXTURESHEET sheet {TEXTURESHEET::WORLD};
         glm::vec2 origin {1,1};
 
-        // Block Data
+        // Block Data Attributes
         int transparent = 0;
+        int liquid = 0;
 
         // BlockType info
         BlockType blockData {AIR, 0};
@@ -105,7 +104,6 @@ class Block {
 
         // Getters
         [[nodiscard]] BlockType GetBlockType() const { return blockData; }
-        [[nodiscard]] bool IsCulled() const {return culled; }
         [[nodiscard]] glm::vec2 GetTextureOrigin() const { return origin; }
         [[nodiscard]] TEXTURESHEET GetTextureSheet() const { return sheet; }
         [[nodiscard]] std::vector<Vertex> GetFaceVerticies(const std::vector<BLOCKFACE>& _faces) const;

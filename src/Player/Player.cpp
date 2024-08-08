@@ -24,6 +24,14 @@ Player::Player(glm::vec3 _position, glm::vec3 _facingDirection) {
 
     cameraSensitivity = 0.1f;
 
+    // Set initial values for min max positions
+    minY = -20;
+    maxY = worldHeight * chunkSize;
+    minX = -(worldSize/2.0f) * chunkSize;
+    maxX = (worldSize/2.0f) * chunkSize;
+    minZ = -(worldSize/2.0f) * chunkSize;
+    maxZ = (worldSize/2.0f) * chunkSize;
+
     UpdateMaxPositions();
 }
 
@@ -48,6 +56,7 @@ void Player::HandleMovement(Uint64 _deltaTicks) {
     usingCamera->MoveTo({position.x, position.y + 1, position.z});
 
     // Fetch new position bounds if the block the player is in has changed
+    if (lastPosition != position) { UpdatePlayerChunk(); }
     UpdateMaxPositions();
 }
 
@@ -178,18 +187,7 @@ void Player::WalkingMovement(float _seconds) {
     vectorSpeed.x = moveDirection.x * maxHorizSpeed;
     vectorSpeed.z = moveDirection.z * maxHorizSpeed;
 
-    // just walked off ledge, off ground
-    if (position.y > minY && timeSinceOnGround == 0) {
-        timeSinceOnGround = 0.001;
-    }
-
-    // If space is pressed when the player is on solid ground, then start a jump
-    if (state[SDL_SCANCODE_SPACE] && timeSinceOnGround == 0) {
-        vectorSpeed.y = JUMPSPEED;
-        timeSinceOnGround = 0.001;
-    }
-
-    // Updating the last stored position
+    // Updating the last static position before determining if a movement has started
     if (timeSinceOnGround == 0) {
         vectorSpeed.y = 0.0f;
         lastStaticPosition = position;
@@ -199,36 +197,41 @@ void Player::WalkingMovement(float _seconds) {
         timeSinceOnGround += _seconds;
     }
 
+    // just walked off ledge, off ground
+    if (position.y > minY && timeSinceOnGround == 0) {
+        timeSinceOnGround = 0.001;
+    }
+
+    // If space is pressed when the player is on solid ground or in liquid, then start a jump
+    if (state[SDL_SCANCODE_SPACE] && timeSinceOnGround == 0) {
+        vectorSpeed.y = JUMPSPEED;
+        timeSinceOnGround = 0.001;
+    }
+
     lastPosition = position;
 
     position = (vectorSpeed * _seconds) + lastStaticPosition;
     position.y = (vectorSpeed.y * timeSinceOnGround) + (0.5f * vectorAcceleration.y * std::pow(timeSinceOnGround, 2.0f)) + lastStaticPosition.y;
 }
 
-void Player::UpdateMaxPositions() {
-    // Attempt to obtain the chunk of the player
+void Player::UpdatePlayerChunk() {
+    // Attempt to obtain the chunk of the player, this may be null
+
     glm::vec3 chunkPos = (position / (float)chunkSize);
     chunkPos = {chunkPos.x + worldSize / 2.0f, chunkPos.y, chunkPos.z + worldSize/2.0f};
-    Chunk* playerChunk = world->GetChunkAtPosition(chunkPos);
+    playerChunk = world->GetChunkAtPosition(chunkPos);
+}
 
-    // if a chunk cannot be obtained, player potentially exceeding world area. Force limits of world size
-    if (playerChunk == nullptr) {
-        minY = -20;
-        maxY = worldHeight * chunkSize;
-        minX = -(worldSize/2.0f) * chunkSize;
-        maxX = (worldSize/2.0f) * chunkSize;
-        minZ = -(worldSize/2.0f) * chunkSize;
-        maxZ = (worldSize/2.0f) * chunkSize;
-    }
 
-    else {
-        glm::vec3 playerBlockPos = {chunkPos.x - (int)chunkPos.x, chunkPos.y - (int)chunkPos.y, chunkPos.z - (int)chunkPos.z};
-        playerBlockPos *= chunkSize;
-        playerBlockPos = {playerBlockPos.x, playerBlockPos.y - 1, playerBlockPos.z};
+void Player::UpdateMaxPositions() {
+    // if a chunk was not obtained, dont update the previous min max values
+    if (playerChunk == nullptr) return;
 
-        // Get the highest ylevel that the player would reach first
-        minY = playerChunk->GetTopLevelAtPosition(playerBlockPos, 0.4f);
-    }
+    // Get block position in chunk player is currently inside of
+    glm::vec3 blockPos = position - (playerChunk->GetPosition() * (float)chunkSize);
+
+    // Get the highest ylevel that the player would reach first
+    minY = playerChunk->GetTopLevelAtPosition({blockPos.x, blockPos.y - 1, blockPos.z}, 0.4f);
 
 
     maxY = worldHeight * chunkSize;

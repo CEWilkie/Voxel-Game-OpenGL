@@ -437,20 +437,22 @@ Block* Chunk::GetBlockFromData(BlockType _data) const {
     return nullptr;
 }
 
-float Chunk::GetTopLevelAtPosition(glm::vec3 _position, float _radius) {
+float Chunk::GetTopLevelAtPosition(glm::vec3 _position, float _radius) const {
     float topLevel = -20;
 
     // if position y is 0.8 or above, round to ciel
-    int y = (_position.y - (int)_position.y >= 0.8) ? (int)roundf(_position.y) : (int)_position.y;
+    float y = (_position.y - (int)_position.y >= 0.8f) ? roundf(_position.y) : floorf(_position.y);
 
     // to 0.01 precision, convert to int to *maybe* stop some imprecision issues with looping through with floats
-    for (int x = int(100.0 * _position.x); x <= int(100.0 * (_position.x + _radius)); x += int(100.0 * _radius)) {
-        for (int z = int(100.0 * _position.z); z <= int(100.0 * (_position.z + _radius)); z += int(100.0 * _radius)) {
-            // Convert back to float position
+    for (int x = int(100.0 * (_position.x - _radius)); x <= int(100.0 * (_position.x + _radius)); x += int(100.0 * _radius)) {
+        for (int z = int(100.0 * (_position.z - _radius)); z <= int(100.0 * (_position.z + _radius)); z += int(100.0 * _radius)) {
+            // Convert back to float position of block relative to chunk
             glm::vec3 position{x/100.0, y, z/100.0};
-
             Block* block = GetBlockAtPosition(position, 0);
-            if (block == nullptr || block->GetBlockType().blockID == AIR || block->GetBlockType().blockID == WATER) continue;
+
+            // If no block found / air, or if it is a liquid (ie: water) then do not apply topLevel
+            if (block == nullptr || block->GetBlockType().blockID == AIR) continue;
+            if (block->GetAttributeValue(BLOCKATTRIBUTE::LIQUID) > 0) continue;
 
             // blockHeight + y in chunk + chunkHeight
             float blockTL = 1.0f + y + chunkPosition.y*(float)chunkSize;

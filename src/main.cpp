@@ -65,7 +65,7 @@ int main(int argc, char** argv){
 
     printf("SPAWN POS %f %f %f\n", 0.5f, world->GenerateBlockHeight({0,0}), 0.5f);
 
-    glm::vec3 startPos = {0.5f, world->GenerateBlockHeight({0,0}) + 3, 0.5f};
+    glm::vec3 startPos = {0.5f, world->GenerateBlockHeight({0,0}) + 1, 0.5f};
     Player player {startPos, {0,0,1.0f}};
 
     // Set skybox dimensions with player camera

@@ -28,6 +28,7 @@ void World::Display() {
             for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
                 worldChunks[chunkX][chunkY][chunkZ]->DisplaySolid();
             }
+    glDisable(GL_CULL_FACE);
 
     // Draw transparent objects
     for (int chunkX = 0; chunkX < worldSize; chunkX++)
@@ -35,8 +36,6 @@ void World::Display() {
             for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
                 worldChunks[chunkX][chunkY][chunkZ]->DisplayTransparent();
             }
-
-    glDisable(GL_CULL_FACE);
 
 }
 

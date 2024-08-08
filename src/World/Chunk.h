@@ -111,7 +111,7 @@ class Chunk {
 
         // Getters
         [[nodiscard]] Block* GetBlockAtPosition(glm::vec3 _position, int _depth) const;
-        [[nodiscard]] float GetTopLevelAtPosition(glm::vec3 _position, float _radius);
+        [[nodiscard]] float GetTopLevelAtPosition(glm::vec3 _position, float _radius) const;
         [[nodiscard]] Block* GetBlockFromData(BlockType _blockData) const;
         [[nodiscard]] glm::vec3 GetPosition() const { return chunkPosition; }
 };

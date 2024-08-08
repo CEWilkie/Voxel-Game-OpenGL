@@ -51,6 +51,7 @@ Water::Water(int _variant) {
 
     // Set attributes
     transparent = 1;
+    liquid = 1;
 }
 
 Air::Air(int _variant) {

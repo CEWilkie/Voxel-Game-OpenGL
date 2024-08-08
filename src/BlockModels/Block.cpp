@@ -156,7 +156,6 @@ Block::~Block() {
 }
 
 void Block::Display(Transformation* _t) {
-    if (!inCamera || culled) return;
     if (blockData.blockID == BLOCKID::AIR && blockData.variantID == 0) return;
 
     // Bind to the model
@@ -214,6 +213,9 @@ int Block::GetAttributeValue(BLOCKATTRIBUTE _attribute) const {
     switch (_attribute) {
         case BLOCKATTRIBUTE::TRANSPARENT:
             return transparent;
+
+        case BLOCKATTRIBUTE::LIQUID:
+            return liquid;
 
         default:
             return 0;

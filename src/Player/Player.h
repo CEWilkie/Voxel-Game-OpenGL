@@ -11,6 +11,7 @@
 #include "../World/World.h"
 
 class World;
+class Chunk;
 
 enum class MOVEMENTMODE {
         WALKING, FLYING, // ...
@@ -22,22 +23,22 @@ class Player {
         glm::vec3 position {};
         glm::vec3 lastPosition {};
         glm::vec3 lastStaticPosition {};
-        float topLevel {};
+
         float timeSinceOnGround {};
         float timeSinceStill {};
+
         float radius = 0.4f;
         float maxX {}, minX {};
         float maxZ {}, minZ {};
         float maxY {}, minY {};
+
+        Chunk* playerChunk {};
 
         // Movement Info
         MOVEMENTMODE movementMode = MOVEMENTMODE::WALKING;
         glm::vec3 vectorSpeed {};
         glm::vec3 vectorAcceleration {};
         glm::vec3 moveDirection {0, 0, 0};
-
-
-        Kinematics kinematics {};
 
         // Player normals
         glm::vec3 normalUp {};
@@ -62,7 +63,14 @@ class Player {
         void UpdateMaxPositions();
         void FlyingMovement(float _seconds);
         void WalkingMovement(float _seconds);
+
+        //
+        void UpdatePlayerChunk();
+
+        // Player Camera
         void MouseLook(SDL_bool _mouseGrabbed);
+
+
 
         // Getters
         [[nodiscard]] Camera* GetUsingCamera() const { return usingCamera; }
