@@ -26,6 +26,8 @@ class Player {
 
         float timeSinceOnGround {};
         float timeSinceStill {};
+        bool canJump = true;
+        bool inLiquid = false;
 
         float radius = 0.4f;
         float maxX {}, minX {};
@@ -59,13 +61,14 @@ class Player {
 
         // Movement
         void HandleMovement(Uint64 _deltaTicks);
-        void EnforcePositionBoundaries(float _seconds);
-        void UpdateMaxPositions();
         void FlyingMovement(float _seconds);
         void WalkingMovement(float _seconds);
 
-        //
+        // Movement limits
         void UpdatePlayerChunk();
+        void UpdateMaxPositions();
+        void EnforcePositionBoundaries(float _seconds);
+        void GetMovementFriction();
 
         // Player Camera
         void MouseLook(SDL_bool _mouseGrabbed);

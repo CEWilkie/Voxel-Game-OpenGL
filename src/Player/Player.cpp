@@ -39,7 +39,8 @@ void Player::HandleMovement(Uint64 _deltaTicks) {
     // Seconds that have passed since last movement update
     float seconds = float(_deltaTicks) / 1000.0f;
 
-    // Update player position using correct movement method
+    // Update player position using correct movement method#
+    GetMovementFriction();
     switch (movementMode) {
         case MOVEMENTMODE::FLYING:
             FlyingMovement(seconds);
@@ -58,29 +59,6 @@ void Player::HandleMovement(Uint64 _deltaTicks) {
     // Fetch new position bounds if the block the player is in has changed
     if (lastPosition != position) { UpdatePlayerChunk(); }
     UpdateMaxPositions();
-}
-
-void Player::EnforcePositionBoundaries(float _seconds) {
-    // Check against min and max position values
-    if (position.x - radius < minX) {
-        position.x = minX + radius;
-    }
-    if (position.x + radius > maxX) {
-        position.x = maxX - radius;
-    }
-    if (position.z - radius < minZ) {
-        position.z = minZ + radius;
-    }
-    if (position.z + radius > maxZ) {
-        position.z = maxZ - radius;
-    }
-    if (position.y < minY && lastPosition.y > position.y) {
-        position.y = minY;
-        timeSinceOnGround = 0;
-    }
-    if (position.y > maxY) {
-        position.y = maxY;
-    }
 }
 
 void Player::FlyingMovement(float _seconds) {
@@ -203,9 +181,16 @@ void Player::WalkingMovement(float _seconds) {
     }
 
     // If space is pressed when the player is on solid ground or in liquid, then start a jump
-    if (state[SDL_SCANCODE_SPACE] && timeSinceOnGround == 0) {
-        vectorSpeed.y = JUMPSPEED;
+    if (state[SDL_SCANCODE_SPACE] && canJump) {
+        if (inLiquid) {
+            vectorSpeed.y = JUMPSPEED / 2.0f;
+        }
+        else {
+            vectorSpeed.y = JUMPSPEED;
+        }
         timeSinceOnGround = 0.001;
+        lastStaticPosition.y = position.y;
+        canJump = false;
     }
 
     lastPosition = position;
@@ -241,8 +226,45 @@ void Player::UpdateMaxPositions() {
     maxZ = (worldSize/2.0f) * chunkSize;
 }
 
+void Player::EnforcePositionBoundaries(float _seconds) {
+    // Check against min and max position values
+    if (position.x - radius < minX) {
+        position.x = minX + radius;
+    }
+    if (position.x + radius > maxX) {
+        position.x = maxX - radius;
+    }
+    if (position.z - radius < minZ) {
+        position.z = minZ + radius;
+    }
+    if (position.z + radius > maxZ) {
+        position.z = maxZ - radius;
+    }
+    if (position.y < minY && lastPosition.y > position.y) {
+        position.y = minY;
+        timeSinceOnGround = 0;
+        canJump = true;
+    }
+    if (position.y > maxY) {
+        position.y = maxY;
+    }
+}
 
+void Player::GetMovementFriction() {
+    // Get block position in chunk player is currently inside of
+    if (playerChunk == nullptr) return;
+    glm::vec3 blockPos = position - (playerChunk->GetPosition() * (float) chunkSize);
 
+    Block *playerBlock = playerChunk->GetBlockAtPosition(blockPos, 0);
+    if (playerBlock == nullptr) return;
+
+    // If player is in a liquid then reset jump time
+    inLiquid = false;
+    if (playerBlock->GetAttributeValue(BLOCKATTRIBUTE::LIQUID) > 0) {
+        canJump = true;
+        inLiquid = true;
+    }
+}
 
 void Player::MouseLook(SDL_bool _mouseGrabbed) {
     if (_mouseGrabbed == SDL_FALSE) return;
