@@ -74,12 +74,15 @@ typedef std::array<float, chunkArea> ChunkDataMap;
 
 
 
-// MOVEMENT VALUES
+/*
+ * MOVEMENT VALUES
+ */
 
 const inline float JUMPHEIGHT = 1.2f;
 const inline float JUMPDURATION = 0.2f;
 const inline float GRAVITY = -(JUMPHEIGHT / (2 * std::pow(JUMPDURATION, 2.0f)));
 const inline float JUMPSPEED = sqrtf(2 * JUMPHEIGHT * -GRAVITY);
+
 
 
 

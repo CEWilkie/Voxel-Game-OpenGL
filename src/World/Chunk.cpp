@@ -463,3 +463,7 @@ float Chunk::GetTopLevelAtPosition(glm::vec3 _position, float _radius) const {
 
     return topLevel;
 }
+
+float Chunk::GetFacePositionInBlock(glm::vec3 _position, glm::vec3 _direction, float _radius) const {
+
+}
