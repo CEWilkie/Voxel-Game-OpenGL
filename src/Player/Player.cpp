@@ -149,6 +149,11 @@ void Player::WalkingMovement(float _seconds) {
         moveDirection += normalRight;
     }
 
+    if (state[SDL_SCANCODE_C]) {
+        printf("min x max: %f %f %f\n", minX, position.x, maxX);
+        printf("min z max: %f %f %f\n", minZ, position.z, maxZ);
+    }
+
     // is player walking or running
     if (state[SDL_SCANCODE_LCTRL]) {
         maxHorizSpeed = 11.5f;
@@ -217,35 +222,40 @@ void Player::UpdateMaxPositions() {
 
     // Get the highest ylevel that the player would reach first
     minY = playerChunk->GetTopLevelAtPosition({blockPos.x, blockPos.y - 1, blockPos.z}, 0.4f);
-
-
     maxY = worldHeight * chunkSize;
-    minX = -(worldSize/2.0f) * chunkSize;
-    maxX = (worldSize/2.0f) * chunkSize;
-    minZ = -(worldSize/2.0f) * chunkSize;
-    maxZ = (worldSize/2.0f) * chunkSize;
+
+    // returns position of obstructing face in the chunk
+    minX = (playerChunk->GetPosition().x * (float)chunkSize) + playerChunk->GetDistanceToBlockFace(blockPos, dirFront, radius);
+    maxX = (playerChunk->GetPosition().x * (float)chunkSize) + playerChunk->GetDistanceToBlockFace(blockPos, dirBack, radius);
+
+    minZ = (playerChunk->GetPosition().z * (float)chunkSize) + playerChunk->GetDistanceToBlockFace(blockPos, dirLeft, radius);
+    maxZ = (playerChunk->GetPosition().z * (float)chunkSize) + playerChunk->GetDistanceToBlockFace(blockPos, dirRight, radius);
 }
 
 void Player::EnforcePositionBoundaries(float _seconds) {
     // Check against min and max position values
     if (position.x - radius < minX) {
+        printf("min x max: %f %f %f\n", minX, position.x, maxX);
         position.x = minX + radius;
     }
-    if (position.x + radius > maxX) {
+    else if (position.x + radius > maxX) {
         position.x = maxX - radius;
     }
+
     if (position.z - radius < minZ) {
+        printf("min z max: %f %f %f\n", minZ, position.z, maxZ);
         position.z = minZ + radius;
     }
-    if (position.z + radius > maxZ) {
+    else if (position.z + radius > maxZ) {
         position.z = maxZ - radius;
     }
+
     if (position.y < minY && lastPosition.y > position.y) {
         position.y = minY;
         timeSinceOnGround = 0;
         canJump = true;
     }
-    if (position.y > maxY) {
+    else if (position.y > maxY) {
         position.y = maxY;
     }
 }

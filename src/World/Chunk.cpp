@@ -464,6 +464,59 @@ float Chunk::GetTopLevelAtPosition(glm::vec3 _position, float _radius) const {
     return topLevel;
 }
 
-float Chunk::GetFacePositionInBlock(glm::vec3 _position, glm::vec3 _direction, float _radius) const {
+float Chunk::GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, float _radius) const {
+    if (_direction == glm::vec3{0,0,0}) return 0;
 
+    // get block in direction player is checking, if no block is found, assume no obstructions for the next
+    // 2 blocks (to prevent stop-starting player movement if they move faster than 1 block/second)
+    // also applies for air or liquid blocks
+    Block* block = GetBlockAtPosition(_blockPos + _direction, 0);
+    if (block == nullptr || block->GetBlockType().blockID == AIR || block->GetAttributeValue(BLOCKATTRIBUTE::LIQUID) > 0) {
+        if (_direction.x != 0) return floorf(_blockPos.x) + _direction.x * 2.0f;
+        if (_direction.y != 0) return floorf(_blockPos.y) + _direction.y * 2.0f;
+        if (_direction.z != 0) return floorf(_blockPos.z) + _direction.z * 2.0f;
+    }
+
+    BLOCKFACE face {};
+    std::vector<Vertex> faceVerticies {};
+    float minZ {0}, maxZ {1};
+    float minX {0}, maxX {1};
+
+    if (_direction == dirFront) face = BACK;
+    if (_direction == dirBack) face = FRONT;
+    if (_direction == dirLeft) face = RIGHT;
+    if (_direction == dirRight) face = LEFT;
+
+    // Get min and max face verticies for x and z position
+    faceVerticies = block->GetFaceVerticies({face});
+    for (auto& vertex : faceVerticies) {
+        vertex.position += glm::floor(_blockPos) + _direction;
+        if (vertex.position.z < minZ) minZ = vertex.position.z;
+        if (vertex.position.z > maxZ) maxZ = vertex.position.z;
+
+        if (vertex.position.x < minX) minX = vertex.position.x;
+        if (vertex.position.x > maxX) maxX = vertex.position.x;
+    }
+
+    // Player is only blocked by the block if their position +- radius is within min and max bounds
+    if (_direction.x != 0) {
+        if ((_blockPos.z + _radius >= minZ && _blockPos.z + _radius <= maxZ) ||
+            (_blockPos.z - _radius >= minZ && _blockPos.z - _radius <= maxZ)) {
+            if (_direction == dirFront) return maxX;
+            else return minX + floorf(_blockPos.x) + _direction.x;
+        }
+    }
+
+    if (_direction.z != 0) {
+        if ((_blockPos.x + _radius >= minX && _blockPos.x + _radius <= maxX) ||
+            (_blockPos.x - _radius >= minX && _blockPos.x - _radius <= maxX)) {
+            if (_direction == dirLeft) return maxZ;
+            else return minZ + floorf(_blockPos.z) + _direction.z;
+        }
+    }
+
+    // Player not within min and max bounds, so not blocked
+    if (_direction.x != 0) return floorf(_blockPos.x) + _direction.x * 2.0f;
+    if (_direction.y != 0) return floorf(_blockPos.y) + _direction.y * 2.0f;
+    if (_direction.z != 0) return floorf(_blockPos.z) + _direction.z * 2.0f;
 }
