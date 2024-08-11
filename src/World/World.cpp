@@ -7,10 +7,18 @@
 #include "World.h"
 #include "../Blocks/CreateBlock.h"
 #include "CreateBiome.h"
+#include "../Window.h"
 
 World::World() {
     // Create skybox
     skybox = CreateBlock({BLOCKID::AIR, 1});
+
+    GLint uLocation;
+    uLocation = glGetUniformLocation(window.GetShader(), "worldAmbients.lightingStrength");
+    if (uLocation < 0) printf("location not found [worldAmbients.lightingStrength]\n");
+    else {
+        glUniform1f(uLocation, 1.0f);
+    }
 
     glEnable(GL_DEPTH_TEST);
 }

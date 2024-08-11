@@ -183,6 +183,7 @@ void Player::WalkingMovement(float _seconds) {
     // just walked off ledge, off ground
     if (position.y > minY && timeSinceOnGround == 0) {
         timeSinceOnGround = 0.001;
+        canJump = false;
     }
 
     // If space is pressed when the player is on solid ground or in liquid, then start a jump
@@ -235,7 +236,6 @@ void Player::UpdateMaxPositions() {
 void Player::EnforcePositionBoundaries(float _seconds) {
     // Check against min and max position values
     if (position.x - radius < minX) {
-        printf("min x max: %f %f %f\n", minX, position.x, maxX);
         position.x = minX + radius;
     }
     else if (position.x + radius > maxX) {
@@ -243,7 +243,6 @@ void Player::EnforcePositionBoundaries(float _seconds) {
     }
 
     if (position.z - radius < minZ) {
-        printf("min z max: %f %f %f\n", minZ, position.z, maxZ);
         position.z = minZ + radius;
     }
     else if (position.z + radius > maxZ) {

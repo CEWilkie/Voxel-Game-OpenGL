@@ -14,6 +14,8 @@ uniform mat4 uModelMatrix;
 
 uniform vec2 uVertexTextureCoordOffset = vec2(0.0f, 0.0f);
 
+
+
 void main() {
     // Turn position into vec4
     gl_Position = vec4(position.x, position.y, position.z, 1.0f);
@@ -27,12 +29,7 @@ void main() {
     // Projection
     gl_Position = uProjectionMatrix * gl_Position;
 
-
-    // Colour
-    //v_vertexColour = vertexColour;
-
     // Determine true texture coordinates for 16x16 texture grids
-//    v_vertexTextureCoord = vertexTextureCoord;
     v_vertexTextureCoord = vec2(uVertexTextureCoordOffset.x + vertexTextureCoord.x,
                                 uVertexTextureCoordOffset.y + vertexTextureCoord.y) / 16.0f;
 
