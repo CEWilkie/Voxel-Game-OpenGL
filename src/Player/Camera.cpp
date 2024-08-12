@@ -38,7 +38,10 @@ void Camera::MoveTo(const glm::vec3 &_position) {
 }
 
 void Camera::SetDirection(const glm::vec3 &_direction) {
-    direction = _direction;
+    direction = glm::normalize(_direction);
+
+    glm::vec3 horizDirection(direction.x, 0.0f, direction.z);
+    normalRight = glm::normalize(glm::cross(horizDirection, normalUp));
 }
 
 void Camera::SetAngle(double _angleVert, double _angleHoriz) {
@@ -60,7 +63,7 @@ void Camera::UpdateLookatUniform() const {
 void Camera::UpdateViewFrustrum() {
     // Get rows from projection matrix
     const float halfVertFarSide = maxDistance * tanf(fovAngleY * .5f);
-    const float halfHoriFarSide = halfVertFarSide * window.GetAspectRatio();
+    const float halfHoriFarSide = halfVertFarSide * window.GetAspectRatio() * 0.5f;
     const glm::vec3 farDistance = maxDistance * direction;
 
     // INDEX SIDE : |0 LEFT | 1 RIGHT | 2 BOTTOM | 3 TOP | 4 NEAR | 5 FAR

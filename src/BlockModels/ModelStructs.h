@@ -136,8 +136,8 @@ struct BoxBounds : public BoundingVolume {
         // test global box bounds in each frustrum plane
         bool inOrInFrontOfPlane;
         for (const auto& plane : _camFrustrum.planes) {
-            float r = globalBoxBounds.extent * (std::abs(plane.normal.x) + std::abs(plane.normal.y) + std::abs(plane.normal.z));
-            inOrInFrontOfPlane = (-r <= plane.DistToPlane(globalBoxBounds.centre));
+            float maxDist = globalBoxBounds.extent * (std::abs(plane.normal.x) + std::abs(plane.normal.y) + std::abs(plane.normal.z));
+            inOrInFrontOfPlane = (-maxDist <= plane.DistToPlane(globalBoxBounds.centre));
 
             // If box is behind plane, sphere is not in view
             if (!inOrInFrontOfPlane) return OUTSIDE;

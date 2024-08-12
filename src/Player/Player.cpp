@@ -163,10 +163,10 @@ void Player::WalkingMovement(const std::uint8_t* _keyInputs, float _seconds) {
 
     // is player walking or running
     if (_keyInputs[SDL_SCANCODE_LCTRL]) {
-        maxHorizSpeed = 11.5f;
+        maxHorizSpeed = 7.5f;
     }
     if (!_keyInputs[SDL_SCANCODE_LCTRL]) {
-        maxHorizSpeed = 7.5f;
+        maxHorizSpeed = 4.5f;
     }
 
     // normalise direction to prevent diagonal movement being too fast

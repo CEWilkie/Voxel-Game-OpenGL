@@ -117,7 +117,6 @@ Chunk::Chunk(const glm::vec3& _chunkPosition, ChunkData _chunkData) {
     positionTransformation->UpdateModelMatrix();
 
     boundsTransformation->SetPosition(_chunkPosition * (float)chunkSize);
-    boundsTransformation->SetScale({chunkSize, chunkSize, chunkSize});
     boundsTransformation->UpdateModelMatrix();
 
     // Set chunk position
@@ -125,7 +124,7 @@ Chunk::Chunk(const glm::vec3& _chunkPosition, ChunkData _chunkData) {
 
     // Create bounding box for the chunk (assume max 16x16x16 volume)
     boxBounds = std::move(GenerateBoxBounds({{glm::vec3(0,0,0)},
-                                             {glm::vec3(1,1,1)*(float)chunkSize}}));
+                                             {glm::vec3(chunkSize,chunkSize,chunkSize)}}));
 
     // Guarantee Air Block
     uniqueBlocks.emplace_back(CreateBlock({AIR, 0}), 1);
