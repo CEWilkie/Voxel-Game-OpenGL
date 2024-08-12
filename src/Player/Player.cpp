@@ -189,19 +189,19 @@ void Player::WalkingMovement(const std::uint8_t* _keyInputs, float _seconds) {
 
     // just walked off ledge, off ground
     if (position.y > minY && timeSinceOnGround == 0) {
-        timeSinceOnGround = 0.001;
+        timeSinceOnGround = _seconds;
         canJump = false;
     }
 
     // If space is pressed when the player is on solid ground or in liquid, then start a jump
     if (_keyInputs[SDL_SCANCODE_SPACE] && canJump) {
         if (inLiquid) {
-            vectorSpeed.y = JUMPSPEED / 2.0f;
+            vectorSpeed.y = JUMPSPEED * 0.7f;
         }
         else {
             vectorSpeed.y = JUMPSPEED;
         }
-        timeSinceOnGround = 0.001;
+        timeSinceOnGround = _seconds;
         lastStaticPosition.y = position.y;
         canJump = false;
     }
@@ -361,4 +361,60 @@ void Player::MouseLook(SDL_bool _mouseGrabbed) {
     normalRight = glm::normalize(glm::cross(horizDirection, normalUp));
 
     normalFront = glm::normalize(glm::cross(normalUp, normalRight));
+}
+
+
+void Player::HandlePlayerInputs(const SDL_Event &_event) {
+    if (_event.type == SDL_MOUSEBUTTONDOWN) {
+        switch (_event.button.button) {
+            case SDL_BUTTON_LEFT:
+                BreakBlock();
+                break;
+
+            case SDL_BUTTON_RIGHT:
+                PlaceBlock();
+                break;
+        }
+    }
+}
+
+
+void Player::BreakBlock() {
+    // Create ray from campos using direction and max range, detect first block ray encounters
+
+    glm::vec3 rayPosition = glm::vec3(position.x, position.y+1, position.z) - (playerChunk->GetPosition() * (float)chunkSize);
+    glm::vec3 rayEnd = rayPosition + glm::normalize(facingDirection) * range;
+
+    Block* breakingBlock {};
+    printf("rp %f %f %f\n", rayPosition.x, rayPosition.y, rayPosition.z);
+    while (glm::length(rayPosition) <= glm::length(rayEnd)) {
+        Block* blockAtPosition = playerChunk->GetBlockAtPosition(rayPosition, 0);
+        rayPosition += facingDirection;
+        if (blockAtPosition == nullptr) continue;
+
+        printf("block! %d\n", blockAtPosition->GetBlockType().blockID);
+
+        // if the block is breakable, end early
+        if (blockAtPosition->GetAttributeValue(BLOCKATTRIBUTE::BREAKABLE) > 0) {
+            breakingBlock = blockAtPosition;
+            break;
+        }
+
+        // block not breakable, however only proceed if the player can access through the block
+        if (blockAtPosition->GetAttributeValue(BLOCKATTRIBUTE::CANACCESSTHROUGHBLOCK) == 0) break;
+    }
+
+    if (breakingBlock == nullptr) return;
+
+    printf("blockFound\n");
+
+    // else a block has been found, so break it
+    playerChunk->BreakBlockAtPosition(rayPosition);
+
+}
+
+void Player::PlaceBlock() {
+    glm::vec3 rayPosition = usingCamera->GetPosition() - (playerChunk->GetPosition() * (float)chunkSize);
+
+    playerChunk->PlaceBlockAtPosition(rayPosition, {STONE, 0});
 }

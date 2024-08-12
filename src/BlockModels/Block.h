@@ -76,7 +76,7 @@ inline std::unique_ptr<BlockVAOs> blockVAOmanager {};
 
 
 enum class BLOCKATTRIBUTE {
-        TRANSPARENT, LIQUID,
+        TRANSPARENT, LIQUID, BREAKABLE, CANACCESSTHROUGHBLOCK,
         // ... other block attributes
 };
 
@@ -89,6 +89,8 @@ class Block {
         // Block Data Attributes
         int transparent = 0;
         int liquid = 0;
+        int breakable = 1;
+        int canInteractThroughBlock = 0;
 
         // BlockType info
         BlockType blockData {AIR, 0};

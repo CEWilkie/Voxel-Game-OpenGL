@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "../Blocks/CreateBlock.h"
+#include "../GlobalStates.h"
 
 /*
  * SUBCHUNK
@@ -18,7 +19,7 @@ ChunkNode::ChunkNode(Block* _nodeBlock, glm::vec3 _blockPos, Chunk* _root) {
     rootChunk = _root;
     nodeBlock = _nodeBlock;
 
-    // Create transformation matrix
+    // set position
     position = _blockPos;
 }
 
@@ -162,24 +163,61 @@ void Chunk::CreateBlockMeshes() {
 //    printf("CHUNK MESH CREATION : %llu TICKS TAKEN\n", et-st);
 }
 
+void Chunk::UpdateBlockMesh(Block *_block) {
+    // if block does not already have a mesh, create one
+    MaterialMesh* mesh = GetBlockMesh(_block);
+    if (mesh == nullptr) {
+        blockMeshes.push_back(std::make_unique<MaterialMesh>(_block));
+    }
+
+    // Update the meshes
+    for (auto& blockMesh : blockMeshes) {
+        if (blockMesh->GetBlock()->GetBlockType().blockID == AIR) continue;
+
+        blockMesh->ResetVerticies();
+
+        for (int x = 0; x < chunkSize; x++) {
+            for (int y = 0; y < chunkSize; y++) {
+                for (int z = 0; z < chunkSize; z++) {
+                    if (!BlockType::Compare(GetBlockAtPosition({x,y,z}, 0)->GetBlockType(),
+                                            blockMesh->GetBlock()->GetBlockType())) continue;
+
+                    blockMesh->AddVerticies(blockMesh->GetBlock()->GetFaceVerticies(
+                            GetShowingFaces({x,y,z})),glm::vec3(x,y,z));
+                }
+            }
+        }
+
+        blockMesh->BindMesh();
+    }
+}
+
 void Chunk::DisplaySolid() {
     if (!inCamera) return;
+
+    if (USE_WIREFRAME) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // Draw only the blocks that are solid
     for (const auto& mesh : blockMeshes) {
         if (mesh->GetBlock()->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 1) continue;
         mesh->DrawMesh(*positionTransformation);
     }
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void Chunk::DisplayTransparent() {
     if (!inCamera) return;
+
+    if (USE_WIREFRAME) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // Draw only the blocks that are transparent
     for (const auto& mesh : blockMeshes) {
         if (mesh->GetBlock()->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 0) continue;
         mesh->DrawMesh(*positionTransformation);
     }
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 
@@ -238,7 +276,6 @@ std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _position) const {
     // Get block being checked
     Block* checkingBlock = GetBlockAtPosition(_position, 0);
     if (checkingBlock == nullptr) return {}; // Could not find block
-    if (BlockType::Compare(checkingBlock->GetBlockType(), {AIR, 0})) return {}; // Air block
 
     // Check for non-transparent block on each face (or non-same transparent block for a transparent block)
     for (int i = 0; i < faces.size(); i++) {
@@ -311,7 +348,7 @@ chunkNodeArray Chunk::CreateTerrain() {
                 }
 
                 // Add blockID into terrain array
-                terrain[x][y][z] = newBlockData;
+                terrain[x][y][z] = GetBlockFromData(newBlockData);
 
                 // Make leaf node in tree for block
                 chunkBlocks[x][y][z] = std::make_unique<ChunkNode>(GetBlockFromData(newBlockData), blockPos, this);
@@ -365,12 +402,46 @@ void Chunk::SetAdjacentChunks(const std::array<Chunk*, 10> &_chunks) {
 }
 
 
+void Chunk::BreakBlockAtPosition(glm::vec3 _position) {
+    Block* _block = GetBlockAtPosition(_position, 0);
+    SetBlockAtPosition(_position, 0, {AIR, 0});
+    printf("block broken\n");
 
+    // remove the block's verticies from the mesh, and update meshes of the newly exposed blocks
+    MaterialMesh* blockMesh = GetBlockMesh(_block);
+//    blockMesh->RemoveVerticies(_block->GetFaceVerticies(GetShowingFaces(_position)), _position);
+//    blockMesh->UpdateMesh();
+
+    UpdateBlockMesh(_block);
+}
+
+
+void Chunk::PlaceBlockAtPosition(glm::vec3 _position, BlockType _blockType) {
+    // Check if material is new to the chunk
+    if (!std::any_of(uniqueBlocks.begin(), uniqueBlocks.end(),
+                     [&](std::pair<std::unique_ptr<Block>, int> &uniqueBlock) {
+        // Block is unique
+        if (!BlockType::Compare(uniqueBlock.first->GetBlockType(), _blockType)) return false;
+
+        // Already exists, increment count
+        uniqueBlock.second += 1;
+        return true;
+    })) {
+        // create a new block of the specified type, and create mesh for block
+        uniqueBlocks.emplace_back(CreateBlock(_blockType), 1);
+    }
+
+    terrain[(int)_position.x][(int)_position.y][(int)_position.z] = GetBlockFromData(_blockType);
+
+
+    // now need to reconstruct mesh
+}
 
 
 Block* Chunk::GetBlockAtPosition(glm::vec3 _position, int _depth) const {
-    // provided position is outside the bounds of the chunk, check adjacent chunk. Do not check adjacent chunk's
-    // adjacent chunks
+    // provided position is outside the bounds of the chunk, check adjacent chunk. Nullptr returned when no block found
+    // increase depth limit to check more than 1 adj chunk (checking the adj chunk's adj chunks)
+
 //    Block* defaultReturn = GetBlockFromData({AIR, 0});
     Block* defaultReturn = nullptr;
     if (_depth > 1) return defaultReturn;
@@ -426,7 +497,65 @@ Block* Chunk::GetBlockAtPosition(glm::vec3 _position, int _depth) const {
             return defaultReturn;
     }
 
-    return GetBlockFromData(terrain[(int)_position.x][(int)_position.y][(int)_position.z]);
+    return terrain[(int)_position.x][(int)_position.y][(int)_position.z];
+}
+
+void Chunk::SetBlockAtPosition(glm::vec3 _position, int _depth, BlockType _blockType) {
+    if (_depth > 1) return;
+    _depth += 1;
+
+    // TOP, BOTTOM, FRONT, FRONTLEFT, LEFT, BACKLEFT, BACK, BACKRIGHT, RIGHT, FRONTRIGHT
+    if (_position.x < 0) {
+        if (adjacentChunks[2] != nullptr) {
+            _position.x += chunkSize;
+            return adjacentChunks[2]->SetBlockAtPosition(_position, _depth, _blockType);
+        }
+        else
+            return;
+    }
+    if ( _position.x >= chunkSize) {
+        if (adjacentChunks[6] != nullptr) {
+            _position.x -= chunkSize;
+            return adjacentChunks[6]->SetBlockAtPosition(_position, _depth, _blockType);
+        }
+        else
+            return;
+    }
+    if (_position.y < 0) {
+        if (adjacentChunks[1] != nullptr) {
+            _position.y += chunkSize;
+            return adjacentChunks[1]->SetBlockAtPosition(_position, _depth, _blockType);
+        }
+        else
+            return;
+    }
+    if ( _position.y >= chunkSize) {
+        if (adjacentChunks[0] != nullptr) {
+            _position.y -= chunkSize;
+            return adjacentChunks[0]->SetBlockAtPosition(_position, _depth, _blockType);
+        }
+        else
+            return;
+    }
+    if (_position.z < 0) {
+        if (adjacentChunks[4] != nullptr) {
+            _position.z += chunkSize;
+            return adjacentChunks[4]->SetBlockAtPosition(_position, _depth, _blockType);
+        }
+        else
+            return;
+    }
+    if ( _position.z >= chunkSize) {
+        if (adjacentChunks[8] != nullptr) {
+            _position.z -= chunkSize;
+            return adjacentChunks[8]->SetBlockAtPosition(_position, _depth, _blockType);
+        }
+        else
+            return;
+    }
+
+    terrain[(int)_position.x][(int)_position.y][(int)_position.z] = GetBlockFromData(_blockType);
+
 }
 
 Block* Chunk::GetBlockFromData(BlockType _data) const {
@@ -522,4 +651,12 @@ float Chunk::GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, f
     if (_direction.x != 0) return floorf(_blockPos.x) + _direction.x * 2.0f;
     if (_direction.y != 0) return floorf(_blockPos.y) + _direction.y * 2.0f;
     if (_direction.z != 0) return floorf(_blockPos.z) + _direction.z * 2.0f;
+}
+
+MaterialMesh* Chunk::GetBlockMesh(const Block *_block) const {
+    for (const auto& mesh : blockMeshes) {
+        if (mesh->GetBlock() == _block) return mesh.get();
+    }
+
+    return nullptr;
 }

@@ -19,20 +19,24 @@ class MaterialMesh {
         int nFaces = 0;
 
         Block* block;
+        bool unmeshedChanges = true;
 
     public:
         explicit MaterialMesh(Block* _block);
         ~MaterialMesh();
 
         void AddVerticies(std::vector<Vertex> _verticies, glm::vec3 _position);
-        void RemoveBlockFaceVertex(BLOCKFACE _faceID, glm::vec3 _position);
+        void RemoveVerticies(std::vector<Vertex> _verticies, glm::vec3 _position);
+        void ResetVerticies();
 
         void BindMesh();
+        void UpdateMesh();
         void DrawMesh(const Transformation& _transformation) const;
 
 
 
         [[nodiscard]] Block* GetBlock() const { return block; }
+        [[nodiscard]] bool OldMesh() const {return unmeshedChanges; }
 };
 
 

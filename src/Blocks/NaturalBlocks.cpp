@@ -52,6 +52,8 @@ Water::Water(int _variant) {
     // Set attributes
     transparent = 1;
     liquid = 1;
+    breakable = 0;
+    canInteractThroughBlock = 1;
 }
 
 Air::Air(int _variant) {
@@ -73,4 +75,6 @@ Air::Air(int _variant) {
     }
 
     transparent = 1;
+    breakable = 0;
+    canInteractThroughBlock = 1;
 }

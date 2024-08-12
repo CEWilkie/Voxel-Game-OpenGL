@@ -17,7 +17,7 @@ static const int MINCHUNKHEIGHT = 25;
 static const int MAXCHUNKHEIGHT = 128;
 
 // SIZING OF THE INITIAL WORLD AREA GENERATED
-static const int worldSize = 8;
+static const int worldSize = 4;
 static const int worldHeight = 16; // from 0 to n chunks high (n x 16 blocks)
 static const int worldArea = worldSize * worldSize;
 static const int worldVolume = worldArea * worldHeight;
@@ -68,7 +68,7 @@ struct HeightMap {
     bool isEmpty = true;
 };
 
-typedef std::array<std::array<std::array<BlockType, chunkSize>, chunkSize>, chunkSize> chunkTerrainArray;
+typedef std::array<std::array<std::array<Block*, chunkSize>, chunkSize>, chunkSize> chunkTerrainArray;
 typedef std::array<std::array<std::array<float, chunkSize>, chunkSize>, chunkSize> chunkDensityArray;
 typedef std::array<float, chunkArea> ChunkDataMap;
 

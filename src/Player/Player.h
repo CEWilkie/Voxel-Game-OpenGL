@@ -58,6 +58,9 @@ class Player {
         int currentCamera = 1;
         bool camSwitchToggle = false;
 
+        // Player-World interaction
+        float range = 4.5f;
+
     public:
         Player(glm::vec3 _position, glm::vec3 _facingDirection);
 
@@ -66,7 +69,7 @@ class Player {
         void FlyingMovement(const std::uint8_t* _keyInputs, float _seconds);
         void WalkingMovement(const std::uint8_t* _keyInputs, float _seconds);
 
-        // Movement limits
+        // Movement Parameters
         void UpdatePlayerChunk();
         void UpdateMaxPositions();
         void EnforcePositionBoundaries(float _seconds);
@@ -76,6 +79,10 @@ class Player {
         void MouseLook(SDL_bool _mouseGrabbed);
         void SwitchCamera(const std::uint8_t* _keyInputs);
 
+        // Block interactions
+        void HandlePlayerInputs(const SDL_Event& _event);
+        void BreakBlock();
+        void PlaceBlock();
 
         // Getters
         [[nodiscard]] Camera* GetUsingCamera() const { return usingCamera; }

@@ -236,6 +236,12 @@ int Block::GetAttributeValue(BLOCKATTRIBUTE _attribute) const {
         case BLOCKATTRIBUTE::LIQUID:
             return liquid;
 
+        case BLOCKATTRIBUTE::BREAKABLE:
+            return breakable;
+
+        case BLOCKATTRIBUTE::CANACCESSTHROUGHBLOCK:
+            return canInteractThroughBlock;
+
         default:
             return 0;
     }

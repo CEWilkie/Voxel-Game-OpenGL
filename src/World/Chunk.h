@@ -96,6 +96,7 @@ class Chunk {
 
         // Display
         void CreateBlockMeshes();
+        void UpdateBlockMesh(Block* _block);
         void DisplaySolid();
         void DisplayTransparent();
 
@@ -110,13 +111,22 @@ class Chunk {
         void CreateNodeTree(chunkNodeArray _chunkNodes);
         void SetAdjacentChunks(const std::array<Chunk*, 10>& _chunks);
 
-        // Getters
+        // Chunk Interaction
+        void BreakBlockAtPosition(glm::vec3 _position);
+        void PlaceBlockAtPosition(glm::vec3 _position, BlockType _blockType);
         [[nodiscard]] Block* GetBlockAtPosition(glm::vec3 _position, int _depth) const;
+        void SetBlockAtPosition(glm::vec3 _position, int _depth, BlockType _blockType);
+
+        // Getters
+        [[nodiscard]] Block* GetBlockFromData(BlockType _blockData) const;
+
         [[nodiscard]] float GetTopLevelAtPosition(glm::vec3 _position, float _radius) const;
         [[nodiscard]] float GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, float _radius) const;
-        [[nodiscard]] Block* GetBlockFromData(BlockType _blockData) const;
+
         [[nodiscard]] glm::vec3 GetPosition() const { return chunkPosition; }
         [[nodiscard]] bool ChunkVisible() const { return inCamera; };
+
+        [[nodiscard]] MaterialMesh* GetBlockMesh(const Block* _block) const;
 };
 
 

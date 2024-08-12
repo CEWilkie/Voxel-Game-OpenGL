@@ -58,7 +58,7 @@ void World::CheckCulling(const Camera &_camera) {
                     displayingChunks += 1;
             }
 
-    printf("DISPLAYING %d / %d CHUNKS\n", displayingChunks, nChunks);
+//    printf("DISPLAYING %d / %d CHUNKS\n", displayingChunks, nChunks);
 }
 
 
@@ -105,7 +105,7 @@ void World::GenerateWorld() {
 
 
 float World::GenerateBlockHeight(glm::vec2 _blockPos) {
-    float height = 0;
+    float height;
 
     /*
      * PRIMARY TERRAIN LEVELS

@@ -28,8 +28,20 @@ void MaterialMesh::AddVerticies(std::vector<Vertex> _verticies, glm::vec3 _posit
     }
 }
 
-void MaterialMesh::RemoveBlockFaceVertex(BLOCKFACE _faceID, glm::vec3 _position) {
-    // ...
+void MaterialMesh::RemoveVerticies(std::vector<Vertex> _verticies, glm::vec3 _position) {
+    // find verticies in vector which are in _verticies and remove them
+    for (auto iter = vertexArray.begin(); iter != vertexArray.end();) {
+        if (std::any_of(_verticies.begin(), _verticies.end(), [&](Vertex& v){
+            if (v.position + _position == iter->position) return true;
+        })) iter = vertexArray.erase(iter);
+        else
+            iter++;
+    }
+}
+
+void MaterialMesh::ResetVerticies() {
+    vertexArray.clear();
+    nFaces = 0;
 }
 
 void MaterialMesh::BindMesh() {
@@ -69,6 +81,28 @@ void MaterialMesh::BindMesh() {
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void MaterialMesh::UpdateMesh() {
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(vertexArray.size() * sizeof(Vertex)), vertexArray.data());
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    // populate indexArray
+    nFaces = (int)vertexArray.size() / 4;
+    std::vector<GLuint> indexArray {};
+    for (int f = 0; f < nFaces; f++) {
+        indexArray.push_back(f*4 + 1);
+        indexArray.push_back(f*4 + 3);
+        indexArray.push_back(f*4 + 0);
+        indexArray.push_back(f*4 + 0);
+        indexArray.push_back(f*4 + 3);
+        indexArray.push_back(f*4 + 2);
+    }
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, GLsizeiptr(indexArray.size()*sizeof(GLuint)), indexArray.data());
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void MaterialMesh::DrawMesh(const Transformation& _transformation) const {

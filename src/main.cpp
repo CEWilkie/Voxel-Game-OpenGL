@@ -10,7 +10,8 @@
 #include "World/World.h"
 #include "Textures/TextureManager.h"
 
-#include "World/Chunk.h"
+#include "GlobalStates.h"
+
 
 int main(int argc, char** argv){
     // Init SDL
@@ -131,25 +132,34 @@ int main(int argc, char** argv){
          * DRAW TO SCREEN
          */
 
+        // WORLD DISPLAY
         world->Display();
 
+
         // 2D OVERLAY
+
+
 
         /*
          * INPUT MANAGEMENT
          */
 
         // SDL EVENTS
-
         SDL_Event event;
         while (SDL_PollEvent(&event) != 0) {
             if (event.type == SDL_QUIT) {
                 running = false;
             }
+
+            if (grabMouse == SDL_TRUE) {
+                player.HandlePlayerInputs(event);
+            }
         }
 
-        // LOCK / UNLOCK MOUSE TO SCREEN
+        // KEYBOARD STATES
         const std::uint8_t* state = SDL_GetKeyboardState(nullptr);
+
+        // LOCK / UNLOCK MOUSE TO SCREEN
         if (state[SDL_SCANCODE_ESCAPE]) {
             // Guard against escape being set to false after 2 frame press
             if (!escToggled) {
@@ -169,7 +179,6 @@ int main(int argc, char** argv){
         if (!state[SDL_SCANCODE_ESCAPE]) escToggled = false;
 
         // PLAYER MOVEMENT UPDATE
-
         if (grabMouse == SDL_TRUE) {
             player.HandleMovement(deltaTicks);
             player.MouseLook(grabMouse);
@@ -177,7 +186,6 @@ int main(int argc, char** argv){
         }
 
         // FPS CHECK
-
         if (state[SDL_SCANCODE_F]) {
             auto seconds = (double(ticks) / 1000.0);
             if (seconds == 0) seconds = 1;
