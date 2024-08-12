@@ -54,15 +54,17 @@ class Player {
 
         std::unique_ptr<Camera> firstPerson = std::make_unique<Camera>();
         std::unique_ptr<Camera> thirdPerson = std::make_unique<Camera>();
-        Camera* usingCamera {};
+        Camera* usingCamera = firstPerson.get();
+        int currentCamera = 1;
+        bool camSwitchToggle = false;
 
     public:
         Player(glm::vec3 _position, glm::vec3 _facingDirection);
 
         // Movement
         void HandleMovement(Uint64 _deltaTicks);
-        void FlyingMovement(float _seconds);
-        void WalkingMovement(float _seconds);
+        void FlyingMovement(const std::uint8_t* _keyInputs, float _seconds);
+        void WalkingMovement(const std::uint8_t* _keyInputs, float _seconds);
 
         // Movement limits
         void UpdatePlayerChunk();
@@ -72,7 +74,7 @@ class Player {
 
         // Player Camera
         void MouseLook(SDL_bool _mouseGrabbed);
-
+        void SwitchCamera(const std::uint8_t* _keyInputs);
 
 
         // Getters

@@ -19,7 +19,6 @@ class Player;
 namespace WorldDataTypes {
     typedef std::array<std::array<std::array<std::unique_ptr<Chunk>, worldSize>, worldHeight>, worldSize> chunkArray;
     typedef std::array<std::unique_ptr<Biome>, worldArea> biomeMap;
-    typedef std::array<float, worldArea> chunkDataMap;
 }
 
 class World {
@@ -35,6 +34,9 @@ class World {
         std::vector<std::unique_ptr<Biome>> uniqueBiomes {};
         WorldDataTypes::biomeMap biomeMap {};
 
+        int nChunks {};
+        int displayingChunks {};
+
     public:
         World();
         ~World();
@@ -43,7 +45,7 @@ class World {
         void Display();
         void CheckCulling(const Camera& _camera);
 
-        // Skybox
+        // Skybox and Decoratives
         void SetSkyboxProperties(const Player& player);
         void SetSkyboxPosition(glm::vec3 _position);
 

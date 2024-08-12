@@ -74,7 +74,8 @@ class Chunk {
 
         // Chunk Culling and positioning
         std::unique_ptr<BoxBounds> boxBounds {};
-        std::unique_ptr<Transformation> chunkTransformation = std::make_unique<Transformation>();
+        std::unique_ptr<Transformation> boundsTransformation = std::make_unique<Transformation>();
+        std::unique_ptr<Transformation> positionTransformation = std::make_unique<Transformation>();
         glm::vec3 chunkPosition {0,0,0};
 
         // Chunk tree
@@ -115,6 +116,7 @@ class Chunk {
         [[nodiscard]] float GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, float _radius) const;
         [[nodiscard]] Block* GetBlockFromData(BlockType _blockData) const;
         [[nodiscard]] glm::vec3 GetPosition() const { return chunkPosition; }
+        [[nodiscard]] bool ChunkVisible() const { return inCamera; };
 };
 
 

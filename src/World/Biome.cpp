@@ -20,7 +20,7 @@ BlockType Biome::GetBlockType(float _hmTopLevel, float _blockY) {
     else if (_blockY > _hmTopLevel) newBlockData = {AIR, 0};
     else if (_blockY == _hmTopLevel && _blockY >= WATERLEVEL + 120) newBlockData = {BLOCKID::STONE, 0};
     else if (_blockY == _hmTopLevel) newBlockData = {BLOCKID::GRASS, 0};
-    else if (_blockY > _hmTopLevel - 4 && _hmTopLevel < WATERLEVEL + 30) newBlockData = {BLOCKID::DIRT, 0};
+    else if (_blockY > _hmTopLevel - 4 && _hmTopLevel < WATERLEVEL + 120) newBlockData = {BLOCKID::DIRT, 0};
     else newBlockData = {BLOCKID::STONE, 0};
 
     // For each domain, test if the given block y position is within it

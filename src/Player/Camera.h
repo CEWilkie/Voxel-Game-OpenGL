@@ -40,12 +40,8 @@ class Camera {
     public:
         Camera();
 
-        // Camera Movement
-        void Move(Uint64 _deltaFrames);
-        void MouseLook(SDL_bool _mouseGrabbed);
+        // Camera Matrix and Frustrum
         void UpdateLookatUniform() const;
-
-        // Frustrum Culling with view clip planes
         void UpdateViewFrustrum();
 
         // Camera Setters

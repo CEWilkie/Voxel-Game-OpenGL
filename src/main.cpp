@@ -86,6 +86,11 @@ int main(int argc, char** argv){
     Uint64 deltaTicks, endTick = SDL_GetTicks64();
     glm::mat4 lastViewMatrix {};
 
+    // FPS check
+    int target = 120; // target fps
+    int frames = 0;
+    Uint64 ticks = 0;
+
     while (running) {
         /*
          * START OF FRAME
@@ -93,10 +98,14 @@ int main(int argc, char** argv){
 
         Uint64 startTick = SDL_GetTicks64();
         deltaTicks = startTick - endTick;
-        if (deltaTicks < 1000 / 120) {
-            SDL_Delay(Uint32((1000 / 120) - deltaTicks));
+        if (deltaTicks < 1000 / target) {
+            SDL_Delay(Uint32((1000 / target) - deltaTicks));
+            deltaTicks = SDL_GetTicks64() - endTick;
         }
         endTick = startTick;
+
+        frames += 1;
+        ticks += deltaTicks;
 
         /*
          *  CLEAR SCREEN
@@ -112,7 +121,7 @@ int main(int argc, char** argv){
         // If the player has changed the direction they are looking in since last check
         if (player.CameraMoved()) {
             player.GetUsingCamera()->UpdateViewFrustrum();
-//            world->CheckCulling(*player.GetUsingCamera());
+            world->CheckCulling(*player.GetUsingCamera());
         }
 
 
@@ -137,44 +146,50 @@ int main(int argc, char** argv){
             }
         }
 
-        // KEYBOARD INPUTS
-
-        // Mouse position -> Looking target
+        // LOCK / UNLOCK MOUSE TO SCREEN
         const std::uint8_t* state = SDL_GetKeyboardState(nullptr);
         if (state[SDL_SCANCODE_ESCAPE]) {
             // Guard against escape being set to false after 2 frame press
-            if (escToggled) continue;
+            if (!escToggled) {
+                // Set mouse pos to centre to prevent change in looking target on resume
+                int maxx, maxy;
+                window.GetWindowSize(maxx, maxy);
+                SDL_WarpMouseInWindow(window.WindowPtr(), maxx/2, maxy/2);
+
+                // lock mouse to window
+                grabMouse = (grabMouse == SDL_TRUE) ? SDL_FALSE : SDL_TRUE;
+                SDL_SetWindowGrab(window.WindowPtr(), grabMouse);
+                SDL_ShowCursor((grabMouse == SDL_TRUE) ? SDL_DISABLE : SDL_ENABLE);
+            }
+
             escToggled = true;
-
-            // Set mouse pos to centre to prevent change in looking target on resume
-            int maxx, maxy;
-            window.GetWindowSize(maxx, maxy);
-            SDL_WarpMouseInWindow(window.WindowPtr(), maxx/2, maxy/2);
-
-            // lock mouse to window
-            grabMouse = (grabMouse == SDL_TRUE) ? SDL_FALSE : SDL_TRUE;
-            SDL_SetWindowGrab(window.WindowPtr(), grabMouse);
-            SDL_ShowCursor((grabMouse == SDL_TRUE) ? SDL_DISABLE : SDL_ENABLE);
         }
         if (!state[SDL_SCANCODE_ESCAPE]) escToggled = false;
 
-        // CAMERA
+        // PLAYER MOVEMENT UPDATE
 
         if (grabMouse == SDL_TRUE) {
             player.HandleMovement(deltaTicks);
             player.MouseLook(grabMouse);
+            player.GetUsingCamera()->UpdateLookatUniform();
         }
 
-//        if (state[SDL_SCANCODE_C]) {
-//            secondaryCamera.MoveTo(camera.GetPosition());
-//            secondaryCamera.SetDirection(camera.GetDirection());
-//            printf("campos %f %f %f\n", secondaryCamera.GetPosition().x, secondaryCamera.GetPosition().y, secondaryCamera.GetPosition().z);
-//        }
-//
-//        if (state[SDL_SCANCODE_1]) curCam = &camera;
-//        if (state[SDL_SCANCODE_2]) curCam = &secondaryCamera;
+        // FPS CHECK
 
-        if (state[SDL_SCANCODE_F]) printf("FPS: %llu\n", 1000/(deltaTicks + 1));
+        if (state[SDL_SCANCODE_F]) {
+            auto seconds = (double(ticks) / 1000.0);
+            if (seconds == 0) seconds = 1;
+            double fps = frames / seconds;
+            printf("FPS: %f | TARGET FPS: %d | %%MATCH: %f%%\n", fps, target, (double(fps)/target) * 100.0);
+
+            // reset fps counter every 10 seconds as it would become too unrepresentative of any sudden dips / changes
+            // to fps
+
+            if (ticks >= 1000 * 10) {
+                ticks = 0;
+                frames = 0;
+            }
+        }
 
         /*
          *  UDPATE OBJECTS
@@ -186,7 +201,6 @@ int main(int argc, char** argv){
          * UPDATE DISPLAY
          */
 
-        player.GetUsingCamera()->UpdateLookatUniform();
         SDL_GL_SwapWindow(window.WindowPtr());
 
         /*

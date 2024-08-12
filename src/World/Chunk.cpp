@@ -112,9 +112,13 @@ void ChunkNode::UpdateMaterialMesh(MaterialMesh* _mesh) {
  */
 
 Chunk::Chunk(const glm::vec3& _chunkPosition, ChunkData _chunkData) {
-    // Update the chunk bounds matrix
-    chunkTransformation->SetPosition(_chunkPosition * (float)chunkSize);
-    chunkTransformation->UpdateModelMatrix();
+    // Update the chunkPosition and chunkBounds transformations
+    positionTransformation->SetPosition(_chunkPosition * (float)chunkSize);
+    positionTransformation->UpdateModelMatrix();
+
+    boundsTransformation->SetPosition(_chunkPosition * (float)chunkSize);
+    boundsTransformation->SetScale({chunkSize, chunkSize, chunkSize});
+    boundsTransformation->UpdateModelMatrix();
 
     // Set chunk position
     chunkPosition = _chunkPosition;
@@ -165,7 +169,7 @@ void Chunk::DisplaySolid() {
     // Draw only the blocks that are solid
     for (const auto& mesh : blockMeshes) {
         if (mesh->GetBlock()->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 1) continue;
-        mesh->DrawMesh(*chunkTransformation);
+        mesh->DrawMesh(*positionTransformation);
     }
 }
 
@@ -175,7 +179,7 @@ void Chunk::DisplayTransparent() {
     // Draw only the blocks that are transparent
     for (const auto& mesh : blockMeshes) {
         if (mesh->GetBlock()->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 0) continue;
-        mesh->DrawMesh(*chunkTransformation);
+        mesh->DrawMesh(*positionTransformation);
     }
 }
 
@@ -186,7 +190,7 @@ void Chunk::DisplayTransparent() {
 
 
 void Chunk::CheckCulling(const Camera& _camera) {
-    inCamera = boxBounds->InFrustrum(_camera.GetCameraFrustrum(), *chunkTransformation);
+    inCamera = boxBounds->InFrustrum(_camera.GetCameraFrustrum(), *boundsTransformation);
 }
 
 std::vector<BLOCKFACE> Chunk::GetHiddenFaces(glm::vec3 _position) const {

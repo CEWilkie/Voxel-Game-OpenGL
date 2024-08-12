@@ -48,11 +48,17 @@ void World::Display() {
 }
 
 void World::CheckCulling(const Camera &_camera) {
+    displayingChunks = 0;
+
     for (int chunkX = 0; chunkX < worldSize; chunkX++)
         for (int chunkY = 0; chunkY < worldHeight; chunkY++)
             for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
                 worldChunks[chunkX][chunkY][chunkZ]->CheckCulling(_camera);
+                if (worldChunks[chunkX][chunkY][chunkZ]->ChunkVisible())
+                    displayingChunks += 1;
             }
+
+    printf("DISPLAYING %d / %d CHUNKS\n", displayingChunks, nChunks);
 }
 
 
@@ -106,7 +112,7 @@ float World::GenerateBlockHeight(glm::vec2 _blockPos) {
      */
 
     // Seabed / ContinentBed Generation
-    float continentiality = glm::simplex(glm::vec2( _blockPos.x / 500.0, _blockPos.y / 500.0));
+    float continentiality = glm::simplex(glm::vec2( _blockPos.x / 2000.0, _blockPos.y / 2000.0));
     continentiality = (continentiality + 1) / 2;
 
     // Primary Noise based around waterlevel
@@ -201,6 +207,7 @@ void World::GenerateTerrain() {
                 auto st = SDL_GetTicks64();
                 worldChunks[x][y][z] = std::make_unique<Chunk>(chunkPos, chunkData);
                 worldChunks[x][y][z]->GenerateChunk();
+                nChunks++;
                 auto et = SDL_GetTicks64();
 
                 chunkSumTicksTaken += et - st;

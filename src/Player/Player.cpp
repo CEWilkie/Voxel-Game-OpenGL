@@ -18,7 +18,6 @@ Player::Player(glm::vec3 _position, glm::vec3 _facingDirection) {
     thirdPerson->SetDirection(facingDirection);
     thirdPerson->MoveTo({position.x, position.y + 1, position.z});
 
-    usingCamera = firstPerson.get();
     usingCamera->UpdateViewFrustrum();
     usingCamera->UpdateLookatUniform();
 
@@ -39,58 +38,68 @@ void Player::HandleMovement(Uint64 _deltaTicks) {
     // Seconds that have passed since last movement update
     float seconds = float(_deltaTicks) / 1000.0f;
 
-    // Update player position using correct movement method#
+    // Update player position using correct movement method
     GetMovementFriction();
+    const std::uint8_t* keyInputs = SDL_GetKeyboardState(nullptr);
     switch (movementMode) {
         case MOVEMENTMODE::FLYING:
-            FlyingMovement(seconds);
+            FlyingMovement(keyInputs, seconds);
             break;
 
         default: // WALKING
-            WalkingMovement(seconds);
+            WalkingMovement(keyInputs, seconds);
     }
 
     // Ensure that the new position remains within the boundaries (not travel through walls)
     EnforcePositionBoundaries(seconds);
 
+    // Check for the player attempting to switch camera
+    SwitchCamera(keyInputs);
+
     // Update camera position
-    usingCamera->MoveTo({position.x, position.y + 1, position.z});
+    if (currentCamera == 1) {
+        usingCamera->MoveTo({position.x, position.y + 1, position.z});
+    }
+    else if (currentCamera == 3) {
+        glm::vec3 thirdPersonPos = glm::vec3(position.x, position.y + 1, position.z) + normalUp - normalFront*3.0f;
+        usingCamera->MoveTo(thirdPersonPos);
+    }
+    usingCamera->UpdateViewFrustrum();
 
     // Fetch new position bounds if the block the player is in has changed
     if (lastPosition != position) { UpdatePlayerChunk(); }
     UpdateMaxPositions();
 }
 
-void Player::FlyingMovement(float _seconds) {
+void Player::FlyingMovement(const std::uint8_t* _keyInputs, float _seconds) {
     // max speeds
     float maxHorizSpeed = 15.0f;
     float maxVertSpeed = 15.0f;
 
     // Determine direction of movement
     moveDirection = {0, 0, 0};
-    const std::uint8_t* state = SDL_GetKeyboardState(nullptr);
-    if (state[SDL_SCANCODE_W]) {
+    if (_keyInputs[SDL_SCANCODE_W]) {
         moveDirection += normalFront;
     }
-    if (state[SDL_SCANCODE_S]) {
+    if (_keyInputs[SDL_SCANCODE_S]) {
         moveDirection -= normalFront;
     }
-    if (state[SDL_SCANCODE_A]) {
+    if (_keyInputs[SDL_SCANCODE_A]) {
         moveDirection -= normalRight;
     }
-    if (state[SDL_SCANCODE_D]) {
+    if (_keyInputs[SDL_SCANCODE_D]) {
         moveDirection += normalRight;
     }
-    if (state[SDL_SCANCODE_SPACE]) {
+    if (_keyInputs[SDL_SCANCODE_SPACE]) {
         moveDirection += normalUp;
     }
-    if (state[SDL_SCANCODE_LSHIFT]) {
+    if (_keyInputs[SDL_SCANCODE_LSHIFT]) {
         moveDirection -= normalUp;
     }
-    if (state[SDL_SCANCODE_LCTRL]) {
+    if (_keyInputs[SDL_SCANCODE_LCTRL]) {
         maxHorizSpeed = 22.5f;
     }
-    if (!state[SDL_SCANCODE_LCTRL]) {
+    if (!_keyInputs[SDL_SCANCODE_LCTRL]) {
         maxHorizSpeed = 15.0f;
     }
 
@@ -126,7 +135,7 @@ void Player::FlyingMovement(float _seconds) {
     position += vectorSpeed * _seconds;
 }
 
-void Player::WalkingMovement(float _seconds) {
+void Player::WalkingMovement(const std::uint8_t* _keyInputs, float _seconds) {
     // accel/decel values are blocks/second
     vectorAcceleration.y = GRAVITY;
 
@@ -135,30 +144,28 @@ void Player::WalkingMovement(float _seconds) {
 
     // Determine direction of movement
     moveDirection = {0, 0, 0};
-    const std::uint8_t* state = SDL_GetKeyboardState(nullptr);
-    if (state[SDL_SCANCODE_W]) {
+    if (_keyInputs[SDL_SCANCODE_W]) {
         moveDirection += normalFront;
     }
-    if (state[SDL_SCANCODE_S]) {
+    if (_keyInputs[SDL_SCANCODE_S]) {
         moveDirection -= normalFront;
     }
-    if (state[SDL_SCANCODE_A]) {
+    if (_keyInputs[SDL_SCANCODE_A]) {
         moveDirection -= normalRight;
     }
-    if (state[SDL_SCANCODE_D]) {
+    if (_keyInputs[SDL_SCANCODE_D]) {
         moveDirection += normalRight;
     }
 
-    if (state[SDL_SCANCODE_C]) {
-        printf("min x max: %f %f %f\n", minX, position.x, maxX);
-        printf("min z max: %f %f %f\n", minZ, position.z, maxZ);
+    if (_keyInputs[SDL_SCANCODE_C]) {
+        printf("PLAYERPOS: %f %f %f\n", position.x, position.y, position.z);
     }
 
     // is player walking or running
-    if (state[SDL_SCANCODE_LCTRL]) {
+    if (_keyInputs[SDL_SCANCODE_LCTRL]) {
         maxHorizSpeed = 11.5f;
     }
-    if (!state[SDL_SCANCODE_LCTRL]) {
+    if (!_keyInputs[SDL_SCANCODE_LCTRL]) {
         maxHorizSpeed = 7.5f;
     }
 
@@ -187,7 +194,7 @@ void Player::WalkingMovement(float _seconds) {
     }
 
     // If space is pressed when the player is on solid ground or in liquid, then start a jump
-    if (state[SDL_SCANCODE_SPACE] && canJump) {
+    if (_keyInputs[SDL_SCANCODE_SPACE] && canJump) {
         if (inLiquid) {
             vectorSpeed.y = JUMPSPEED / 2.0f;
         }
@@ -203,6 +210,26 @@ void Player::WalkingMovement(float _seconds) {
 
     position = (vectorSpeed * _seconds) + lastStaticPosition;
     position.y = (vectorSpeed.y * timeSinceOnGround) + (0.5f * vectorAcceleration.y * std::pow(timeSinceOnGround, 2.0f)) + lastStaticPosition.y;
+}
+
+void Player::SwitchCamera(const std::uint8_t* _keyInputs) {
+    if (_keyInputs[SDL_SCANCODE_R]) {
+        if (!camSwitchToggle) {
+            if (currentCamera == 1) {
+                usingCamera = thirdPerson.get();
+                currentCamera = 3;
+            }
+            else if (currentCamera == 3) {
+                usingCamera = firstPerson.get();
+                currentCamera = 1;
+            }
+
+        }
+
+        camSwitchToggle = true;
+    }
+
+    if (!_keyInputs[SDL_SCANCODE_R]) camSwitchToggle = false;
 }
 
 void Player::UpdatePlayerChunk() {
