@@ -102,6 +102,7 @@ class Block {
 
         // Model Display and Transformation
         void Display(Transformation* _t);
+        void DisplayWireframe(Transformation* _transformation);
         void SetTransformation(Transformation* _t);
 
         // Getters

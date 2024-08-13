@@ -177,6 +177,23 @@ void Block::Display(Transformation* _t) {
     glBindVertexArray(0);
 }
 
+void Block::DisplayWireframe(Transformation *_transformation) {
+
+    // Apply black border and set to line mode
+    glm::vec4 borderCol{0,0,0,255}, noCol{0,0,0,0};
+    GLint uniformLocation = glGetUniformLocation(window.GetShader(), "vertexTextureColorOverride");
+    glUniform4fv(uniformLocation, 1, &borderCol[0]);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glLineWidth(2.0f);
+
+    Display(_transformation);
+
+    // Remove border, return to filled mode
+    glUniform4fv(uniformLocation, 1, &noCol[0]);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glLineWidth(1.0f);
+}
+
 void Block::SetTransformation(Transformation *_t) {
 //    blockTransformation = _t;
 }

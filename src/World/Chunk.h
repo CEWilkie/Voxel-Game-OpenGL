@@ -96,7 +96,7 @@ class Chunk {
 
         // Display
         void CreateBlockMeshes();
-        void UpdateBlockMesh(Block* _block);
+        void UpdateBlockMeshAtPosition(glm::vec3 _blockPos, int _depth);
         void DisplaySolid();
         void DisplayTransparent();
 
@@ -112,7 +112,7 @@ class Chunk {
         void SetAdjacentChunks(const std::array<Chunk*, 10>& _chunks);
 
         // Chunk Interaction
-        void BreakBlockAtPosition(glm::vec3 _position);
+        void BreakBlockAtPosition(glm::vec3 _blockPos);
         void PlaceBlockAtPosition(glm::vec3 _position, BlockType _blockType);
         [[nodiscard]] Block* GetBlockAtPosition(glm::vec3 _position, int _depth) const;
         void SetBlockAtPosition(glm::vec3 _position, int _depth, BlockType _blockType);

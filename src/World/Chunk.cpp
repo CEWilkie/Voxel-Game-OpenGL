@@ -146,8 +146,6 @@ void Chunk::CreateBlockMeshes() {
     // Create block meshes for each unique block
     auto st = SDL_GetTicks64();
     for (const auto& block : uniqueBlocks) {
-        // Create mesh for non-air blocks
-        if (BlockType::Compare(block.first->GetBlockType(), {AIR, 0})) continue;
         blockMeshes.push_back(std::make_unique<MaterialMesh>(block.first.get()));
 
         // Update mesh
@@ -163,33 +161,76 @@ void Chunk::CreateBlockMeshes() {
 //    printf("CHUNK MESH CREATION : %llu TICKS TAKEN\n", et-st);
 }
 
-void Chunk::UpdateBlockMesh(Block *_block) {
-    // if block does not already have a mesh, create one
-    MaterialMesh* mesh = GetBlockMesh(_block);
-    if (mesh == nullptr) {
-        blockMeshes.push_back(std::make_unique<MaterialMesh>(_block));
+void Chunk::UpdateBlockMeshAtPosition(glm::vec3 _blockPos, int _depth) {
+    if (_depth > 1) return;
+    _depth++;
+
+    // TOP, BOTTOM, FRONT, FRONTLEFT, LEFT, BACKLEFT, BACK, BACKRIGHT, RIGHT, FRONTRIGHT
+    if (_blockPos.x < 0) {
+        if (adjacentChunks[2] != nullptr) {
+            _blockPos.x += chunkSize;
+            return adjacentChunks[2]->UpdateBlockMeshAtPosition(_blockPos, _depth);
+        }
+        else
+            return;
+    }
+    if (_blockPos.x >= chunkSize) {
+        if (adjacentChunks[6] != nullptr) {
+            _blockPos.x -= chunkSize;
+            return adjacentChunks[6]->UpdateBlockMeshAtPosition(_blockPos, _depth);
+        }
+        else
+            return;
+    }
+    if (_blockPos.y < 0) {
+        if (adjacentChunks[1] != nullptr) {
+            _blockPos.y += chunkSize;
+            return adjacentChunks[1]->UpdateBlockMeshAtPosition(_blockPos, _depth);
+        }
+        else
+            return;
+    }
+    if (_blockPos.y >= chunkSize) {
+        if (adjacentChunks[0] != nullptr) {
+            _blockPos.y -= chunkSize;
+            return adjacentChunks[0]->UpdateBlockMeshAtPosition(_blockPos, _depth);
+        }
+        else
+            return;
+    }
+    if (_blockPos.z < 0) {
+        if (adjacentChunks[4] != nullptr) {
+            _blockPos.z += chunkSize;
+            return adjacentChunks[4]->UpdateBlockMeshAtPosition(_blockPos, _depth);
+        }
+        else
+            return;
+    }
+    if (_blockPos.z >= chunkSize) {
+        if (adjacentChunks[8] != nullptr) {
+            _blockPos.z -= chunkSize;
+            return adjacentChunks[8]->UpdateBlockMeshAtPosition(_blockPos, _depth);
+        }
+        else
+            return;
     }
 
-    // Update the meshes
-    for (auto& blockMesh : blockMeshes) {
-        if (blockMesh->GetBlock()->GetBlockType().blockID == AIR) continue;
+    Block* meshBlock = GetBlockAtPosition(_blockPos, 1);
+    if (meshBlock == nullptr || meshBlock->GetBlockType().blockID == AIR) return;
 
-        blockMesh->ResetVerticies();
-
-        for (int x = 0; x < chunkSize; x++) {
-            for (int y = 0; y < chunkSize; y++) {
-                for (int z = 0; z < chunkSize; z++) {
-                    if (!BlockType::Compare(GetBlockAtPosition({x,y,z}, 0)->GetBlockType(),
-                                            blockMesh->GetBlock()->GetBlockType())) continue;
-
-                    blockMesh->AddVerticies(blockMesh->GetBlock()->GetFaceVerticies(
-                            GetShowingFaces({x,y,z})),glm::vec3(x,y,z));
-                }
-            }
-        }
-
+    // Fetch mesh of block and ensure block has a mesh
+    MaterialMesh* blockMesh = GetBlockMesh(meshBlock);
+    if (blockMesh == nullptr) {
+        blockMeshes.push_back(std::make_unique<MaterialMesh>(meshBlock));
+        blockMesh = blockMeshes.back().get();
         blockMesh->BindMesh();
     }
+
+    blockMesh->AddVerticies(meshBlock->GetFaceVerticies(GetShowingFaces(_blockPos)),
+                            _blockPos + GetPosition());
+    blockMesh->UpdateMesh();
+
+    printf("mesh updated\n");
 }
 
 void Chunk::DisplaySolid() {
@@ -402,17 +443,28 @@ void Chunk::SetAdjacentChunks(const std::array<Chunk*, 10> &_chunks) {
 }
 
 
-void Chunk::BreakBlockAtPosition(glm::vec3 _position) {
-    Block* _block = GetBlockAtPosition(_position, 0);
-    SetBlockAtPosition(_position, 0, {AIR, 0});
-    printf("block broken\n");
+void Chunk::BreakBlockAtPosition(glm::vec3 _blockPos) {
+    // Fetch block being broken
+    Block* block = GetBlockAtPosition(_blockPos, 0);
+    if (block == nullptr) return;
 
-    // remove the block's verticies from the mesh, and update meshes of the newly exposed blocks
-    MaterialMesh* blockMesh = GetBlockMesh(_block);
-//    blockMesh->RemoveVerticies(_block->GetFaceVerticies(GetShowingFaces(_position)), _position);
-//    blockMesh->UpdateMesh();
+    // remove the block's verticies from the mesh
+    MaterialMesh* blockMesh = GetBlockMesh(block);
+    if (blockMesh != nullptr) {
+        std::vector<Vertex> verticies = block->GetFaceVerticies(GetShowingFaces(_blockPos));
+        blockMesh->RemoveVerticies(verticies,{(int)_blockPos.x, (int)_blockPos.y, (int)_blockPos.z});
+        blockMesh->UpdateMesh();
+    }
 
-    UpdateBlockMesh(_block);
+    // Set the block being broken to AIR 0 and update the meshes of newly exposed blocks
+    SetBlockAtPosition(_blockPos, 0, {AIR, 0});
+
+    UpdateBlockMeshAtPosition(_blockPos + dirTop, 0);
+    UpdateBlockMeshAtPosition(_blockPos + dirBottom, 0);
+    UpdateBlockMeshAtPosition(_blockPos + dirLeft, 0);
+    UpdateBlockMeshAtPosition(_blockPos + dirRight, 0);
+    UpdateBlockMeshAtPosition(_blockPos + dirFront, 0);
+    UpdateBlockMeshAtPosition(_blockPos + dirBack, 0);
 }
 
 

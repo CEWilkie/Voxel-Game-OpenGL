@@ -28,14 +28,44 @@ void MaterialMesh::AddVerticies(std::vector<Vertex> _verticies, glm::vec3 _posit
     }
 }
 
-void MaterialMesh::RemoveVerticies(std::vector<Vertex> _verticies, glm::vec3 _position) {
-    // find verticies in vector which are in _verticies and remove them
-    for (auto iter = vertexArray.begin(); iter != vertexArray.end();) {
-        if (std::any_of(_verticies.begin(), _verticies.end(), [&](Vertex& v){
-            if (v.position + _position == iter->position) return true;
-        })) iter = vertexArray.erase(iter);
-        else
-            iter++;
+void MaterialMesh::RemoveVerticies(std::vector<Vertex>& _verticies, glm::vec3 _position) {
+    if (vertexArray.empty()) return;
+
+    int matches;
+
+    // find sequence of verticies in the vertex array which match with _verticies and remove them
+    for (auto startIter = vertexArray.begin(); startIter != vertexArray.end();) {
+        auto endIter = startIter;
+        matches = 0;
+        for (auto remIter = _verticies.begin(); remIter != _verticies.end();) {
+            if (endIter->position == remIter->position + _position) {
+                // Matching sequence of positions to remove, check next value
+                endIter++;
+                remIter++;
+                matches++;
+            }
+            else {
+                // is not the sequence of positions being searched for, go to next startIter
+                endIter = startIter;
+                break;
+            }
+
+            if (endIter == vertexArray.end()) break;
+        }
+
+        if (matches > 0) {
+            printf("matches : %d out of %zu\n", matches, _verticies.size());
+        }
+
+        // Sequence found
+        if (startIter != endIter) {
+            printf("vertex sequence found\n");
+            vertexArray.erase(startIter, endIter);
+            break;
+        }
+        else {
+            startIter++;
+        }
     }
 }
 
@@ -106,7 +136,7 @@ void MaterialMesh::UpdateMesh() {
 }
 
 void MaterialMesh::DrawMesh(const Transformation& _transformation) const {
-    if (vertexArray.empty()) return;
+    if (vertexArray.empty()) return; // nothing to draw
 
     // Bind object
     glBindVertexArray(vertexArrayObject);

@@ -135,6 +135,8 @@ int main(int argc, char** argv){
         // WORLD DISPLAY
         world->Display();
 
+        // ENTITY DISPLAY
+        player.Display();
 
         // 2D OVERLAY
 

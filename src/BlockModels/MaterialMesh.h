@@ -26,7 +26,7 @@ class MaterialMesh {
         ~MaterialMesh();
 
         void AddVerticies(std::vector<Vertex> _verticies, glm::vec3 _position);
-        void RemoveVerticies(std::vector<Vertex> _verticies, glm::vec3 _position);
+        void RemoveVerticies(std::vector<Vertex>& _verticies, glm::vec3 _position);
         void ResetVerticies();
 
         void BindMesh();

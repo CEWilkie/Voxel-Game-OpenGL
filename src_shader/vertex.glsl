@@ -6,6 +6,7 @@ layout(location = 1) in vec2 vertexTextureCoord;
 
 // PIPE OUT
 out vec2 v_vertexTextureCoord;
+out vec4 v_vertexTextureColorOverride;
 
 // UNIFORMS
 uniform mat4 uViewMatrix;
@@ -13,8 +14,7 @@ uniform mat4 uProjectionMatrix;
 uniform mat4 uModelMatrix;
 
 uniform vec2 uVertexTextureCoordOffset = vec2(0.0f, 0.0f);
-
-
+uniform vec4 vertexTextureColorOverride = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 
 void main() {
     // Turn position into vec4
@@ -33,4 +33,6 @@ void main() {
     v_vertexTextureCoord = vec2(uVertexTextureCoordOffset.x + vertexTextureCoord.x,
                                 uVertexTextureCoordOffset.y + vertexTextureCoord.y) / 16.0f;
 
+    // If this value's alpha is not 0, the colour is overlay onto the texture
+    v_vertexTextureColorOverride = vertexTextureColorOverride;
 }

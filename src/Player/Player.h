@@ -60,9 +60,13 @@ class Player {
 
         // Player-World interaction
         float range = 4.5f;
+        glm::vec3 unobstructedRayPosition {};
 
     public:
         Player(glm::vec3 _position, glm::vec3 _facingDirection);
+
+        // Display
+        void Display();
 
         // Movement
         void HandleMovement(Uint64 _deltaTicks);
@@ -81,8 +85,9 @@ class Player {
 
         // Block interactions
         void HandlePlayerInputs(const SDL_Event& _event);
-        void BreakBlock();
-        void PlaceBlock();
+        void GetUnobstructedRayPosition();
+        void BreakBlock(glm::vec3 _rayPosition);
+        void PlaceBlock(glm::vec3 _rayPosition);
 
         // Getters
         [[nodiscard]] Camera* GetUsingCamera() const { return usingCamera; }
