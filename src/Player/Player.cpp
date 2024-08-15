@@ -402,30 +402,30 @@ void Player::HandlePlayerInputs(const SDL_Event &_event) {
 void Player::GetUnobstructedRayPosition() {
     if (playerChunk == nullptr) return;
 
-    // Create ray from campos using direction and max range, detect first block ray encounters
+    // Create ray from campos using direction and max range, detect first block ray encounters that can be interacted
+    // with
     glm::vec3 rayPosition = firstPerson->GetPosition() - (playerChunk->GetPosition() * (float)chunkSize);
     rayPosition.y += 1;
-    glm::vec3 rayEnd = rayPosition + glm::normalize(facingDirection) * range;
 
-    while (glm::length(rayPosition) <= glm::length(rayEnd)) {
+    // higher accuracy -> more checks, smaller increments in position along the line
+    float accuracy = 20.0f;
+
+    for (int r = 0; r < (int)accuracy; r++) {
         Block* blockAtPosition = playerChunk->GetBlockAtPosition(rayPosition, 0);
-        if (blockAtPosition == nullptr) {
-            rayPosition += facingDirection * 0.05f;
-            continue;
+        if (blockAtPosition != nullptr) {
+            // if the block is breakable, end early
+            if (blockAtPosition->GetAttributeValue(BLOCKATTRIBUTE::BREAKABLE) > 0) {
+                break;
+            }
+
+            // block not breakable, however only proceed if the player can access through the block
+            if (blockAtPosition->GetAttributeValue(BLOCKATTRIBUTE::CANACCESSTHROUGHBLOCK) == 0) {
+                break;
+            }
         }
 
-        // if the block is breakable, end early
-        if (blockAtPosition->GetAttributeValue(BLOCKATTRIBUTE::BREAKABLE) > 0) {
-            break;
-        }
-
-        // block not breakable, however only proceed if the player can access through the block
-        if (blockAtPosition->GetAttributeValue(BLOCKATTRIBUTE::CANACCESSTHROUGHBLOCK) == 0) {
-            break;
-        }
-
-        // Else continue
-        rayPosition += facingDirection * 0.05f;
+        // next position
+        rayPosition += glm::normalize(facingDirection) * (range/accuracy);
     }
 
     unobstructedRayPosition = rayPosition;
