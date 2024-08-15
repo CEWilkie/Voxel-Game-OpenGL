@@ -102,6 +102,7 @@ class Chunk {
         // Display
         void CreateBlockMeshes();
         void UpdateBlockMeshAtPosition(glm::vec3 _blockPos, int _depth);
+        void UpdateBlockMesh(Block* _meshBlock);
         void DisplaySolid();
         void DisplayTransparent();
 

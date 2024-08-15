@@ -24,6 +24,8 @@ void MaterialMesh::AddVerticies(const std::vector<Vertex>& _verticies, const glm
     for (const Vertex& vertex : _verticies) {
         vertexArray.push_back({vertex.position + _position, vertex.textureCoord});
     }
+
+    unboundChanges = true;
 }
 
 void MaterialMesh::RemoveVerticies(std::vector<Vertex>& _verticies, const glm::vec3& _position) {
@@ -58,6 +60,7 @@ void MaterialMesh::RemoveVerticies(std::vector<Vertex>& _verticies, const glm::v
         // If the face sequence was found, not same
         if (vaFaceIter != vaIter) {
             vertexArray.erase(vaIter, vaFaceIter);
+            unboundChanges = true;
             break;
         }
         else {
@@ -74,6 +77,7 @@ void MaterialMesh::RemoveVerticies(std::vector<Vertex>& _verticies, const glm::v
 void MaterialMesh::ResetVerticies() {
     vertexArray.clear();
     nFaces = 0;
+    unboundChanges = true;
 }
 
 void MaterialMesh::BindMesh() {
@@ -113,6 +117,9 @@ void MaterialMesh::BindMesh() {
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    unboundChanges = false;
+    bound = true;
 }
 
 void MaterialMesh::UpdateMesh() {
@@ -135,6 +142,8 @@ void MaterialMesh::UpdateMesh() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, GLsizeiptr(indexArray.size()*sizeof(GLuint)), indexArray.data());
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    unboundChanges = false;
 }
 
 void MaterialMesh::DrawMesh(const Transformation& _transformation) const {

@@ -162,20 +162,31 @@ void Chunk::CreateBlockMeshes() {
 }
 
 void Chunk::UpdateBlockMeshAtPosition(glm::vec3 _blockPos, int _depth) {
-    Chunk* blockChunk = GetChunkAtPosition(_blockPos, _depth);
-    if (blockChunk == nullptr) return;
-
-    Block* meshBlock = blockChunk->GetBlockAtPosition(_blockPos, 1);
+    Block* meshBlock = GetBlockAtPosition(_blockPos, 0);
     if (meshBlock == nullptr) return;
 
-    // Get material mesh, as long as it is not air
-    MaterialMesh* blockMesh = blockChunk->GetMeshFromBlock(meshBlock);
+    UpdateBlockMesh(meshBlock);
+}
+
+void Chunk::UpdateBlockMesh(Block* _meshBlock) {
+    MaterialMesh* blockMesh = GetMeshFromBlock(_meshBlock);
     if (blockMesh == nullptr || blockMesh->GetBlock()->GetBlockType().blockID == AIR) return;
 
-    std::vector<Vertex> verticies = meshBlock->GetFaceVerticies(GetShowingFaces(_blockPos));
-    glm::vec3 intBlockPos = {(int)_blockPos.x, (int)_blockPos.y, (int)_blockPos.z};
-    blockMesh->AddVerticies(verticies,intBlockPos);
-    blockMesh->UpdateMesh();
+    blockMesh->ResetVerticies();
+
+    for (int x = 0; x < chunkSize; x++) {
+        for (int y = 0; y < chunkSize; y++) {
+            for (int z = 0; z < chunkSize; z++) {
+                Block* block = GetBlockAtPosition({x,y,z}, 0);
+
+                if (BlockType::Compare(block->GetBlockType(), _meshBlock->GetBlockType())) {
+                    blockMesh->AddVerticies(block->GetFaceVerticies(GetShowingFaces({x,y,z})), {x,y,z});
+                }
+            }
+        }
+    }
+
+    blockMesh->BindMesh();
 }
 
 void Chunk::DisplaySolid() {
@@ -392,27 +403,28 @@ void Chunk::BreakBlockAtPosition(glm::vec3 _blockPos) {
     Chunk* blockChunk = GetChunkAtPosition(_blockPos, 0);
     if (blockChunk == nullptr) return;
 
-    // Fetch block being broken
+    // Fetch block being broken, if this is somehow null theres bigger issues at play
     Block* block = blockChunk->GetBlockAtPosition(_blockPos, 0);
     if (block == nullptr) return;
 
-    // remove the block's verticies from the mesh
-    MaterialMesh* blockMesh = blockChunk->GetMeshFromBlock(block);
-    if (blockMesh != nullptr) {
-        std::vector<Vertex> verticies = block->GetFaceVerticies(blockChunk->GetShowingFaces(_blockPos));
-        blockMesh->RemoveVerticies(verticies,{(int)_blockPos.x, (int)_blockPos.y, (int)_blockPos.z});
-        blockMesh->UpdateMesh();
-    }
-
-    // Set the block being broken to AIR 0 and update the meshes of newly exposed blocks
+    // Set the block being broken to AIR 0
     blockChunk->SetBlockAtPosition(_blockPos, 0, {AIR, 0});
 
-//    blockChunk->UpdateBlockMeshAtPosition(_blockPos + dirTop, 0);
-//    blockChunk->UpdateBlockMeshAtPosition(_blockPos + dirBottom, 0);
-//    blockChunk->UpdateBlockMeshAtPosition(_blockPos + dirLeft, 0);
-//    blockChunk->UpdateBlockMeshAtPosition(_blockPos + dirRight, 0);
-//    blockChunk->UpdateBlockMeshAtPosition(_blockPos + dirFront, 0);
-//    blockChunk->UpdateBlockMeshAtPosition(_blockPos + dirBack, 0);
+    // update blocks mesh
+    MaterialMesh* blockMesh = blockChunk->GetMeshFromBlock(block);
+    if (blockMesh != nullptr) blockChunk->UpdateBlockMesh(block);
+
+    // Update the meshes of each block adjacent to the block just broken
+    std::array<glm::vec3, 7> blockPositions {_blockPos + dirTop, _blockPos + dirBottom, _blockPos + dirLeft,
+                                   _blockPos + dirRight, _blockPos + dirFront, _blockPos + dirBack};
+
+    for (auto& blockPosition : blockPositions) {
+        Chunk* chunkAtPosition = blockChunk->GetChunkAtPosition(blockPosition, 0);
+        if (chunkAtPosition == nullptr) continue;
+
+        chunkAtPosition->UpdateBlockMesh(chunkAtPosition->GetBlockAtPosition(blockPosition, 0));
+    }
+
 }
 
 

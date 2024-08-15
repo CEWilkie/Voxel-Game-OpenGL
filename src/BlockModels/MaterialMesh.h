@@ -19,7 +19,8 @@ class MaterialMesh {
         int nFaces = 0;
 
         Block* block;
-        bool unmeshedChanges = true;
+        bool unboundChanges = false;
+        bool bound = false;
 
     public:
         explicit MaterialMesh(Block* _block);
@@ -36,7 +37,8 @@ class MaterialMesh {
 
 
         [[nodiscard]] Block* GetBlock() const { return block; }
-        [[nodiscard]] bool OldMesh() const {return unmeshedChanges; }
+        [[nodiscard]] bool UnboundChanges() const {return unboundChanges; }
+        [[nodiscard]] bool Bound() const { return bound; }
 };
 
 
