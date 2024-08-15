@@ -20,52 +20,54 @@ MaterialMesh::~MaterialMesh() {
     glDeleteVertexArrays(1, &vertexArrayObject);
 }
 
-void MaterialMesh::AddVerticies(std::vector<Vertex> _verticies, glm::vec3 _position) {
-    for (auto& vertex : _verticies) {
-        // Update vertex position and add to vertex array
-        vertex.position += _position;
-        vertexArray.push_back(vertex);
+void MaterialMesh::AddVerticies(const std::vector<Vertex>& _verticies, const glm::vec3& _position) {
+    for (const Vertex& vertex : _verticies) {
+        vertexArray.push_back({vertex.position + _position, vertex.textureCoord});
     }
 }
 
-void MaterialMesh::RemoveVerticies(std::vector<Vertex>& _verticies, glm::vec3 _position) {
+void MaterialMesh::RemoveVerticies(std::vector<Vertex>& _verticies, const glm::vec3& _position) {
     if (vertexArray.empty()) return;
+    if (_verticies.empty()) return;
 
-    int matches;
+    // Find the faces specified by _verticies which are in vertexArray and remove them
+    for (auto vaIter = vertexArray.begin(); vaIter != vertexArray.end();) {
+        auto vaFaceIter = vaIter;
 
-    // find sequence of verticies in the vertex array which match with _verticies and remove them
-    for (auto startIter = vertexArray.begin(); startIter != vertexArray.end();) {
-        auto endIter = startIter;
-        matches = 0;
-        for (auto remIter = _verticies.begin(); remIter != _verticies.end();) {
-            if (endIter->position == remIter->position + _position) {
-                // Matching sequence of positions to remove, check next value
-                endIter++;
-                remIter++;
-                matches++;
-            }
-            else {
-                // is not the sequence of positions being searched for, go to next startIter
-                endIter = startIter;
-                break;
+        int vertexCount = 0;
+
+        for (auto rvIter = _verticies.begin(); rvIter < _verticies.end();) {
+            if (rvIter->position + _position != vaFaceIter->position) {
+                vaFaceIter = vaIter;
+                rvIter += 4 - vertexCount;
+                continue;
             }
 
-            if (endIter == vertexArray.end()) break;
+            vaFaceIter++;
+            rvIter++;
+            vertexCount++;
+
+            if (vertexCount == 4) {
+                vertexCount = 0;
+                vaIter = vertexArray.erase(vaIter, vaFaceIter);
+                rvIter = _verticies.erase(_verticies.begin(), rvIter);
+                vaFaceIter = vaIter;
+            }
         }
 
-        if (matches > 0) {
-            printf("matches : %d out of %zu\n", matches, _verticies.size());
-        }
-
-        // Sequence found
-        if (startIter != endIter) {
-            printf("vertex sequence found\n");
-            vertexArray.erase(startIter, endIter);
+        // If the face sequence was found, not same
+        if (vaFaceIter != vaIter) {
+            vertexArray.erase(vaIter, vaFaceIter);
             break;
         }
         else {
-            startIter++;
+            vaIter++;
         }
+
+    }
+
+    if (!_verticies.empty()) {
+        printf("%zu verticies remain!\n", _verticies.size());
     }
 }
 

@@ -208,8 +208,8 @@ std::vector<Vertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &_faces
     std::vector<Vertex> baseVertexArray = blockVAOmanager->GetBaseVertexArray(blockModel);
     std::vector<Vertex> vertexArray {};
 
-    float angleDeg = 90.0f * (rand() % 4 + 0);
-    glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(angleDeg), glm::vec3(0.0f, 1.0f, 0.0f));
+//    float angleDeg = 90.0f * (rand() % 4 + 0);
+//    glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(angleDeg), glm::vec3(0.0f, 1.0f, 0.0f));
 
     // For each requested face
     for (auto& face : _faces) {
@@ -223,20 +223,20 @@ std::vector<Vertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &_faces
             // Store Vertex and used Index
             Vertex faceVertex = baseVertexArray[baseIndexArray[i]];
 
-            if (face == TOP || face == BOTTOM) {
-                faceVertex.position = rotationY * glm::vec4(faceVertex.position, 1.0f);
-                if (angleDeg == 90.0f) {
-                    faceVertex.position.z += 1;
-                }
-                else if (angleDeg == 180.0f) {
-                    faceVertex.position.z += 1;
-                    faceVertex.position.x += 1;
-                }
-                else if (angleDeg == 270.0f) {
-                    faceVertex.position.x += 1;
-                }
-
-            }
+//            if (face == TOP || face == BOTTOM) {
+//                faceVertex.position = rotationY * glm::vec4(faceVertex.position, 1.0f);
+//                if (angleDeg == 90.0f) {
+//                    faceVertex.position.z += 1;
+//                }
+//                else if (angleDeg == 180.0f) {
+//                    faceVertex.position.z += 1;
+//                    faceVertex.position.x += 1;
+//                }
+//                else if (angleDeg == 270.0f) {
+//                    faceVertex.position.x += 1;
+//                }
+//
+//            }
             vertexArray.push_back(faceVertex);
             usedIndicies.push_back(baseIndexArray[i]);
         }

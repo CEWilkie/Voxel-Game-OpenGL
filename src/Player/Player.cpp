@@ -441,7 +441,6 @@ void Player::BreakBlock(glm::vec3 _rayPosition) {
     Block* blockAtPosition = playerChunk->GetBlockAtPosition(_rayPosition, 0);
     if (blockAtPosition == nullptr) return;
 
-    // else a block has been found, so break it
     playerChunk->BreakBlockAtPosition(_rayPosition);
 }
 

@@ -90,6 +90,11 @@ class Chunk {
         // Biome Data and chunk Generation info
         ChunkData chunkData;
 
+
+
+        [[nodiscard]] Block* GetChunkBlockAtPosition(const glm::vec3& _blockPos);
+        void SetChunkBlockAtPosition(const glm::vec3& _blockPos, const BlockType& _blockType);
+
     public:
         Chunk(const glm::vec3& _chunkPosition, ChunkData _chunkData);
         ~Chunk();
@@ -103,7 +108,7 @@ class Chunk {
         // Object Culling
         void CheckCulling(const Camera& _camera);
         [[nodiscard]] std::vector<BLOCKFACE> GetHiddenFaces(glm::vec3 _position) const;
-        [[nodiscard]] std::vector<BLOCKFACE> GetShowingFaces(glm::vec3 _position) const;
+        [[nodiscard]] std::vector<BLOCKFACE> GetShowingFaces(glm::vec3 _blockPos) const;
 
         // Chunk Generation
         void GenerateChunk();
@@ -114,11 +119,11 @@ class Chunk {
         // Chunk Interaction
         void BreakBlockAtPosition(glm::vec3 _blockPos);
         void PlaceBlockAtPosition(glm::vec3 _position, BlockType _blockType);
-        [[nodiscard]] Block* GetBlockAtPosition(glm::vec3 _position, int _depth) const;
-        void SetBlockAtPosition(glm::vec3 _position, int _depth, BlockType _blockType);
+        [[nodiscard]] Block* GetBlockAtPosition(glm::vec3 _blockPos, int _depth) const;
+        void SetBlockAtPosition(glm::vec3 _blockPos, int _depth, const BlockType& _blockType);
 
         // Getters
-        [[nodiscard]] Block* GetBlockFromData(BlockType _blockData) const;
+        [[nodiscard]] Block* GetBlockFromData(const BlockType& _blockType);
 
         [[nodiscard]] float GetTopLevelAtPosition(glm::vec3 _position, float _radius) const;
         [[nodiscard]] float GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, float _radius) const;
@@ -126,7 +131,9 @@ class Chunk {
         [[nodiscard]] glm::vec3 GetPosition() const { return chunkPosition; }
         [[nodiscard]] bool ChunkVisible() const { return inCamera; };
 
-        [[nodiscard]] MaterialMesh* GetBlockMesh(const Block* _block) const;
+        [[nodiscard]] MaterialMesh* GetMeshFromBlock(Block* _block);
+
+        [[nodiscard]] Chunk* GetChunkAtPosition(glm::vec3& _blockPos, int _depth) const;
 };
 
 

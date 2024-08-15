@@ -162,75 +162,20 @@ void Chunk::CreateBlockMeshes() {
 }
 
 void Chunk::UpdateBlockMeshAtPosition(glm::vec3 _blockPos, int _depth) {
-    if (_depth > 1) return;
-    _depth++;
+    Chunk* blockChunk = GetChunkAtPosition(_blockPos, _depth);
+    if (blockChunk == nullptr) return;
 
-    // TOP, BOTTOM, FRONT, FRONTLEFT, LEFT, BACKLEFT, BACK, BACKRIGHT, RIGHT, FRONTRIGHT
-    if (_blockPos.x < 0) {
-        if (adjacentChunks[2] != nullptr) {
-            _blockPos.x += chunkSize;
-            return adjacentChunks[2]->UpdateBlockMeshAtPosition(_blockPos, _depth);
-        }
-        else
-            return;
-    }
-    if (_blockPos.x >= chunkSize) {
-        if (adjacentChunks[6] != nullptr) {
-            _blockPos.x -= chunkSize;
-            return adjacentChunks[6]->UpdateBlockMeshAtPosition(_blockPos, _depth);
-        }
-        else
-            return;
-    }
-    if (_blockPos.y < 0) {
-        if (adjacentChunks[1] != nullptr) {
-            _blockPos.y += chunkSize;
-            return adjacentChunks[1]->UpdateBlockMeshAtPosition(_blockPos, _depth);
-        }
-        else
-            return;
-    }
-    if (_blockPos.y >= chunkSize) {
-        if (adjacentChunks[0] != nullptr) {
-            _blockPos.y -= chunkSize;
-            return adjacentChunks[0]->UpdateBlockMeshAtPosition(_blockPos, _depth);
-        }
-        else
-            return;
-    }
-    if (_blockPos.z < 0) {
-        if (adjacentChunks[4] != nullptr) {
-            _blockPos.z += chunkSize;
-            return adjacentChunks[4]->UpdateBlockMeshAtPosition(_blockPos, _depth);
-        }
-        else
-            return;
-    }
-    if (_blockPos.z >= chunkSize) {
-        if (adjacentChunks[8] != nullptr) {
-            _blockPos.z -= chunkSize;
-            return adjacentChunks[8]->UpdateBlockMeshAtPosition(_blockPos, _depth);
-        }
-        else
-            return;
-    }
+    Block* meshBlock = blockChunk->GetBlockAtPosition(_blockPos, 1);
+    if (meshBlock == nullptr) return;
 
-    Block* meshBlock = GetBlockAtPosition(_blockPos, 1);
-    if (meshBlock == nullptr || meshBlock->GetBlockType().blockID == AIR) return;
+    // Get material mesh, as long as it is not air
+    MaterialMesh* blockMesh = blockChunk->GetMeshFromBlock(meshBlock);
+    if (blockMesh == nullptr || blockMesh->GetBlock()->GetBlockType().blockID == AIR) return;
 
-    // Fetch mesh of block and ensure block has a mesh
-    MaterialMesh* blockMesh = GetBlockMesh(meshBlock);
-    if (blockMesh == nullptr) {
-        blockMeshes.push_back(std::make_unique<MaterialMesh>(meshBlock));
-        blockMesh = blockMeshes.back().get();
-        blockMesh->BindMesh();
-    }
-
-    blockMesh->AddVerticies(meshBlock->GetFaceVerticies(GetShowingFaces(_blockPos)),
-                            _blockPos + GetPosition());
+    std::vector<Vertex> verticies = meshBlock->GetFaceVerticies(GetShowingFaces(_blockPos));
+    glm::vec3 intBlockPos = {(int)_blockPos.x, (int)_blockPos.y, (int)_blockPos.z};
+    blockMesh->AddVerticies(verticies,intBlockPos);
     blockMesh->UpdateMesh();
-
-    printf("mesh updated\n");
 }
 
 void Chunk::DisplaySolid() {
@@ -307,7 +252,7 @@ std::vector<BLOCKFACE> Chunk::GetHiddenFaces(glm::vec3 _position) const {
     return hiddenFaces;
 }
 
-std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _position) const {
+std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _blockPos) const {
     std::vector<BLOCKFACE> showingFaces {};
     std::vector<BLOCKFACE> faces {TOP, BOTTOM, FRONT, BACK, RIGHT, LEFT};
     std::vector<glm::vec3> positionOffsets {
@@ -315,12 +260,12 @@ std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _position) const {
             dirBack, dirRight, dirLeft};
 
     // Get block being checked
-    Block* checkingBlock = GetBlockAtPosition(_position, 0);
+    Block* checkingBlock = GetBlockAtPosition(_blockPos, 0);
     if (checkingBlock == nullptr) return {}; // Could not find block
 
     // Check for non-transparent block on each face (or non-same transparent block for a transparent block)
     for (int i = 0; i < faces.size(); i++) {
-        Block* blockAtFace = GetBlockAtPosition(_position + positionOffsets[i], 0);
+        Block* blockAtFace = GetBlockAtPosition(_blockPos + positionOffsets[i], 0);
         if (blockAtFace == nullptr) { // could not obtain block data
 //            showingFaces.push_back(faces[i]);
             continue;
@@ -444,27 +389,30 @@ void Chunk::SetAdjacentChunks(const std::array<Chunk*, 10> &_chunks) {
 
 
 void Chunk::BreakBlockAtPosition(glm::vec3 _blockPos) {
+    Chunk* blockChunk = GetChunkAtPosition(_blockPos, 0);
+    if (blockChunk == nullptr) return;
+
     // Fetch block being broken
-    Block* block = GetBlockAtPosition(_blockPos, 0);
+    Block* block = blockChunk->GetBlockAtPosition(_blockPos, 0);
     if (block == nullptr) return;
 
     // remove the block's verticies from the mesh
-    MaterialMesh* blockMesh = GetBlockMesh(block);
+    MaterialMesh* blockMesh = blockChunk->GetMeshFromBlock(block);
     if (blockMesh != nullptr) {
-        std::vector<Vertex> verticies = block->GetFaceVerticies(GetShowingFaces(_blockPos));
+        std::vector<Vertex> verticies = block->GetFaceVerticies(blockChunk->GetShowingFaces(_blockPos));
         blockMesh->RemoveVerticies(verticies,{(int)_blockPos.x, (int)_blockPos.y, (int)_blockPos.z});
         blockMesh->UpdateMesh();
     }
 
     // Set the block being broken to AIR 0 and update the meshes of newly exposed blocks
-    SetBlockAtPosition(_blockPos, 0, {AIR, 0});
+    blockChunk->SetBlockAtPosition(_blockPos, 0, {AIR, 0});
 
-    UpdateBlockMeshAtPosition(_blockPos + dirTop, 0);
-    UpdateBlockMeshAtPosition(_blockPos + dirBottom, 0);
-    UpdateBlockMeshAtPosition(_blockPos + dirLeft, 0);
-    UpdateBlockMeshAtPosition(_blockPos + dirRight, 0);
-    UpdateBlockMeshAtPosition(_blockPos + dirFront, 0);
-    UpdateBlockMeshAtPosition(_blockPos + dirBack, 0);
+//    blockChunk->UpdateBlockMeshAtPosition(_blockPos + dirTop, 0);
+//    blockChunk->UpdateBlockMeshAtPosition(_blockPos + dirBottom, 0);
+//    blockChunk->UpdateBlockMeshAtPosition(_blockPos + dirLeft, 0);
+//    blockChunk->UpdateBlockMeshAtPosition(_blockPos + dirRight, 0);
+//    blockChunk->UpdateBlockMeshAtPosition(_blockPos + dirFront, 0);
+//    blockChunk->UpdateBlockMeshAtPosition(_blockPos + dirBack, 0);
 }
 
 
@@ -489,137 +437,74 @@ void Chunk::PlaceBlockAtPosition(glm::vec3 _position, BlockType _blockType) {
     // now need to reconstruct mesh
 }
 
+/*
+ * Fetches block at position. Assumes provided position values are within 0 - 15.
+ */
 
-Block* Chunk::GetBlockAtPosition(glm::vec3 _position, int _depth) const {
-    // provided position is outside the bounds of the chunk, check adjacent chunk. Nullptr returned when no block found
-    // increase depth limit to check more than 1 adj chunk (checking the adj chunk's adj chunks)
-
-//    Block* defaultReturn = GetBlockFromData({AIR, 0});
-    Block* defaultReturn = nullptr;
-    if (_depth > 1) return defaultReturn;
-    _depth += 1;
-
-    // TOP, BOTTOM, FRONT, FRONTLEFT, LEFT, BACKLEFT, BACK, BACKRIGHT, RIGHT, FRONTRIGHT
-    if (_position.x < 0) {
-        if (adjacentChunks[2] != nullptr) {
-            _position.x += chunkSize;
-            return adjacentChunks[2]->GetBlockAtPosition(_position, _depth);
-        }
-        else
-            return defaultReturn;
-    }
-    if ( _position.x >= chunkSize) {
-        if (adjacentChunks[6] != nullptr) {
-            _position.x -= chunkSize;
-            return adjacentChunks[6]->GetBlockAtPosition(_position,_depth);
-        }
-        else
-            return defaultReturn;
-    }
-    if (_position.y < 0) {
-        if (adjacentChunks[1] != nullptr) {
-            _position.y += chunkSize;
-            return adjacentChunks[1]->GetBlockAtPosition(_position,_depth);
-        }
-        else
-            return defaultReturn;
-    }
-    if ( _position.y >= chunkSize) {
-        if (adjacentChunks[0] != nullptr) {
-            _position.y -= chunkSize;
-            return adjacentChunks[0]->GetBlockAtPosition(_position,_depth);
-        }
-        else
-            return defaultReturn;
-    }
-    if (_position.z < 0) {
-        if (adjacentChunks[4] != nullptr) {
-            _position.z += chunkSize;
-            return adjacentChunks[4]->GetBlockAtPosition(_position,_depth);
-        }
-        else
-            return defaultReturn;
-    }
-    if ( _position.z >= chunkSize) {
-        if (adjacentChunks[8] != nullptr) {
-            _position.z -= chunkSize;
-            return adjacentChunks[8]->GetBlockAtPosition(_position,_depth);
-        }
-        else
-            return defaultReturn;
-    }
-
-    return terrain[(int)_position.x][(int)_position.y][(int)_position.z];
+Block* Chunk::GetChunkBlockAtPosition(const glm::vec3 &_blockPos) {
+    return terrain[(int)_blockPos.x][(int)_blockPos.y][(int)_blockPos.z];
 }
 
-void Chunk::SetBlockAtPosition(glm::vec3 _position, int _depth, BlockType _blockType) {
-    if (_depth > 1) return;
-    _depth += 1;
+/*
+ * Obtains the chunk that the provided position is within, and then returns the block in the chunk at that position
+ */
 
-    // TOP, BOTTOM, FRONT, FRONTLEFT, LEFT, BACKLEFT, BACK, BACKRIGHT, RIGHT, FRONTRIGHT
-    if (_position.x < 0) {
-        if (adjacentChunks[2] != nullptr) {
-            _position.x += chunkSize;
-            return adjacentChunks[2]->SetBlockAtPosition(_position, _depth, _blockType);
-        }
-        else
-            return;
-    }
-    if ( _position.x >= chunkSize) {
-        if (adjacentChunks[6] != nullptr) {
-            _position.x -= chunkSize;
-            return adjacentChunks[6]->SetBlockAtPosition(_position, _depth, _blockType);
-        }
-        else
-            return;
-    }
-    if (_position.y < 0) {
-        if (adjacentChunks[1] != nullptr) {
-            _position.y += chunkSize;
-            return adjacentChunks[1]->SetBlockAtPosition(_position, _depth, _blockType);
-        }
-        else
-            return;
-    }
-    if ( _position.y >= chunkSize) {
-        if (adjacentChunks[0] != nullptr) {
-            _position.y -= chunkSize;
-            return adjacentChunks[0]->SetBlockAtPosition(_position, _depth, _blockType);
-        }
-        else
-            return;
-    }
-    if (_position.z < 0) {
-        if (adjacentChunks[4] != nullptr) {
-            _position.z += chunkSize;
-            return adjacentChunks[4]->SetBlockAtPosition(_position, _depth, _blockType);
-        }
-        else
-            return;
-    }
-    if ( _position.z >= chunkSize) {
-        if (adjacentChunks[8] != nullptr) {
-            _position.z -= chunkSize;
-            return adjacentChunks[8]->SetBlockAtPosition(_position, _depth, _blockType);
-        }
-        else
-            return;
-    }
+Block* Chunk::GetBlockAtPosition(glm::vec3 _blockPos, int _depth) const {
+    Chunk* blockChunk = GetChunkAtPosition(_blockPos, _depth);
+    if (blockChunk == nullptr) return nullptr;
 
-    terrain[(int)_position.x][(int)_position.y][(int)_position.z] = GetBlockFromData(_blockType);
-
+    return blockChunk->GetChunkBlockAtPosition(_blockPos);
 }
 
-Block* Chunk::GetBlockFromData(BlockType _data) const {
+
+
+/*
+ * Sets the block at given position with the given type. blockPos is assumed to have values within 0 - 15
+ */
+
+void Chunk::SetChunkBlockAtPosition(const glm::vec3 &_blockPos, const BlockType& _blockType) {
+    terrain[(int)_blockPos.x][(int)_blockPos.y][(int)_blockPos.z] = GetBlockFromData(_blockType);
+}
+
+/*
+ * Obtains the chunk that the provided position is within, and then sets the block in that chunk to the specified type
+ */
+
+void Chunk::SetBlockAtPosition(glm::vec3 _blockPos, int _depth, const BlockType& _blockType) {
+    Chunk* blockChunk = GetChunkAtPosition(_blockPos, _depth);
+    if (blockChunk == nullptr) return;
+
+    blockChunk->SetChunkBlockAtPosition(_blockPos, _blockType);
+}
+
+/*
+ * Returns a pointer to a unique block instance in the chunk. If the provided data does not correlate to a unique block
+ * then a new block is created and added, and a pointer to that returned.
+ */
+
+Block* Chunk::GetBlockFromData(const BlockType& _blockType) {
     for (const auto& block : uniqueBlocks) {
-        if (BlockType::Compare(block.first->GetBlockType(), _data))
+        if (BlockType::Compare(block.first->GetBlockType(), _blockType))
             return block.first.get();
     }
 
-    // No block found with specified data
-    printf("BLOCK NOT FOUND, ID %d VARIANT %d\n", _data.blockID, _data.variantID);
-    return nullptr;
+    // No block found with specified data, so it is new to the chunk -> add to uniqueBlocks
+    uniqueBlocks.emplace_back(CreateBlock(_blockType), 1);
+    return uniqueBlocks.back().first.get();
 }
+
+MaterialMesh* Chunk::GetMeshFromBlock(Block *_block) {
+    for (const auto& mesh : blockMeshes) {
+        if (mesh->GetBlock() == _block) return mesh.get();
+    }
+
+    // No mesh found for specified block -> create a new mesh for that block
+    blockMeshes.push_back(std::make_unique<MaterialMesh>(_block));
+    return blockMeshes.back().get();
+}
+
+
+
 
 float Chunk::GetTopLevelAtPosition(glm::vec3 _position, float _radius) const {
     float topLevel = -20;
@@ -705,10 +590,69 @@ float Chunk::GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, f
     if (_direction.z != 0) return floorf(_blockPos.z) + _direction.z * 2.0f;
 }
 
-MaterialMesh* Chunk::GetBlockMesh(const Block *_block) const {
-    for (const auto& mesh : blockMeshes) {
-        if (mesh->GetBlock() == _block) return mesh.get();
+
+/*
+ * Position assumed to be relative to the chunk calling the initial command. The calling chunk determines if the
+ * position provided is within 0 <= blockPos < ChunkSize, in each .xyz position. If not, it obtains the adjacent chunk
+ * in the given direction where the position is outside of the limits.
+ *
+ * Returns a correct chunk for the _blockPos and updates _blockPos to be relative to the returned chunk
+ */
+
+Chunk* Chunk::GetChunkAtPosition(glm::vec3& _blockPos, int _depth) const {
+    if (_depth > 1) return nullptr;
+    else _depth++;
+
+    // TOP, BOTTOM, FRONT, FRONTLEFT, LEFT, BACKLEFT, BACK, BACKRIGHT, RIGHT, FRONTRIGHT
+    if (_blockPos.x < 0) {
+        if (adjacentChunks[2] != nullptr) {
+            _blockPos.x += chunkSize;
+            return adjacentChunks[2]->GetChunkAtPosition(_blockPos, _depth);
+        }
+        else
+            return nullptr;
+    }
+    if (_blockPos.x >= chunkSize) {
+        if (adjacentChunks[6] != nullptr) {
+            _blockPos.x -= chunkSize;
+            return adjacentChunks[6]->GetChunkAtPosition(_blockPos, _depth);
+        }
+        else
+            return nullptr;
+    }
+    if (_blockPos.y < 0) {
+        if (adjacentChunks[1] != nullptr) {
+            _blockPos.y += chunkSize;
+            return adjacentChunks[1]->GetChunkAtPosition(_blockPos, _depth);
+        }
+        else
+            return nullptr;
+    }
+    if (_blockPos.y >= chunkSize) {
+        if (adjacentChunks[0] != nullptr) {
+            _blockPos.y -= chunkSize;
+            return adjacentChunks[0]->GetChunkAtPosition(_blockPos, _depth);
+        }
+        else
+            return nullptr;
+    }
+    if (_blockPos.z < 0) {
+        if (adjacentChunks[4] != nullptr) {
+            _blockPos.z += chunkSize;
+            return adjacentChunks[4]->GetChunkAtPosition(_blockPos, _depth);
+        }
+        else
+            return nullptr;
+    }
+    if (_blockPos.z >= chunkSize) {
+        if (adjacentChunks[8] != nullptr) {
+            _blockPos.z -= chunkSize;
+            return adjacentChunks[8]->GetChunkAtPosition(_blockPos, _depth);
+        }
+        else
+            return nullptr;
     }
 
-    return nullptr;
+    // _blockPos is within this chunk, return pointer to this chunk
+    return const_cast<Chunk *>(this);
 }
