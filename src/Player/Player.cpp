@@ -39,14 +39,16 @@ void Player::Display() {
     // Furthest distance a ray from player can travel before hitting interactable object
     if (playerChunk == nullptr) return;
 
-    // Get block at rayPosition
-    Block* targetBlock = playerChunk->GetBlockAtPosition(unobstructedRayPosition, 0);
-    if (targetBlock != nullptr) {
-        Transformation t;
-        glm::vec3 pos = glm::floor(unobstructedRayPosition) + playerChunk->GetPosition() * (float)chunkSize;
-        t.SetPosition(pos);
-        t.UpdateModelMatrix();
-        targetBlock->DisplayWireframe(&t);
+    // Display frame of targeting block
+    if (lookingAtInteractable) {
+        Block* targetBlock = playerChunk->GetBlockAtPosition(unobstructedRayPosition, 0);
+        if (targetBlock != nullptr) {
+            Transformation t;
+            glm::vec3 pos = glm::floor(unobstructedRayPosition) + playerChunk->GetPosition() * (float)chunkSize;
+            t.SetPosition(pos);
+            t.UpdateModelMatrix();
+            targetBlock->DisplayWireframe(&t);
+        }
     }
 }
 
@@ -280,18 +282,18 @@ void Player::UpdateMaxPositions() {
 
 void Player::EnforcePositionBoundaries(float _seconds) {
     // Check against min and max position values
-    if (position.x - radius < minX) {
-        position.x = minX + radius;
+    if (position.x - radius - 0.05f < minX) {
+        position.x = minX + radius + 0.05f;
     }
-    else if (position.x + radius > maxX) {
-        position.x = maxX - radius;
+    else if (position.x + radius + 0.05f > maxX) {
+        position.x = maxX - radius - 0.05f;
     }
 
-    if (position.z - radius < minZ) {
-        position.z = minZ + radius;
+    if (position.z - radius - 0.05f < minZ) {
+        position.z = minZ + radius + 0.05f;
     }
-    else if (position.z + radius > maxZ) {
-        position.z = maxZ - radius;
+    else if (position.z + radius + 0.05f > maxZ) {
+        position.z = maxZ - radius - 0.05f;
     }
 
     if (position.y < minY && lastPosition.y > position.y) {
@@ -401,6 +403,7 @@ void Player::HandlePlayerInputs(const SDL_Event &_event) {
 
 void Player::GetUnobstructedRayPosition() {
     if (playerChunk == nullptr) return;
+    lookingAtInteractable = false;
 
     // Create ray from campos using direction and max range, detect first block ray encounters that can be interacted
     // with
@@ -415,6 +418,7 @@ void Player::GetUnobstructedRayPosition() {
         if (blockAtPosition != nullptr) {
             // if the block is breakable, end early
             if (blockAtPosition->GetAttributeValue(BLOCKATTRIBUTE::BREAKABLE) > 0) {
+                lookingAtInteractable = true;
                 break;
             }
 
@@ -432,6 +436,8 @@ void Player::GetUnobstructedRayPosition() {
 }
 
 void Player::BreakBlock(glm::vec3 _rayPosition) {
+    if (!lookingAtInteractable) return;
+
     Block* blockAtPosition = playerChunk->GetBlockAtPosition(_rayPosition, 0);
     if (blockAtPosition == nullptr) return;
 
@@ -440,7 +446,7 @@ void Player::BreakBlock(glm::vec3 _rayPosition) {
 }
 
 void Player::PlaceBlock(glm::vec3 _rayPosition) {
-    glm::vec3 rayPosition = usingCamera->GetPosition() - (playerChunk->GetPosition() * (float)chunkSize);
+    if (!lookingAtInteractable) return;
 
-    playerChunk->PlaceBlockAtPosition(rayPosition, {STONE, 0});
+    playerChunk->PlaceBlockAtPosition(_rayPosition, {STONE, 0});
 }

@@ -59,8 +59,9 @@ class Player {
         bool camSwitchToggle = false;
 
         // Player-World interaction
-        float range = 4.5f;
+        float range = 7.5f;
         glm::vec3 unobstructedRayPosition {};
+        bool lookingAtInteractable = false;
 
     public:
         Player(glm::vec3 _position, glm::vec3 _facingDirection);
