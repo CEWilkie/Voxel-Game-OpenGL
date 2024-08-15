@@ -428,25 +428,32 @@ void Chunk::BreakBlockAtPosition(glm::vec3 _blockPos) {
 }
 
 
-void Chunk::PlaceBlockAtPosition(glm::vec3 _position, BlockType _blockType) {
-    // Check if material is new to the chunk
-    if (!std::any_of(uniqueBlocks.begin(), uniqueBlocks.end(),
-                     [&](std::pair<std::unique_ptr<Block>, int> &uniqueBlock) {
-        // Block is unique
-        if (!BlockType::Compare(uniqueBlock.first->GetBlockType(), _blockType)) return false;
+void Chunk::PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType) {
+    Chunk* blockChunk = GetChunkAtPosition(_blockPos, 0);
+    if (blockChunk == nullptr) return;
 
-        // Already exists, increment count
-        uniqueBlock.second += 1;
-        return true;
-    })) {
-        // create a new block of the specified type, and create mesh for block
-        uniqueBlocks.emplace_back(CreateBlock(_blockType), 1);
+    // Get unique block instance and set terrain at position to block
+    Block* block = blockChunk->GetBlockFromData(_blockType);
+    if (block == nullptr) return;
+
+    terrain[(int)_blockPos.x][(int)_blockPos.y][(int)_blockPos.z] = GetBlockFromData(_blockType);
+
+    // update blocks mesh
+    MaterialMesh* blockMesh = blockChunk->GetMeshFromBlock(block);
+    if (blockMesh != nullptr) blockChunk->UpdateBlockMesh(block);
+
+    // Update the meshes of each block adjacent to the block just placed
+    std::array<glm::vec3, 7> blockPositions {_blockPos + dirTop, _blockPos + dirBottom, _blockPos + dirLeft,
+                                             _blockPos + dirRight, _blockPos + dirFront, _blockPos + dirBack};
+
+    for (auto& blockPosition : blockPositions) {
+        Chunk* chunkAtPosition = blockChunk->GetChunkAtPosition(blockPosition, 0);
+        if (chunkAtPosition == nullptr) continue;
+
+        chunkAtPosition->UpdateBlockMesh(chunkAtPosition->GetBlockAtPosition(blockPosition, 0));
     }
 
-    terrain[(int)_position.x][(int)_position.y][(int)_position.z] = GetBlockFromData(_blockType);
 
-
-    // now need to reconstruct mesh
 }
 
 /*

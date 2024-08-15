@@ -447,5 +447,10 @@ void Player::BreakBlock(glm::vec3 _rayPosition) {
 void Player::PlaceBlock(glm::vec3 _rayPosition) {
     if (!lookingAtInteractable) return;
 
+    // Is there a block to place on
+    Block* blockAtPosition = playerChunk->GetBlockAtPosition(_rayPosition, 0);
+    if (blockAtPosition == nullptr) return;
+
+    _rayPosition -= glm::normalize(facingDirection) * (range/20.0f);
     playerChunk->PlaceBlockAtPosition(_rayPosition, {STONE, 0});
 }

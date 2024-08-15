@@ -119,7 +119,7 @@ class Chunk {
 
         // Chunk Interaction
         void BreakBlockAtPosition(glm::vec3 _blockPos);
-        void PlaceBlockAtPosition(glm::vec3 _position, BlockType _blockType);
+        void PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType);
         [[nodiscard]] Block* GetBlockAtPosition(glm::vec3 _blockPos, int _depth) const;
         void SetBlockAtPosition(glm::vec3 _blockPos, int _depth, const BlockType& _blockType);
 
