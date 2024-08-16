@@ -94,8 +94,7 @@ void ChunkNode::UpdateMaterialMesh(MaterialMesh* _mesh) {
     for (int x = (int)cOrigin.x; x < (int)cMax.x; x++) {
         for (int y = (int)cOrigin.y; y < (int)cMax.y; y++) {
             for (int z = (int)cOrigin.z; z < (int)cMax.z; z++) {
-                _mesh->AddVerticies(nodeBlock->GetFaceVerticies(rootChunk->GetShowingFaces({x,y,z})),
-                                        glm::vec3(x,y,z));
+
             }
         }
     }
@@ -210,7 +209,7 @@ void Chunk::CreateBlockMeshes() {
  */
 
 void Chunk::UpdateMeshAtPosition(glm::vec3 _blockPos) {
-    Block* meshBlock = GetBlockAtPosition(_blockPos, 0);
+    Block* meshBlock = GetBlockAtPosition(_blockPos, 0).first;
     UpdateBlockMesh(meshBlock);
 }
 
@@ -230,10 +229,11 @@ void Chunk::UpdateBlockMesh(Block* _meshBlock) {
     for (int x = 0; x < chunkSize; x++) {
         for (int y = 0; y < chunkSize; y++) {
             for (int z = 0; z < chunkSize; z++) {
-                Block* block = GetBlockAtPosition({x,y,z}, 0);
+                ChunkBlock block = GetBlockAtPosition({x,y,z}, 0);
 
-                if (BlockType::Compare(block->GetBlockType(), _meshBlock->GetBlockType())) {
-                    blockMesh->AddVerticies(block->GetFaceVerticies(GetShowingFaces({x,y,z})), {x,y,z});
+                if (BlockType::Compare(block.first->GetBlockType(), _meshBlock->GetBlockType())) {
+                    std::vector<Vertex> verticies = block.first->GetFaceVerticies(GetShowingFaces({x,y,z}), block.second);
+                    blockMesh->AddVerticies(verticies, {x,y,z});
                 }
             }
         }
@@ -252,11 +252,11 @@ void Chunk::CreateChunkMeshes() {
     for (int x = 0; x < chunkSize; x++) {
         for (int y = 0; y < chunkSize; y++) {
             for (int z = 0; z < chunkSize; z++) {
-                Block* block = GetBlockAtPosition({x,y,z}, 0);
-                MaterialMesh* blockMesh = GetMeshFromBlock(block);
+                ChunkBlock block = GetBlockAtPosition({x,y,z}, 0);
+                MaterialMesh* blockMesh = GetMeshFromBlock(block.first);
                 if (blockMesh == nullptr || blockMesh->GetBlock()->GetBlockType().blockID == AIR) continue;
 
-                std::vector<Vertex> verticies = block->GetFaceVerticies(GetShowingFaces({x,y,z}));
+                std::vector<Vertex> verticies = block.first->GetFaceVerticies(GetShowingFaces({x,y,z}), block.second);
                 blockMesh->AddVerticies(verticies, {x,y,z});
             }
         }
@@ -277,12 +277,12 @@ std::vector<BLOCKFACE> Chunk::GetHiddenFaces(glm::vec3 _blockPos) const {
             glm::vec3{0, 1, 0}, glm::vec3{0, -1, 0}, glm::vec3{-1, 0, 0},
             glm::vec3{1,0,0}, glm::vec3{0, 0, 1}, glm::vec3{0, 0, -1}};
 
-    Block* checkingBlock = GetBlockAtPosition(_blockPos, 0);
+    Block* checkingBlock = GetBlockAtPosition(_blockPos, 0).first;
     if (checkingBlock == nullptr) return faces; // Could not find block
     if (BlockType::Compare(checkingBlock->GetBlockType(), {AIR, 0})) return faces; // Air block
 
     for (int i = 0; i < faces.size(); i++) {
-        Block* blockAtFace = GetBlockAtPosition(_blockPos + positionOffsets[i], 0);
+        Block* blockAtFace = GetBlockAtPosition(_blockPos + positionOffsets[i], 0).first;
         if (blockAtFace == nullptr) { // could not obtain block data
             continue;
         }
@@ -320,12 +320,12 @@ std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _blockPos) const {
             dirBack, dirRight, dirLeft};
 
     // Get block being checked
-    Block* checkingBlock = GetBlockAtPosition(_blockPos, 0);
+    Block* checkingBlock = GetBlockAtPosition(_blockPos, 0).first;
     if (checkingBlock == nullptr) return {}; // Could not find block
 
     // Check for non-transparent block on each face (or non-same transparent block for a transparent block)
     for (int i = 0; i < faces.size(); i++) {
-        Block* blockAtFace = GetBlockAtPosition(_blockPos + positionOffsets[i], 0);
+        Block* blockAtFace = GetBlockAtPosition(_blockPos + positionOffsets[i], 0).first;
         if (blockAtFace == nullptr) { // could not obtain block data
 //            showingFaces.push_back(faces[i]);
             continue;
@@ -419,7 +419,10 @@ void Chunk::CreateTerrain() {
                 }
 
                 // Add blockID into terrain array
-                terrain[x][y][z] = GetBlockFromData(newBlockData);
+                terrain[x][y][z].first = GetBlockFromData(newBlockData);
+
+                // give block a random rotation
+                terrain[x][y][z].second.rotation = (rand() % 4 + 0) * 90;
             }
         }
     }
@@ -449,7 +452,7 @@ void Chunk::BreakBlockAtPosition(glm::vec3 _blockPos) {
     if (blockChunk == nullptr) return;
 
     // Fetch block being broken, if this is somehow null theres bigger issues at play
-    Block* block = blockChunk->GetBlockAtPosition(_blockPos, 0);
+    Block* block = blockChunk->GetBlockAtPosition(_blockPos, 0).first;
     if (block == nullptr) return;
 
     // Set the block being broken to AIR 0
@@ -467,7 +470,7 @@ void Chunk::BreakBlockAtPosition(glm::vec3 _blockPos) {
         Chunk* chunkAtPosition = blockChunk->GetChunkAtPosition(blockPosition, 0);
         if (chunkAtPosition == nullptr) continue;
 
-        chunkAtPosition->UpdateBlockMesh(chunkAtPosition->GetBlockAtPosition(blockPosition, 0));
+        chunkAtPosition->UpdateBlockMesh(chunkAtPosition->GetBlockAtPosition(blockPosition, 0).first);
     }
 
 }
@@ -487,7 +490,7 @@ void Chunk::PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType) {
     Block* block = blockChunk->GetBlockFromData(_blockType);
     if (block == nullptr) return;
 
-    terrain[(int)_blockPos.x][(int)_blockPos.y][(int)_blockPos.z] = GetBlockFromData(_blockType);
+    terrain[(int)_blockPos.x][(int)_blockPos.y][(int)_blockPos.z].first = GetBlockFromData(_blockType);
 
     // update blocks mesh
     MaterialMesh* blockMesh = blockChunk->GetMeshFromBlock(block);
@@ -501,7 +504,7 @@ void Chunk::PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType) {
         Chunk* chunkAtPosition = blockChunk->GetChunkAtPosition(blockPosition, 0);
         if (chunkAtPosition == nullptr) continue;
 
-        chunkAtPosition->UpdateBlockMesh(chunkAtPosition->GetBlockAtPosition(blockPosition, 0));
+        chunkAtPosition->UpdateBlockMesh(chunkAtPosition->GetBlockAtPosition(blockPosition, 0).first);
     }
 
 
@@ -514,7 +517,7 @@ void Chunk::PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType) {
  */
 
 void Chunk::SetChunkBlockAtPosition(const glm::vec3 &_blockPos, const BlockType& _blockType) {
-    terrain[(int)_blockPos.x][(int)_blockPos.y][(int)_blockPos.z] = GetBlockFromData(_blockType);
+    terrain[(int)_blockPos.x][(int)_blockPos.y][(int)_blockPos.z].first = GetBlockFromData(_blockType);
 }
 
 /*
@@ -534,7 +537,7 @@ void Chunk::SetBlockAtPosition(glm::vec3 _blockPos, int _depth, const BlockType&
  * Fetches block at position. Assumes provided position values are within 0 - 15.
  */
 
-Block* Chunk::GetChunkBlockAtPosition(const glm::vec3 &_blockPos) {
+ChunkBlock Chunk::GetChunkBlockAtPosition(const glm::vec3 &_blockPos) {
     return terrain[(int)_blockPos.x][(int)_blockPos.y][(int)_blockPos.z];
 }
 
@@ -542,9 +545,9 @@ Block* Chunk::GetChunkBlockAtPosition(const glm::vec3 &_blockPos) {
  * Obtains the chunk that the provided position is within, and then returns the block in the chunk at that position
  */
 
-Block* Chunk::GetBlockAtPosition(glm::vec3 _blockPos, int _depth) const {
+ChunkBlock Chunk::GetBlockAtPosition(glm::vec3 _blockPos, int _depth) const {
     Chunk* blockChunk = GetChunkAtPosition(_blockPos, _depth);
-    if (blockChunk == nullptr) return nullptr;
+    if (blockChunk == nullptr) return {};
 
     return blockChunk->GetChunkBlockAtPosition(_blockPos);
 }
@@ -586,7 +589,7 @@ float Chunk::GetTopLevelAtPosition(glm::vec3 _blockPos, float _radius) const {
         for (int z = int(100.0 * (_blockPos.z - _radius)); z <= int(100.0 * (_blockPos.z + _radius)); z += int(100.0 * _radius)) {
             // Convert back to float position of block relative to chunk
             glm::vec3 position{x/100.0, y, z/100.0};
-            Block* block = GetBlockAtPosition(position, 0);
+            Block* block = GetBlockAtPosition(position, 0).first;
 
             // If no block found / air, or if it is a liquid (ie: water) then do not apply topLevel
             if (block == nullptr || block->GetBlockType().blockID == AIR) continue;
@@ -614,8 +617,8 @@ float Chunk::GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, f
     // get block in direction player is checking, if no block is found, assume no obstructions for the next
     // 2 blocks (to prevent stop-starting player movement if they move faster than 1 block/second)
     // also applies for air or liquid blocks
-    Block* block = GetBlockAtPosition(_blockPos + _direction, 0);
-    if (block == nullptr || block->GetBlockType().blockID == AIR || block->GetAttributeValue(BLOCKATTRIBUTE::LIQUID) > 0) {
+    ChunkBlock block = GetBlockAtPosition(_blockPos + _direction, 0);
+    if (block.first == nullptr || block.first->GetBlockType().blockID == AIR || block.first->GetAttributeValue(BLOCKATTRIBUTE::LIQUID) > 0) {
         if (_direction.x != 0) return floorf(_blockPos.x) + _direction.x * 2.0f;
         if (_direction.y != 0) return floorf(_blockPos.y) + _direction.y * 2.0f;
         if (_direction.z != 0) return floorf(_blockPos.z) + _direction.z * 2.0f;
@@ -632,7 +635,7 @@ float Chunk::GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, f
     if (_direction == dirRight) face = LEFT;
 
     // Get min and max face verticies for x and z position
-    faceVerticies = block->GetFaceVerticies({face});
+    faceVerticies = block.first->GetFaceVerticies({face}, block.second);
     for (auto& vertex : faceVerticies) {
         vertex.position += glm::floor(_blockPos) + _direction;
         if (vertex.position.z < minZ) minZ = vertex.position.z;

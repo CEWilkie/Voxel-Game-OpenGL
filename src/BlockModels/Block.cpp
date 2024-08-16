@@ -149,7 +149,10 @@ std::vector<Vertex> BlockVAOs::GetBaseVertexArray(BLOCKMODEL _model) {
 int BlockAttributes::GetAttributeValue(BLOCKATTRIBUTE _attribute) const {
     switch (_attribute) {
         case BLOCKATTRIBUTE::FACINGDIRECTION:
-            return direction;
+            return topFaceDirection;
+
+        case BLOCKATTRIBUTE::ROTATION:
+            return rotation;
 
         default:
             return 0;
@@ -212,14 +215,14 @@ void Block::SetTransformation(Transformation *_t) {
 
 
 
-std::vector<Vertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &_faces) const {
+std::vector<Vertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &_faces, const BlockAttributes& _blockAttributes) const {
     // Get base index and vertex arrays of the model. Create vector to store requested face verticies list in.
     std::vector<GLuint> baseIndexArray = blockVAOmanager->GetBaseIndexArray(blockModel);
     std::vector<Vertex> baseVertexArray = blockVAOmanager->GetBaseVertexArray(blockModel);
     std::vector<Vertex> vertexArray {};
 
-//    float angleDeg = 90.0f * (rand() % 4 + 0);
-//    glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(angleDeg), glm::vec3(0.0f, 1.0f, 0.0f));
+    float angleDeg = (float)_blockAttributes.GetAttributeValue(BLOCKATTRIBUTE::ROTATION);
+    glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f),glm::radians(angleDeg),dirTop);
 
     // For each requested face
     for (auto& face : _faces) {
@@ -233,20 +236,20 @@ std::vector<Vertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &_faces
             // Store Vertex and used Index
             Vertex faceVertex = baseVertexArray[baseIndexArray[i]];
 
-//            if (face == TOP || face == BOTTOM) {
-//                faceVertex.position = rotationY * glm::vec4(faceVertex.position, 1.0f);
-//                if (angleDeg == 90.0f) {
-//                    faceVertex.position.z += 1;
-//                }
-//                else if (angleDeg == 180.0f) {
-//                    faceVertex.position.z += 1;
-//                    faceVertex.position.x += 1;
-//                }
-//                else if (angleDeg == 270.0f) {
-//                    faceVertex.position.x += 1;
-//                }
-//
-//            }
+            if (face == TOP || face == BOTTOM) {
+                faceVertex.position = rotationY * glm::vec4(faceVertex.position, 1.0f);
+                if (angleDeg == 90.0f) {
+                    faceVertex.position.z += 1;
+                }
+                else if (angleDeg == 180.0f) {
+                    faceVertex.position.z += 1;
+                    faceVertex.position.x += 1;
+                }
+                else if (angleDeg == 270.0f) {
+                    faceVertex.position.x += 1;
+                }
+
+            }
             vertexArray.push_back(faceVertex);
             usedIndicies.push_back(baseIndexArray[i]);
         }

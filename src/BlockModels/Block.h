@@ -104,7 +104,7 @@ struct BlockType {
  */
 
 enum class BLOCKATTRIBUTE {
-    TRANSPARENT, LIQUID, BREAKABLE, CANACCESSTHROUGHBLOCK, FACINGDIRECTION,
+    TRANSPARENT, LIQUID, BREAKABLE, CANACCESSTHROUGHBLOCK, FACINGDIRECTION, ROTATION,
     // ... other block attributes
 };
 
@@ -117,7 +117,8 @@ enum class BLOCKATTRIBUTE {
  */
 
 struct BlockAttributes {
-    int direction = DIRECTION::NORTH;
+    int rotation = 0;
+    int topFaceDirection = DIRECTION::UP;
 
     [[nodiscard]] int GetAttributeValue(BLOCKATTRIBUTE _attribute) const;
 };
@@ -157,7 +158,7 @@ class Block {
         [[nodiscard]] BlockType GetBlockType() const { return blockData; }
         [[nodiscard]] glm::vec2 GetTextureOrigin() const { return origin; }
         [[nodiscard]] TEXTURESHEET GetTextureSheet() const { return sheet; }
-        [[nodiscard]] std::vector<Vertex> GetFaceVerticies(const std::vector<BLOCKFACE>& _faces) const;
+        [[nodiscard]] std::vector<Vertex> GetFaceVerticies(const std::vector<BLOCKFACE>& _faces, const BlockAttributes& _blockAttributes) const;
         [[nodiscard]] int GetAttributeValue(BLOCKATTRIBUTE _attribute) const;
 };
 

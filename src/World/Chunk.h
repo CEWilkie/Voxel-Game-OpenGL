@@ -87,7 +87,7 @@ class Chunk {
         std::array<Chunk*, 10> adjacentChunks {};
 
         // Private functions for getting/setting blocks which non-chunks shouldn't access
-        [[nodiscard]] Block* GetChunkBlockAtPosition(const glm::vec3& _blockPos);
+        [[nodiscard]] ChunkBlock GetChunkBlockAtPosition(const glm::vec3& _blockPos);
         void SetChunkBlockAtPosition(const glm::vec3& _blockPos, const BlockType& _blockType);
 
     public:
@@ -120,7 +120,7 @@ class Chunk {
         void BreakBlockAtPosition(glm::vec3 _blockPos);
         void PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType);
         void SetBlockAtPosition(glm::vec3 _blockPos, int _depth, const BlockType& _blockType);
-        [[nodiscard]] Block* GetBlockAtPosition(glm::vec3 _blockPos, int _depth) const;
+        [[nodiscard]] ChunkBlock GetBlockAtPosition(glm::vec3 _blockPos, int _depth) const;
 
         // Chunk-Entity Collision
         [[nodiscard]] float GetTopLevelAtPosition(glm::vec3 _blockPos, float _radius) const;

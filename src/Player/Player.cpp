@@ -41,7 +41,7 @@ void Player::Display() {
 
     // Display frame of targeting block
     if (lookingAtInteractable) {
-        Block* targetBlock = playerChunk->GetBlockAtPosition(unobstructedRayPosition, 0);
+        Block* targetBlock = playerChunk->GetBlockAtPosition(unobstructedRayPosition, 0).first;
         if (targetBlock != nullptr) {
             Transformation t;
             glm::vec3 pos = glm::floor(unobstructedRayPosition) + playerChunk->GetPosition() * (float)chunkSize;
@@ -311,7 +311,7 @@ void Player::GetMovementFriction() {
     if (playerChunk == nullptr) return;
     glm::vec3 blockPos = position - (playerChunk->GetPosition() * (float) chunkSize);
 
-    Block *playerBlock = playerChunk->GetBlockAtPosition(blockPos, 0);
+    Block *playerBlock = playerChunk->GetBlockAtPosition(blockPos, 0).first;
     if (playerBlock == nullptr) return;
 
     // If player is in a liquid then reset jump time
@@ -414,7 +414,7 @@ void Player::GetUnobstructedRayPosition() {
     float accuracy = 20.0f;
 
     for (int r = 0; r < (int)accuracy; r++) {
-        Block* blockAtPosition = playerChunk->GetBlockAtPosition(rayPosition, 0);
+        Block* blockAtPosition = playerChunk->GetBlockAtPosition(rayPosition, 0).first;
         if (blockAtPosition != nullptr) {
             // if the block is breakable, end early
             if (blockAtPosition->GetAttributeValue(BLOCKATTRIBUTE::BREAKABLE) > 0) {
@@ -438,7 +438,7 @@ void Player::GetUnobstructedRayPosition() {
 void Player::BreakBlock(glm::vec3 _rayPosition) {
     if (!lookingAtInteractable) return;
 
-    Block* blockAtPosition = playerChunk->GetBlockAtPosition(_rayPosition, 0);
+    Block* blockAtPosition = playerChunk->GetBlockAtPosition(_rayPosition, 0).first;
     if (blockAtPosition == nullptr) return;
 
     playerChunk->BreakBlockAtPosition(_rayPosition);
@@ -448,7 +448,7 @@ void Player::PlaceBlock(glm::vec3 _rayPosition) {
     if (!lookingAtInteractable) return;
 
     // Is there a block to place on
-    Block* blockAtPosition = playerChunk->GetBlockAtPosition(_rayPosition, 0);
+    Block* blockAtPosition = playerChunk->GetBlockAtPosition(_rayPosition, 0).first;
     if (blockAtPosition == nullptr) return;
 
     _rayPosition -= glm::normalize(facingDirection) * (range/20.0f);

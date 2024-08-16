@@ -46,8 +46,9 @@ inline Uint64 meshAvgTicksTaken = 0;
 inline Uint64 meshSumTicksTaken = 0;
 
 
-// HEIGHTMAP STRUCT
-typedef std::array<std::array<std::array<Block*, chunkSize>, chunkSize>, chunkSize> chunkTerrainArray;
+// CHUNK TYPEDEFS
+typedef std::pair<Block*, BlockAttributes> ChunkBlock;
+typedef std::array<std::array<std::array<ChunkBlock, chunkSize>, chunkSize>, chunkSize> chunkTerrainArray;
 typedef std::array<std::array<std::array<float, chunkSize>, chunkSize>, chunkSize> chunkDensityArray;
 typedef std::array<float, chunkArea> ChunkDataMap;
 
