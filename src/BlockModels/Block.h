@@ -12,32 +12,26 @@
 #include <glew.h>
 #include <glm/matrix.hpp>
 
+
 #include "../Textures/TextureData.h"
+#include "../Textures/TextureManager.h"
 #include "ModelStructs.h"
 #include "ModelTransformations.h"
-#include "../Player/Camera.h"
-#include "../Textures/TextureManager.h"
 
-enum BLOCKID : unsigned int {
-        TEST, GRASS, DIRT, STONE, WATER, AIR, SAND,
-};
-
-enum BLOCKFACE : int{
-        FRONT, BACK, LEFT, RIGHT, TOP, BOTTOM, ALL
-};
-
-struct BlockType {
-    // Used to identify what the actual block object is of
-    BLOCKID blockID {BLOCKID::AIR};
-    int variantID {0};
-
-    static bool Compare(BlockType A, BlockType B) {
-        return A.blockID == B.blockID && A.variantID == B.variantID;
-    }
-};
+/*
+ * For obtaining a particular block model
+ */
 
 enum BLOCKMODEL {
     FULL, nModels
+};
+
+/*
+ * For referencing a particular face of a block
+ */
+
+enum BLOCKFACE : int {
+    FRONT, BACK, LEFT, RIGHT, TOP, BOTTOM, ALL
 };
 
 /*
@@ -72,13 +66,67 @@ inline std::unique_ptr<BlockVAOs> blockVAOmanager {};
 
 
 
+/*
+ * Base-level identification of block types. Shared between variants
+ */
+
+enum BLOCKID : unsigned int {
+    TEST, GRASS, DIRT, STONE, WATER, AIR, SAND,
+};
 
 
+
+/*
+ * Used to identify the type of block through the combination of BLOCKID and a variant value. Blocks should only be
+ * considered as the same type if they share both blockID and variantID
+ */
+
+struct BlockType {
+    BLOCKID blockID {BLOCKID::AIR};
+    int variantID {0};
+
+    static bool Compare(const BlockType& A, const BlockType& B) {
+        return A.blockID == B.blockID && A.variantID == B.variantID;
+    }
+
+    friend bool operator==(const BlockType& A, const BlockType& B) {
+        return Compare(A, B);
+    }
+};
+
+
+
+/*
+ * Enums for each attribute that a block uses. Attributes when applied to a block should refer to an int value which
+ * can be obtained and utilised. For example, transparency = 0 indicates a solid, non-transparent block. Wheras a
+ * transparency = 1 indicates a block with transparent elements. Values are not necessarily limited to 0 or 1 but must
+ * be int
+ */
 
 enum class BLOCKATTRIBUTE {
-        TRANSPARENT, LIQUID, BREAKABLE, CANACCESSTHROUGHBLOCK,
-        // ... other block attributes
+    TRANSPARENT, LIQUID, BREAKABLE, CANACCESSTHROUGHBLOCK, FACINGDIRECTION,
+    // ... other block attributes
 };
+
+
+
+/*
+ * Data struct to contain block attributes which are not equivalent within all instances of a block type. Whilst all
+ * grass blocks are solid (hence the attribute is stored in the block object), they may face in a different direction,
+ * and thus this is stored in BlockAttributes.
+ */
+
+struct BlockAttributes {
+    int direction = DIRECTION::NORTH;
+
+    [[nodiscard]] int GetAttributeValue(BLOCKATTRIBUTE _attribute) const;
+};
+
+
+
+/*
+ * A block!
+ */
 
 class Block {
     protected:
@@ -118,7 +166,10 @@ class Block {
 
 
 
-
+/*
+ * Testing block, used for testing. Should not naturally generate. Could also be used if a request for a block with
+ * faulty data is made. TestBlock can be the default return.
+ */
 
 class TestBlock : public Block {
     private:

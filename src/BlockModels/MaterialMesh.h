@@ -8,6 +8,12 @@
 #include <glew.h>
 #include "Block.h"
 
+/*
+ * Used to merge together multiple instances of a singular block type into a single mesh of verticies. Permits far
+ * greater optimisation of drawing. Verticies for the object should be provided by determining the visible faces at a
+ * given position, and passing that position and the vertex data of the visible faces to AddVerticies.
+ */
+
 class MaterialMesh {
     private:
         // Buffer objects
@@ -19,15 +25,12 @@ class MaterialMesh {
         int nFaces = 0;
 
         Block* block;
-        bool unboundChanges = false;
-        bool bound = false;
 
     public:
         explicit MaterialMesh(Block* _block);
         ~MaterialMesh();
 
         void AddVerticies(const std::vector<Vertex>& _verticies, const glm::vec3& _position);
-        void RemoveVerticies(std::vector<Vertex>& _verticies, const glm::vec3& _position);
         void ResetVerticies();
 
         void BindMesh();
@@ -37,8 +40,6 @@ class MaterialMesh {
 
 
         [[nodiscard]] Block* GetBlock() const { return block; }
-        [[nodiscard]] bool UnboundChanges() const {return unboundChanges; }
-        [[nodiscard]] bool Bound() const { return bound; }
 };
 
 

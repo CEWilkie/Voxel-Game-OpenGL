@@ -11,19 +11,17 @@
 #include "../Blocks/NaturalBlocks.h"
 #include "../BlockModels/ModelTransformations.h"
 #include "../BlockModels/MaterialMesh.h"
+#include "../Player/Camera.h"
 
 #include "WorldGenConsts.h"
 #include "Biome.h"
 
-//static const int chunkSize = 16; // must be power of 2 for subchunk division ie 2, 4, 8, 16 | 32, 64, 128, ... ( too big)
-//static const int chunkArea = chunkSize * chunkSize;
-//static const int chunkVolume = chunkArea * chunkSize;
-
 class Chunk;
 
-// Used to construct a tree of chunks to manage object culling and display
-// Either the subchunk vector is populated with further, smaller subchunks, or the Cube object is instantiated
-// A SubChunk with a valid cube object is considered to be a terminating point of the subchunk tree.
+/*
+ * Legacy stuff for octree implementations. Currently not used in favour of a more simple 3d-array approach for
+ * chunk blocks. Going to leave the code in the files for the potential of future re-implementation.
+ */
 
 class ChunkNode {
     protected:
@@ -52,10 +50,10 @@ class ChunkNode {
 
 
 
-// REDEF LONG VAR TYPES
-typedef std::array<std::array<std::array<std::unique_ptr<ChunkNode>, chunkSize>, chunkSize>, chunkSize> chunkNodeArray;
+/*
+ * Simple data struct used to hold various maps of the chunk's blocks and biome information.
+ */
 
-// CHUNKDATA STRUCT
 struct ChunkData {
     Biome* biome {};
     ChunkDataMap heightMap {};
@@ -63,35 +61,32 @@ struct ChunkData {
 };
 
 /*
- * Parent node to ChunkNodes
+ * Houses a 3D array of blocks, of cubic size 16x16x16 (chunkSize^3). Resonsible for generating blocks from a given set
+ * of maps (see ChunkData) and then generating biome-specific structures. Chunk also incorporates pointers to the
+ * surrounding 10 adjacent chunks (diagonal top/bottoms not included) which can be used for mesh creation and various
+ * block updates / interactions.
  */
 
 class Chunk {
     private:
-        // Chunk Display
-        bool inCamera = true;
-        std::vector<std::unique_ptr<MaterialMesh>> blockMeshes {};
-
-        // Chunk Culling and positioning
+        // Chunk Culling and Display
         std::unique_ptr<BoxBounds> boxBounds {};
-        std::unique_ptr<Transformation> boundsTransformation = std::make_unique<Transformation>();
-        std::unique_ptr<Transformation> positionTransformation = std::make_unique<Transformation>();
-        glm::vec3 chunkPosition {0,0,0};
+        Transformation cullingTransformation {};
+        Transformation displayTransformation {};
+        bool inCamera = true;
 
-        // Chunk tree
-        std::unique_ptr<ChunkNode> rootNode {};
-        std::array<Chunk*, 10> adjacentChunks {};
-
-        // Block Data
-        std::vector<std::pair<std::unique_ptr<Block>, int>> uniqueBlocks {}; // block, count
+        // Chunk Terrain and Block Data
+        std::vector<std::pair<std::unique_ptr<Block>, int>> uniqueBlocks {};                                            // block, count
+        std::vector<std::unique_ptr<MaterialMesh>> blockMeshes {};                                                      // for each unique block
         chunkTerrainArray terrain {};
         bool generated = false;
 
-        // Biome Data and chunk Generation info
+        // Unique ChunkData and the adjacent Chunk pointers
         ChunkData chunkData;
+        glm::vec3 chunkPosition {0,0,0};
+        std::array<Chunk*, 10> adjacentChunks {};
 
-
-
+        // Private functions for getting/setting blocks which non-chunks shouldn't access
         [[nodiscard]] Block* GetChunkBlockAtPosition(const glm::vec3& _blockPos);
         void SetChunkBlockAtPosition(const glm::vec3& _blockPos, const BlockType& _blockType);
 
@@ -99,41 +94,41 @@ class Chunk {
         Chunk(const glm::vec3& _chunkPosition, ChunkData _chunkData);
         ~Chunk();
 
-        // Display
-        void CreateBlockMeshes();
-        void UpdateBlockMeshAtPosition(glm::vec3 _blockPos, int _depth);
-        void UpdateBlockMesh(Block* _meshBlock);
+        // Chunk Display
         void DisplaySolid();
         void DisplayTransparent();
 
-        // Object Culling
-        void CheckCulling(const Camera& _camera);
-        [[nodiscard]] std::vector<BLOCKFACE> GetHiddenFaces(glm::vec3 _position) const;
+        // Chunk Block Meshes Creation / Updating
+        void CreateBlockMeshes();
+        void UpdateMeshAtPosition(glm::vec3 _blockPos);
+        void UpdateBlockMesh(Block* _meshBlock);
+        void CreateChunkMeshes();
+        [[nodiscard]] std::vector<BLOCKFACE> GetHiddenFaces(glm::vec3 _blockPos) const;
         [[nodiscard]] std::vector<BLOCKFACE> GetShowingFaces(glm::vec3 _blockPos) const;
-
-        // Chunk Generation
-        void GenerateChunk();
-        chunkNodeArray CreateTerrain();
-        void CreateNodeTree(chunkNodeArray _chunkNodes);
-        void SetAdjacentChunks(const std::array<Chunk*, 10>& _chunks);
-
-        // Chunk Interaction
-        void BreakBlockAtPosition(glm::vec3 _blockPos);
-        void PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType);
-        [[nodiscard]] Block* GetBlockAtPosition(glm::vec3 _blockPos, int _depth) const;
-        void SetBlockAtPosition(glm::vec3 _blockPos, int _depth, const BlockType& _blockType);
-
-        // Getters
-        [[nodiscard]] Block* GetBlockFromData(const BlockType& _blockType);
-
-        [[nodiscard]] float GetTopLevelAtPosition(glm::vec3 _position, float _radius) const;
-        [[nodiscard]] float GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, float _radius) const;
-
-        [[nodiscard]] glm::vec3 GetPosition() const { return chunkPosition; }
-        [[nodiscard]] bool ChunkVisible() const { return inCamera; };
-
         [[nodiscard]] MaterialMesh* GetMeshFromBlock(Block* _block);
 
+        // Chunk Culling
+        void CheckCulling(const Camera& _camera);
+        [[nodiscard]] bool ChunkVisible() const { return inCamera; };
+
+        // Chunk Terrain and Structures Generation
+        void GenerateChunk();
+        void CreateTerrain();
+        void SetAdjacentChunks(const std::array<Chunk*, 10>& _chunks);
+
+        // Chunk Block Interaction
+        void BreakBlockAtPosition(glm::vec3 _blockPos);
+        void PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType);
+        void SetBlockAtPosition(glm::vec3 _blockPos, int _depth, const BlockType& _blockType);
+        [[nodiscard]] Block* GetBlockAtPosition(glm::vec3 _blockPos, int _depth) const;
+
+        // Chunk-Entity Collision
+        [[nodiscard]] float GetTopLevelAtPosition(glm::vec3 _blockPos, float _radius) const;
+        [[nodiscard]] float GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, float _radius) const;
+
+        //
+        [[nodiscard]] Block* GetBlockFromData(const BlockType& _blockType);
+        [[nodiscard]] glm::vec3 GetPosition() const { return chunkPosition; }
         [[nodiscard]] Chunk* GetChunkAtPosition(glm::vec3& _blockPos, int _depth) const;
 };
 

@@ -8,6 +8,12 @@
 #include <glm/matrix.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+/*
+ * Transformations permits interactions and use with an objects positioning, rotation and scale. The transformations
+ * model matrix should be passed to the uniform uModelMatrix when displaying an object. Transformations may also be
+ * relative, and take into account a given parent transformation when updating the model matrix
+ */
+
 class Transformation {
     private:
         // Pure transformations info
@@ -75,8 +81,61 @@ class Transformation {
         [[nodiscard]] glm::vec3 GetLocalScale() const { return scale; }
 
         // Has transformation info been updated, and model not yet updated
-        [[nodiscard]] bool ModelUpdated() { return modelUpdated; }
+        [[nodiscard]] bool ModelUpdated() const { return modelUpdated; }
 };
+
+
+
+
+// DIRECTIONS FOR CHECKING ADJACENT CHUNKS / BLOCKS / BIOMES
+inline glm::vec3 dirTop{0, 1, 0};
+inline glm::vec3 dirBottom{0, -1, 0};
+inline glm::vec3 dirFront{-1, 0, 0};
+inline glm::vec3 dirFrontLeft{-1, 0, -1};
+inline glm::vec3 dirLeft{0, 0, -1};
+inline glm::vec3 dirBackLeft{1, 0, -1};
+inline glm::vec3 dirBack{1, 0, 0};
+inline glm::vec3 dirBackRight{1, 0, 1};
+inline glm::vec3 dirRight{0, 0, 1};
+inline glm::vec3 dirFrontRight{-1, 0, 1};
+
+// list of all directions
+const int numDirections = 10;
+inline std::array<glm::vec3, numDirections> allDirections { dirTop, dirBottom, dirFront, dirFrontLeft, dirLeft, dirBackLeft,
+                                                            dirBack, dirBackRight, dirRight, dirFrontRight};
+
+// enums for directions
+enum DIRECTION : int {
+    UP, DOWN, SOUTH, SOUTHWEST, WEST, NORTHWEST, NORTH, NORTHEAST, EAST, SOUTHEAST,
+};
+
+// get direction vector from enum
+inline glm::vec3 GetDirection(const DIRECTION& _direction) {
+    switch (_direction) {
+        case UP:
+            return dirTop;
+        case DOWN:
+            return dirBottom;
+
+        case SOUTH:
+            return dirFront;
+        case NORTH:
+            return dirBack;
+        case EAST:
+            return dirRight;
+        case WEST:
+            return dirLeft;
+
+        case SOUTHEAST:
+            return dirFrontRight;
+        case SOUTHWEST:
+            return dirFrontLeft;
+        case NORTHEAST:
+            return dirBackRight;
+        case NORTHWEST:
+            return dirBackLeft;
+    }
+}
 
 
 #endif //UNTITLED7_MODELTRANSFORMATIONS_H

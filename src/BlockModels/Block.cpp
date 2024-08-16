@@ -146,14 +146,24 @@ std::vector<Vertex> BlockVAOs::GetBaseVertexArray(BLOCKMODEL _model) {
 
 
 
+int BlockAttributes::GetAttributeValue(BLOCKATTRIBUTE _attribute) const {
+    switch (_attribute) {
+        case BLOCKATTRIBUTE::FACINGDIRECTION:
+            return direction;
 
-Block::Block() {
-
+        default:
+            return 0;
+    }
 }
 
-Block::~Block() {
 
-}
+
+
+
+
+Block::Block() = default;
+
+Block::~Block() = default;
 
 void Block::Display(Transformation* _t) {
     if (blockData.blockID == BLOCKID::AIR && blockData.variantID == 0) return;

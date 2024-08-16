@@ -45,29 +45,8 @@ inline int nMeshesCreated;
 inline Uint64 meshAvgTicksTaken = 0;
 inline Uint64 meshSumTicksTaken = 0;
 
-// DIRECTIONS FOR CHECKING ADJACENT CHUNKS / BLOCKS / BIOMES
-inline glm::vec3 dirTop{0, 1, 0};
-inline glm::vec3 dirBottom{0, -1, 0};
-inline glm::vec3 dirFront{-1, 0, 0};
-inline glm::vec3 dirFrontLeft{-1, 0, -1};
-inline glm::vec3 dirLeft{0, 0, -1};
-inline glm::vec3 dirBackLeft{1, 0, -1};
-inline glm::vec3 dirBack{1, 0, 0};
-inline glm::vec3 dirBackRight{1, 0, 1};
-inline glm::vec3 dirRight{0, 0, 1};
-inline glm::vec3 dirFrontRight{-1, 0, 1};
-
-// list of all directions
-const int numDirections = 10;
-inline std::array<glm::vec3, numDirections> allDirections { dirTop, dirBottom, dirFront, dirFrontLeft, dirLeft, dirBackLeft,
-                                                 dirBack, dirBackRight, dirRight, dirFrontRight};
 
 // HEIGHTMAP STRUCT
-struct HeightMap {
-    std::array<int, chunkArea> heightMap {};
-    bool isEmpty = true;
-};
-
 typedef std::array<std::array<std::array<Block*, chunkSize>, chunkSize>, chunkSize> chunkTerrainArray;
 typedef std::array<std::array<std::array<float, chunkSize>, chunkSize>, chunkSize> chunkDensityArray;
 typedef std::array<float, chunkArea> ChunkDataMap;
