@@ -8,6 +8,7 @@
 #include "Window.h"
 #include "Player/Player.h"
 #include "World/World.h"
+#include "World/LoadStructure.h"
 #include "Textures/TextureManager.h"
 
 #include "GlobalStates.h"
@@ -55,6 +56,9 @@ int main(int argc, char** argv){
     /*
      *  WORLD CREATION
      */
+
+    // Create StructureLoader
+    structureLoader = std::make_unique<StructureLoader>();
 
     // Create world
     world = std::make_unique<World>();

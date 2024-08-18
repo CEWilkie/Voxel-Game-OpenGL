@@ -159,11 +159,14 @@ float World::GenerateBlockHeat(glm::vec3 _blockPos) {
 }
 
 float World::GenerateBlockVegetation(glm::vec3 _blockPos, float _heat) {
-    // Density of vegetation
-    float vegetationDensity = glm::simplex(glm::vec2( _blockPos.x / 8.0, _blockPos.z / 8.0));
-    vegetationDensity = (vegetationDensity + 1) / 2;
+    float grassDensity = glm::simplex(glm::vec2( _blockPos.x / 8.0, _blockPos.z / 8.0));
+    grassDensity = (grassDensity + 1) / 2;
 
-    return vegetationDensity;
+    float treeDensity = glm::simplex(glm::vec2( _blockPos.x / 1.0, _blockPos.z / 1.0));
+    treeDensity = (treeDensity + 1) / 2;
+    treeDensity = std::pow(treeDensity, 10.0f);
+
+    return grassDensity + treeDensity;
 }
 
 // Generate the height and temp maps for the given chunk starting pos

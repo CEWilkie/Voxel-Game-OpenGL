@@ -10,6 +10,7 @@
 
 #include "../Blocks/CreateBlock.h"
 #include "../GlobalStates.h"
+#include "LoadStructure.h"
 
 /*
  * SUBCHUNK
@@ -399,6 +400,10 @@ void Chunk::CreateTerrain() {
 
             for (int y = 0; y < chunkHeight; y++) {
                 glm::vec3 blockPos = glm::vec3(x, y, z) + (chunkPosition * (float)chunkSize);
+
+                // If a block has already been generated for this position, continue
+                if (terrain[x][y][z].first != nullptr) continue;
+
                 BlockType newBlockData = chunkData.biome->GetBlockType(hmTopLevel, blockPos.y);
                 SetChunkBlockAtPosition({x,y,z}, newBlockData);
 
@@ -434,17 +439,25 @@ void Chunk::CreateVegitation(glm::vec3 _blockPos) {
     Block* block = GetBlockAtPosition(_blockPos, 0).first;
     glm::vec3 plantPos = _blockPos + dirTop;
 
+    if (plantDensity > 1 && block->GetBlockType().blockID == GRASS) {
+        structureLoader->StartLoadingStructure(STRUCTURE::TEST);
 
-    if (plantDensity < 0.2 && block->GetBlockType().blockID == GRASS) {
-        Block* plantBlock = GetBlockFromData({LEAVES, 0});
+        printf("tree!\n\n\n");
+
+        while (structureLoader->LoadedStructure() != STRUCTURE::NONE) {
+            StructBlockData blockData = structureLoader->GetStructureBlock();
+            Block* blockAtPosition = GetBlockAtPosition(blockData.blockPos + plantPos, 0).first;
+
+            if (blockAtPosition == nullptr || blockAtPosition->GetBlockType().blockID == AIR) {
+                SetBlockAtPosition(blockData.blockPos + plantPos, 0, blockData.blockType);
+            }
+
+            Block* bap = GetBlockAtPosition(blockData.blockPos + plantPos, 0).first;
+            if (bap == nullptr) printf("failed!\n");
+        }
+    }
+    else if (plantDensity < 0.2 && block->GetBlockType().blockID == GRASS) {
         SetBlockAtPosition(plantPos, 0, {LEAVES, 0});
-
-        // Chunk plant has been put into
-        Chunk* plantChunk = GetChunkAtPosition(plantPos, 0);
-
-        // add plants verticies to blockMesh
-        MaterialMesh* blockMesh = plantChunk->GetMeshFromBlock(plantBlock);
-        blockMesh->AddVerticies(block->GetFaceVerticies(GetShowingFaces(plantPos), {}), plantPos);
     }
 
 
@@ -553,14 +566,14 @@ void Chunk::SetChunkBlockAtPosition(const glm::vec3 &_blockPos, const BlockType&
     if (!std::any_of(uniqueBlocks.begin(), uniqueBlocks.end(),
                      [&](std::pair<std::unique_ptr<Block>, int> &uniqueBlock) {
         // Block is unique
-        if (!BlockType::Compare(uniqueBlock.first->GetBlockType(), {STONE, 0})) return false;
+        if (!BlockType::Compare(uniqueBlock.first->GetBlockType(), _blockType)) return false;
 
         // Already exists, increment count
         uniqueBlock.second += 1;
         return true;
     })) {
         // create a new block of the specified type, and create mesh for block
-        uniqueBlocks.emplace_back(CreateBlock({STONE, 0}), 1);
+        uniqueBlocks.emplace_back(CreateBlock(_blockType), 1);
     }
 }
 
