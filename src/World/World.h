@@ -17,7 +17,7 @@
 class Player;
 
 namespace WorldDataTypes {
-    typedef std::array<std::array<std::array<std::unique_ptr<Chunk>, worldSize>, worldHeight>, worldSize> chunkArray;
+    typedef std::array<std::array<std::unique_ptr<Chunk>, worldSize>, worldSize> chunkArray;
     typedef std::array<std::unique_ptr<Biome>, worldArea> biomeMap;
 }
 
@@ -51,8 +51,10 @@ class World {
 
         // Generation
         void GenerateWorld();
-        float GenerateBlockHeight(glm::vec2 _blockPos);
-        ChunkData GenerateChunkData(glm::vec2 _chunkPosition);
+        static float GenerateBlockHeight(glm::vec2 _blockPos);
+        static float GenerateBlockHeat(glm::vec3 _blockPos);
+        static float GenerateBlockVegetation(glm::vec3 _blockPos, float _heat);
+        static ChunkData GenerateChunkData(glm::vec2 _chunkPosition);
         Biome* GenerateBiome(BIOMEID _biomeID);
         void GenerateTerrain();
 

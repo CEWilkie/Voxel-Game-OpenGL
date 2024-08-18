@@ -26,9 +26,17 @@ TextureManager::TextureManager() {
         textureSheetMap[TEXTURESHEET::WORLD] = std::make_unique<TextureData>(*textureData);
     }
 
-    // Natural block textures
+    // Terrain block textures
 
     textureData = new TextureData("../resources/terrainSheet16x.png");
+    if (textureData->IsTextureValid()) {
+        textureData->SetTextureSheetGrid({16, 16});
+        textureSheetMap[TEXTURESHEET::TERRAIN] = std::make_unique<TextureData>(*textureData);
+    }
+
+    // Natural block textures
+
+    textureData = new TextureData("../resources/naturalSheet16x.png");
     if (textureData->IsTextureValid()) {
         textureData->SetTextureSheetGrid({16, 16});
         textureSheetMap[TEXTURESHEET::NATURAL] = std::make_unique<TextureData>(*textureData);

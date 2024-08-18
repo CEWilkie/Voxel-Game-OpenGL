@@ -122,7 +122,7 @@ int main(int argc, char** argv){
         // If the player has changed the direction they are looking in since last check
         if (player.GetUsingCamera()->GetViewMatrix() != lastViewMatrix) {
             player.GetUsingCamera()->UpdateViewFrustrum();
-            world->CheckCulling(*player.GetUsingCamera());
+//            world->CheckCulling(*player.GetUsingCamera());
 
             lastViewMatrix = player.GetUsingCamera()->GetViewMatrix();
         }

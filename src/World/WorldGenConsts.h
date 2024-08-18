@@ -13,17 +13,19 @@
 
 // UNIVERSAL CONSTANTS FOR GENERATION
 static const int WATERLEVEL = 60;
-static const int MINCHUNKHEIGHT = 25;
-static const int MAXCHUNKHEIGHT = 128;
+static const int MINBLOCKHEIGHT = WATERLEVEL;
+static const int MAXBLOCKHEIGHT = 128;
 
-// SIZING OF THE INITIAL WORLD AREA GENERATED
+static const int MINTEMP = -20;
+static const int BASETEMP = 15;
+static const int MAXTEMP = 40;
+
+
+// MAX SIZE OF THE WORLD AREA TO BE LOADED
 static const int worldSize = 4;
-static const int worldHeight = 16; // from 0 to n chunks high (n x 16 blocks)
 static const int worldArea = worldSize * worldSize;
-static const int worldVolume = worldArea * worldHeight;
 
-static const double BIOMESCALEX = 64.0f;
-static const double BIOMESCALEZ = 64.0;
+static long long int worldSeed = time(nullptr);
 
 
 /*
@@ -31,9 +33,10 @@ static const double BIOMESCALEZ = 64.0;
  */
 
 // SIZE OF THE CHUNKS
-static const int chunkSize = 16; // must be power of 2 for subchunk division ie 2, 4, 8, 16 | 32, 64, 128, ... ( too big)
+static const int chunkSize = 16;
+static const int chunkHeight = 256;
 static const int chunkArea = chunkSize * chunkSize;
-static const int chunkVolume = chunkArea * chunkSize;
+static const int chunkVolume = chunkArea * chunkHeight;
 
 // TRACKING TIME FOR CREATING CHUNKS
 inline int nChunksCreated;
@@ -47,11 +50,12 @@ inline Uint64 meshSumTicksTaken = 0;
 
 
 // CHUNK TYPEDEFS
-typedef std::pair<Block*, BlockAttributes> ChunkBlock;
-typedef std::array<std::array<std::array<ChunkBlock, chunkSize>, chunkSize>, chunkSize> chunkTerrainArray;
-typedef std::array<std::array<std::array<float, chunkSize>, chunkSize>, chunkSize> chunkDensityArray;
-typedef std::array<float, chunkArea> ChunkDataMap;
-
+namespace ChunkDataTypes {
+    typedef std::pair<Block *, BlockAttributes> ChunkBlock;
+    typedef std::array<std::array<std::array<ChunkBlock, chunkSize>, chunkHeight>, chunkSize> TerrainArray;
+    typedef std::array<std::array<std::array<float, chunkSize>, chunkHeight>, chunkSize> DensityArray;
+    typedef std::array<float, chunkArea> DataMap;
+}
 
 
 /*

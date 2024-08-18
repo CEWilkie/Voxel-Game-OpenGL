@@ -24,6 +24,8 @@ void MaterialMesh::AddVerticies(const std::vector<Vertex>& _verticies, const glm
     for (const Vertex& vertex : _verticies) {
         vertexArray.push_back({vertex.position + _position, vertex.textureCoord});
     }
+
+    oldMesh = true;
 }
 
 void MaterialMesh::ResetVerticies() {
@@ -68,6 +70,8 @@ void MaterialMesh::BindMesh() {
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    oldMesh = false;
 }
 
 void MaterialMesh::UpdateMesh() {
@@ -90,6 +94,8 @@ void MaterialMesh::UpdateMesh() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, GLsizeiptr(indexArray.size()*sizeof(GLuint)), indexArray.data());
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    oldMesh = false;
 }
 
 void MaterialMesh::DrawMesh(const Transformation& _transformation) const {

@@ -40,6 +40,10 @@ inline std::unique_ptr<Block> CreateBlock(BlockType _blockData) {
             newBlock = std::make_unique<Sand>(_variant);
             break;
 
+        case BLOCKID::LEAVES:
+            newBlock = std::make_unique<Leaves>(_variant);
+            break;
+
         default:
             // Block not defined
             newBlock = std::make_unique<TestBlock>(_variant);

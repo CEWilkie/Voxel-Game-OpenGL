@@ -10,7 +10,7 @@
  */
 
 enum class TEXTURESHEET {
-    NATURAL, WORLD, TEST16, TEST64,
+    TERRAIN, NATURAL, WORLD, TEST16, TEST64,
 };
 
 #include <unordered_map>

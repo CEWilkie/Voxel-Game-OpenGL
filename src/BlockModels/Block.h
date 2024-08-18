@@ -71,7 +71,7 @@ inline std::unique_ptr<BlockVAOs> blockVAOmanager {};
  */
 
 enum BLOCKID : unsigned int {
-    TEST, GRASS, DIRT, STONE, WATER, AIR, SAND,
+    TEST, GRASS, DIRT, STONE, WATER, AIR, SAND, LEAVES,
 };
 
 
@@ -141,6 +141,10 @@ class Block {
         int breakable = 1;
         int canInteractThroughBlock = 0;
 
+        // Visual Rotations
+        bool topFaceLocked = true; // can only face up
+        bool rotationLocked = false; // cannot be rotated
+
         // BlockType info
         BlockType blockData {AIR, 0};
         BLOCKMODEL blockModel {FULL};
@@ -149,17 +153,20 @@ class Block {
         Block();
         ~Block();
 
-        // Model Display and Transformation
+        // Model Display
         void Display(Transformation* _t);
         void DisplayWireframe(Transformation* _transformation);
-        void SetTransformation(Transformation* _t);
-
-        // Getters
-        [[nodiscard]] BlockType GetBlockType() const { return blockData; }
         [[nodiscard]] glm::vec2 GetTextureOrigin() const { return origin; }
         [[nodiscard]] TEXTURESHEET GetTextureSheet() const { return sheet; }
-        [[nodiscard]] std::vector<Vertex> GetFaceVerticies(const std::vector<BLOCKFACE>& _faces, const BlockAttributes& _blockAttributes) const;
+
+        // BlockAttributes
+        [[nodiscard]] BlockType GetBlockType() const { return blockData; }
         [[nodiscard]] int GetAttributeValue(BLOCKATTRIBUTE _attribute) const;
+
+        // Block Face Culling
+        [[nodiscard]] DIRECTION GetRandomTopFaceDirection() const;
+        [[nodiscard]] int GetRandomRotation() const;
+        [[nodiscard]] std::vector<Vertex> GetFaceVerticies(const std::vector<BLOCKFACE>& _faces, const BlockAttributes& _blockAttributes) const;
 };
 
 
@@ -176,7 +183,20 @@ class TestBlock : public Block {
     private:
 
     public:
-        explicit TestBlock(int _variant);
+        explicit TestBlock(int _variant) {
+            blockData = {BLOCKID::TEST, _variant};
+            sheet = TEXTURESHEET::TEST16;
+
+            // Set texture origin
+            switch (_variant) {
+                case 1: origin = {4,2}; break;
+                case 2: origin = {5,4}; break;
+                case 3: origin = {7,1}; break;
+                case 4: origin = {10,2}; break;
+                case 5: origin = {13,1}; break;
+                default: origin = {1,1};
+            }
+        };
 };
 
 

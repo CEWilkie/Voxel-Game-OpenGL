@@ -31,32 +31,31 @@ void World::Display() {
 
     glEnable(GL_CULL_FACE);
     // Draw solid objects
-    for (int chunkX = 0; chunkX < worldSize; chunkX++)
-        for (int chunkY = 0; chunkY < worldHeight; chunkY++)
-            for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
-                worldChunks[chunkX][chunkY][chunkZ]->DisplaySolid();
-            }
+    for (int chunkX = 0; chunkX < worldSize; chunkX++) {
+        for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
+            worldChunks[chunkX][chunkZ]->DisplaySolid();
+        }
+    }
     glDisable(GL_CULL_FACE);
 
     // Draw transparent objects
-    for (int chunkX = 0; chunkX < worldSize; chunkX++)
-        for (int chunkY = 0; chunkY < worldHeight; chunkY++)
-            for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
-                worldChunks[chunkX][chunkY][chunkZ]->DisplayTransparent();
-            }
-
+    for (int chunkX = 0; chunkX < worldSize; chunkX++) {
+        for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
+            worldChunks[chunkX][chunkZ]->DisplayTransparent();
+        }
+    }
 }
 
 void World::CheckCulling(const Camera &_camera) {
     displayingChunks = 0;
 
-    for (int chunkX = 0; chunkX < worldSize; chunkX++)
-        for (int chunkY = 0; chunkY < worldHeight; chunkY++)
-            for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
-                worldChunks[chunkX][chunkY][chunkZ]->CheckCulling(_camera);
-                if (worldChunks[chunkX][chunkY][chunkZ]->ChunkVisible())
-                    displayingChunks += 1;
-            }
+    for (int chunkX = 0; chunkX < worldSize; chunkX++) {
+        for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {;
+            worldChunks[chunkX][chunkZ]->CheckCulling(_camera);
+            if (worldChunks[chunkX][chunkZ]->ChunkVisible())
+                displayingChunks += 1;
+        }
+    }
 
 //    printf("DISPLAYING %d / %d CHUNKS\n", displayingChunks, nChunks);
 }
@@ -113,18 +112,18 @@ float World::GenerateBlockHeight(glm::vec2 _blockPos) {
 
     // Seabed / ContinentBed Generation
     float continentiality = glm::simplex(glm::vec2( _blockPos.x / 2000.0, _blockPos.y / 2000.0));
-    continentiality = (continentiality + 1) / 2;
+    continentiality = 1;
 
     // Primary Noise based around waterlevel
     float baseHeight = glm::simplex(glm::vec2( _blockPos.x / 128.0, _blockPos.y / 128.0));
     baseHeight *= 5;
 
-    baseHeight += WATERLEVEL;  // Ensure minimum generation value for solid blocks
-    height = baseHeight;
+    // Set the base height of the block
+    height = baseHeight * continentiality + MINBLOCKHEIGHT;
 
-    // Secondary base level noise applied to provide more jaggedness
-    float secondHeight = glm::simplex(glm::vec2( _blockPos.x / 32.0, _blockPos.y / 32.0));
-    secondHeight *= 2;
+    // Secondary base level noise applied
+    float secondHeight = glm::simplex(glm::vec2( _blockPos.x / 16.0, _blockPos.y / 16.0));
+    secondHeight *= 1;
     height += secondHeight;
 
     /*
@@ -147,6 +146,26 @@ float World::GenerateBlockHeight(glm::vec2 _blockPos) {
     return std::round(height);
 }
 
+float World::GenerateBlockHeat(glm::vec3 _blockPos) {
+    float heat = glm::simplex(glm::vec2(_blockPos.x / 64.0, _blockPos.z / 64.0));
+    heat = (heat + 1) / 2;
+    heat *= 20;
+    heat += BASETEMP;
+
+    // Relate heat to height (higher = colder)
+    heat -= (_blockPos.y / MAXBLOCKHEIGHT) * 10;
+
+    return heat;
+}
+
+float World::GenerateBlockVegetation(glm::vec3 _blockPos, float _heat) {
+    // Density of vegetation
+    float vegetationDensity = glm::simplex(glm::vec2( _blockPos.x / 8.0, _blockPos.z / 8.0));
+    vegetationDensity = (vegetationDensity + 1) / 2;
+
+    return vegetationDensity;
+}
+
 // Generate the height and temp maps for the given chunk starting pos
 ChunkData World::GenerateChunkData(glm::vec2 _chunkPosition) {
     int chunkX = (int)_chunkPosition.x * chunkSize;
@@ -155,17 +174,19 @@ ChunkData World::GenerateChunkData(glm::vec2 _chunkPosition) {
 
     for (int x = 0; x < chunkSize; x++) {
         for (int z = 0; z < chunkSize; z++) {
-            chunkData.heightMap[x + z * chunkSize] = GenerateBlockHeight({chunkX+x, chunkZ+z});
+            int bx = chunkX + x, bz = chunkZ + z;
 
-            // get positive heat value between 0 and max heat
-            float heat = glm::simplex(glm::vec2(x / 64.0, z / 64.0));
-            heat = (heat + 1) / 2;
-            heat *= 20;
+            // Get the toplevel (highest y) of the given x z position
+            float height = GenerateBlockHeight({bx, bz});
+            chunkData.heightMap[x + z * chunkSize] = height;
 
-            // Relate heat to height (higher = colder)
-            heat -= (chunkData.heightMap[x + z * chunkSize]/MAXCHUNKHEIGHT) * 10;
-
+            // Get the heat value for the block
+            float heat = GenerateBlockHeat({bx,height,bz});
             chunkData.heatMap[x + z * chunkSize] = heat;
+
+            // Create block vegetation value (relate to heat, height)
+            float vegetation = GenerateBlockVegetation({bx, height, bz}, heat);
+            chunkData.plantMap[x + z * chunkSize] = vegetation;
         }
     }
 
@@ -191,55 +212,68 @@ Biome* World::GenerateBiome(BIOMEID _biomeID) {
 
 
 void World::GenerateTerrain() {
-    // Ensure that a chunk is created for the whole world
+    // Ensure that a chunk object is created for the whole world
     for (int x = 0; x < worldSize; x++) {
         for (int z = 0; z < worldSize; z++) {
-            float chunkX = (float)x - worldSize / 2.0f;
-            float chunkZ = (float)z - worldSize / 2.0f;
+            float chunkX = (float) x - worldSize / 2.0f;
+            float chunkZ = (float) z - worldSize / 2.0f;
 
             // Get Chunk ChunkData
             ChunkData chunkData = GenerateChunkData({chunkX, chunkZ});
             chunkData.biome = GenerateBiome(GetBiomeIDFromData(chunkData));
 
-            for (int y = 0; y < worldHeight; y++) {
-                glm::vec3 chunkPos{chunkX, y, chunkZ};
-
-                auto st = SDL_GetTicks64();
-                worldChunks[x][y][z] = std::make_unique<Chunk>(chunkPos, chunkData);
-                worldChunks[x][y][z]->GenerateChunk();
-                nChunks++;
-                auto et = SDL_GetTicks64();
-
-                chunkSumTicksTaken += et - st;
-                nChunksCreated++;
-                chunkAvgTicksTaken = chunkSumTicksTaken / nChunksCreated;
-            }
+            glm::vec3 chunkPos{chunkX, 0, chunkZ};
+            worldChunks[x][z] = std::make_unique<Chunk>(chunkPos, chunkData);
+            nChunks++;
         }
-        printf("%d Chunk / %d Made. . . \n", nChunksCreated, worldVolume);
     }
 
-    // Assign neighbouring chunks to created chunks and invoke terrain generation for non-edge chunks
-    for (int chunkX = 0; chunkX < worldSize; chunkX++)
-        for (int chunkY = 0; chunkY < worldHeight; chunkY++)
-            for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
-                // TOP, BOTTOM, FRONT, FRONTLEFT, LEFT, BACKLEFT, BACK, BACKRIGHT, RIGHT, FRONTRIGHT
-                std::array<Chunk*, numDirections> adjacentChunks {nullptr};
+    // Assign neighbouring chunks to created chunks and invoke terrain and mesh generation
+    for (int chunkX = 0; chunkX < worldSize; chunkX++) {
+        for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
+            // FRONT, FRONTLEFT, LEFT, BACKLEFT, BACK, BACKRIGHT, RIGHT, FRONTRIGHT
+            std::array<Chunk *, 8> adjacentChunks{nullptr};
 
-                for (int dir = 0; dir < numDirections; dir++) {
-                    adjacentChunks[dir] = GetChunkAtPosition(glm::vec3{chunkX, chunkY, chunkZ} + allDirections[dir]);
-                }
-
-                worldChunks[chunkX][chunkY][chunkZ]->SetAdjacentChunks(adjacentChunks);
-                worldChunks[chunkX][chunkY][chunkZ]->CreateBlockMeshes();
+            for (int dir = 2; dir < numDirections; dir++) {
+                adjacentChunks[dir-2] = GetChunkAtPosition(glm::vec3{chunkX, 0, chunkZ} + allDirections[dir]);
             }
+
+            auto st = SDL_GetTicks64();
+
+            worldChunks[chunkX][chunkZ]->SetAdjacentChunks(adjacentChunks);
+            worldChunks[chunkX][chunkZ]->GenerateChunk();
+
+            auto et = SDL_GetTicks64();
+
+            chunkSumTicksTaken += et - st;
+            nChunksCreated++;
+            chunkAvgTicksTaken = chunkSumTicksTaken / nChunksCreated;
+
+        }
+        printf("%d Chunk / %d Made. . . \n", nChunksCreated, worldArea);
+    }
+
+    for (int chunkX = 0; chunkX < worldSize; chunkX++) {
+        for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
+            auto st = SDL_GetTicks64();
+
+            worldChunks[chunkX][chunkZ]->CreateChunkMeshes();
+
+            auto et = SDL_GetTicks64();
+
+            meshSumTicksTaken += et - st;
+            nMeshesCreated++;
+            meshAvgTicksTaken = meshSumTicksTaken / nMeshesCreated;
+
+        }
+    }
 }
 
 Chunk* World::GetChunkAtPosition(glm::vec3 _position) const {
     if (_position.x < 0 || _position.x >= worldSize) return nullptr;
-    if (_position.y < 0 || _position.y >= worldHeight) return nullptr;
     if (_position.z < 0 || _position.z >= worldSize) return nullptr;
 
-    return worldChunks[(int)_position.x][(int)_position.y][(int)_position.z].get();
+    return worldChunks[(int)_position.x][(int)_position.z].get();
 }
 
 Biome* World::GetBiome(BIOMEID _biomeID) {

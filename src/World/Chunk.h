@@ -56,8 +56,9 @@ class ChunkNode {
 
 struct ChunkData {
     Biome* biome {};
-    ChunkDataMap heightMap {};
-    ChunkDataMap heatMap {};
+    ChunkDataTypes::DataMap heightMap {};
+    ChunkDataTypes::DataMap heatMap {};
+    ChunkDataTypes::DataMap plantMap {};
 };
 
 /*
@@ -78,16 +79,16 @@ class Chunk {
         // Chunk Terrain and Block Data
         std::vector<std::pair<std::unique_ptr<Block>, int>> uniqueBlocks {};                                            // block, count
         std::vector<std::unique_ptr<MaterialMesh>> blockMeshes {};                                                      // for each unique block
-        chunkTerrainArray terrain {};
+        ChunkDataTypes::TerrainArray terrain {};
         bool generated = false;
 
         // Unique ChunkData and the adjacent Chunk pointers
         ChunkData chunkData;
         glm::vec3 chunkPosition {0,0,0};
-        std::array<Chunk*, 10> adjacentChunks {};
+        std::array<Chunk*, 8> adjacentChunks {};
 
         // Private functions for getting/setting blocks which non-chunks shouldn't access
-        [[nodiscard]] ChunkBlock GetChunkBlockAtPosition(const glm::vec3& _blockPos);
+        [[nodiscard]] ChunkDataTypes::ChunkBlock GetChunkBlockAtPosition(const glm::vec3& _blockPos);
         void SetChunkBlockAtPosition(const glm::vec3& _blockPos, const BlockType& _blockType);
 
     public:
@@ -99,7 +100,7 @@ class Chunk {
         void DisplayTransparent();
 
         // Chunk Block Meshes Creation / Updating
-        void CreateBlockMeshes();
+        void BindChunkMeshes();
         void UpdateMeshAtPosition(glm::vec3 _blockPos);
         void UpdateBlockMesh(Block* _meshBlock);
         void CreateChunkMeshes();
@@ -114,13 +115,14 @@ class Chunk {
         // Chunk Terrain and Structures Generation
         void GenerateChunk();
         void CreateTerrain();
-        void SetAdjacentChunks(const std::array<Chunk*, 10>& _chunks);
+        void CreateVegitation(glm::vec3 _blockPos);
+        void SetAdjacentChunks(const std::array<Chunk*, 8>& _chunks);
 
         // Chunk Block Interaction
         void BreakBlockAtPosition(glm::vec3 _blockPos);
         void PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType);
         void SetBlockAtPosition(glm::vec3 _blockPos, int _depth, const BlockType& _blockType);
-        [[nodiscard]] ChunkBlock GetBlockAtPosition(glm::vec3 _blockPos, int _depth) const;
+        [[nodiscard]] ChunkDataTypes::ChunkBlock GetBlockAtPosition(glm::vec3 _blockPos, int _depth) const;
 
         // Chunk-Entity Collision
         [[nodiscard]] float GetTopLevelAtPosition(glm::vec3 _blockPos, float _radius) const;

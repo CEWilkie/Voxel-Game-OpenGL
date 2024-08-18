@@ -168,6 +168,10 @@ Block::Block() = default;
 
 Block::~Block() = default;
 
+
+
+
+
 void Block::Display(Transformation* _t) {
     if (blockData.blockID == BLOCKID::AIR && blockData.variantID == 0) return;
 
@@ -207,12 +211,52 @@ void Block::DisplayWireframe(Transformation *_transformation) {
     glLineWidth(1.0f);
 }
 
-void Block::SetTransformation(Transformation *_t) {
-//    blockTransformation = _t;
+int Block::GetAttributeValue(BLOCKATTRIBUTE _attribute) const {
+    switch (_attribute) {
+        case BLOCKATTRIBUTE::TRANSPARENT:
+            return transparent;
+
+        case BLOCKATTRIBUTE::LIQUID:
+            return liquid;
+
+        case BLOCKATTRIBUTE::BREAKABLE:
+            return breakable;
+
+        case BLOCKATTRIBUTE::CANACCESSTHROUGHBLOCK:
+            return canInteractThroughBlock;
+
+        default:
+            return 0;
+    }
 }
 
 
 
+/*
+ * Returns a value which is a permitted direction for the top face of the block to be pointing in. Should the block be
+ * locked to pointing up, then it will only return the UP direction. Else a random direction will be chosen.
+ */
+
+DIRECTION Block::GetRandomTopFaceDirection() const {
+    if (topFaceLocked) return UP;
+
+    // random dir from:
+    std::array<DIRECTION, 6> directions {UP, DOWN, NORTH, SOUTH, EAST, WEST};
+    return directions[rand() % 6 + 0];
+}
+
+/*
+ * Returns a value which is a permitted rotation value around the facing direction for the block. Angle is always a
+ * multiple of 90 (aka right-angled). Should rotation be locked, then the angle will always be 0. Angle is in degrees,
+ * may require converting to radians for glm functions.
+ */
+
+int Block::GetRandomRotation() const {
+    if (rotationLocked) return 0;
+
+    // random right angle
+    return (rand() % 4 + 0) * 90;
+}
 
 
 std::vector<Vertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &_faces, const BlockAttributes& _blockAttributes) const {
@@ -256,44 +300,4 @@ std::vector<Vertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &_faces
     }
 
     return vertexArray;
-}
-
-int Block::GetAttributeValue(BLOCKATTRIBUTE _attribute) const {
-    switch (_attribute) {
-        case BLOCKATTRIBUTE::TRANSPARENT:
-            return transparent;
-
-        case BLOCKATTRIBUTE::LIQUID:
-            return liquid;
-
-        case BLOCKATTRIBUTE::BREAKABLE:
-            return breakable;
-
-        case BLOCKATTRIBUTE::CANACCESSTHROUGHBLOCK:
-            return canInteractThroughBlock;
-
-        default:
-            return 0;
-    }
-}
-
-
-
-
-
-
-
-TestBlock::TestBlock(int _variant) {
-    blockData = {BLOCKID::TEST, _variant};
-    sheet = TEXTURESHEET::TEST16;
-
-    // Set texture origin
-    switch (_variant) {
-        case 1: origin = {4,2}; break;
-        case 2: origin = {5,4}; break;
-        case 3: origin = {7,1}; break;
-        case 4: origin = {10,2}; break;
-        case 5: origin = {13,1}; break;
-        default: origin = {1,1};
-    }
 }

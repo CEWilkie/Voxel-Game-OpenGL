@@ -25,7 +25,7 @@ Player::Player(glm::vec3 _position, glm::vec3 _facingDirection) {
 
     // Set initial values for min max positions
     minY = -20;
-    maxY = worldHeight * chunkSize;
+    maxY = chunkHeight;
     minX = -(worldSize/2.0f) * chunkSize;
     maxX = (worldSize/2.0f) * chunkSize;
     minZ = -(worldSize/2.0f) * chunkSize;
@@ -270,7 +270,7 @@ void Player::UpdateMaxPositions() {
 
     // Get the highest ylevel that the player would reach first
     minY = playerChunk->GetTopLevelAtPosition({blockPos.x, blockPos.y - 1, blockPos.z}, 0.4f);
-    maxY = worldHeight * chunkSize;
+    maxY = chunkHeight;
 
     // returns position of obstructing face in the chunk
     minX = (playerChunk->GetPosition().x * (float)chunkSize) + playerChunk->GetDistanceToBlockFace(blockPos, dirFront, radius);

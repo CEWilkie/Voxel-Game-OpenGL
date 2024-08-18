@@ -25,20 +25,26 @@ class MaterialMesh {
         int nFaces = 0;
 
         Block* block;
+        bool oldMesh = true;
 
     public:
         explicit MaterialMesh(Block* _block);
         ~MaterialMesh();
 
+        // Mesh verticies setup and binding
         void AddVerticies(const std::vector<Vertex>& _verticies, const glm::vec3& _position);
         void ResetVerticies();
-
         void BindMesh();
         void UpdateMesh();
+
+        // Mark meshes for recreation
+        void MarkOld() { oldMesh = true; }
+        [[nodiscard]] bool IsOld() const { return oldMesh; }
+
+        // Mesh Display
         void DrawMesh(const Transformation& _transformation) const;
 
-
-
+        // Getters
         [[nodiscard]] Block* GetBlock() const { return block; }
 };
 

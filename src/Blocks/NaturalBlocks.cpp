@@ -14,7 +14,7 @@ Stone::Stone(int _variant) {
     blockData = {BLOCKID::STONE, _variant};
 
     // Set the texture and texture origin
-    sheet = TEXTURESHEET::NATURAL;
+    sheet = TEXTURESHEET::TERRAIN;
     origin = {1,1};
 }
 
@@ -22,7 +22,7 @@ Dirt::Dirt(int _variant) {
     blockData = {BLOCKID::DIRT, _variant};
 
     // Set the texture and texture origin
-    sheet = TEXTURESHEET::NATURAL;
+    sheet = TEXTURESHEET::TERRAIN;
     origin = {4,2};
 }
 
@@ -30,7 +30,7 @@ Grass::Grass(int _variant) {
     blockData = {BLOCKID::GRASS, _variant};
 
     // Set the texture and texture origin
-    sheet = TEXTURESHEET::NATURAL;
+    sheet = TEXTURESHEET::TERRAIN;
     origin = {7,1};
 }
 
@@ -38,7 +38,7 @@ Sand::Sand(int _variant) {
     blockData = {BLOCKID::SAND, _variant};
 
     // Set texture and texture origin
-    sheet = TEXTURESHEET::NATURAL;
+    sheet = TEXTURESHEET::TERRAIN;
     origin = {13, 1};
 }
 
@@ -46,7 +46,7 @@ Water::Water(int _variant) {
     blockData = {BLOCKID::WATER, _variant};
 
     // Set the texture and texture origin
-    sheet = TEXTURESHEET::NATURAL;
+    sheet = TEXTURESHEET::TERRAIN;
     origin = {10,2};
 
     // Set attributes
@@ -77,4 +77,15 @@ Air::Air(int _variant) {
     transparent = 1;
     breakable = 0;
     canInteractThroughBlock = 1;
+}
+
+Leaves::Leaves(int _variant) {
+    blockData = {BLOCKID::LEAVES, _variant};
+    sheet = TEXTURESHEET::NATURAL;
+
+    if (_variant == 0) {
+        origin = {1,1};
+    }
+
+    transparent = 1;
 }
