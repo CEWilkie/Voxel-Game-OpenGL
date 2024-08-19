@@ -8,7 +8,7 @@
 #include <vector>
 #include <memory>
 
-#include "../Blocks/NaturalBlocks.h"
+#include "../Blocks/TerrainBlocks.h"
 #include "../BlockModels/ModelTransformations.h"
 #include "../BlockModels/MaterialMesh.h"
 #include "../Player/Camera.h"

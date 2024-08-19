@@ -330,14 +330,14 @@ std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _blockPos) const {
         }
 
         // transparent blocks only show when there is air
-        if (checkingBlock->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 1) {
+        if (checkingBlock->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) > 0) {
             // Is not air
             if (!BlockType::Compare(blockAtFace->GetBlockType(), {AIR, 0})) {
                 continue;
             }
         }
 
-            // Normal blocks may show if the block on the face is transparent
+        // Normal blocks may show if the block on the face is transparent
         else if (blockAtFace->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 0) {
             continue;
         }
@@ -400,20 +400,26 @@ void Chunk::CreateTerrain() {
 
             for (int y = 0; y < chunkHeight; y++) {
                 glm::vec3 blockPos = glm::vec3(x, y, z) + (chunkPosition * (float)chunkSize);
-
-                // If a block has already been generated for this position, continue
-                if (terrain[x][y][z].first != nullptr) continue;
-
                 BlockType newBlockData = chunkData.biome->GetBlockType(hmTopLevel, blockPos.y);
-                SetChunkBlockAtPosition({x,y,z}, newBlockData);
-
-                // Get Block and add pointer into terrain array
                 Block* block = GetBlockFromData(newBlockData);
-                terrain[x][y][z].first = block;
+
+                // If a block has already been generated for this position and has higher gen priority than the current
+                // block attempting to generate, then ignore new gen attempt. Equivalent gen priority sees newest
+                // generation overwrite
+                if (terrain[x][y][z].first != nullptr) {
+                    int generatedPriority = terrain[x][y][z].first->GetAttributeValue(BLOCKATTRIBUTE::GENERATIONPRIORITY);
+                    int generatingPriority = block->GetAttributeValue(BLOCKATTRIBUTE::GENERATIONPRIORITY);
+
+                    if (generatedPriority > generatingPriority) continue;
+                }
+
+                // Set block and make a new unique instance if required
+                SetChunkBlockAtPosition({x,y,z}, newBlockData);
 
                 // give block a random rotation and facing direction
                 terrain[x][y][z].second.topFaceDirection = block->GetRandomTopFaceDirection();
                 terrain[x][y][z].second.rotation = block->GetRandomRotation();
+
             }
 
             // Now create vegetation provided chunk contains hmToplevel
@@ -442,18 +448,28 @@ void Chunk::CreateVegitation(glm::vec3 _blockPos) {
     if (plantDensity > 1 && block->GetBlockType().blockID == GRASS) {
         structureLoader->StartLoadingStructure(STRUCTURE::TEST);
 
-        printf("tree!\n\n\n");
+        int maxB = rand() % 5 + 0;
+        for (int b = 0; b < maxB; b++) {
+            SetBlockAtPosition(plantPos + glm::vec3(0,b,0), 0,
+                               {WOOD, 0});
+        }
+
+        plantPos.y += (float)maxB;
 
         while (structureLoader->LoadedStructure() != STRUCTURE::NONE) {
             StructBlockData blockData = structureLoader->GetStructureBlock();
             Block* blockAtPosition = GetBlockAtPosition(blockData.blockPos + plantPos, 0).first;
+            Block* loadingBlock = GetBlockFromData(blockData.blockType);
 
-            if (blockAtPosition == nullptr || blockAtPosition->GetBlockType().blockID == AIR) {
-                SetBlockAtPosition(blockData.blockPos + plantPos, 0, blockData.blockType);
+            // Ensure vegetation can overwrite any current blocks in that position
+            if (blockAtPosition != nullptr) {
+                int generatedPriority = blockAtPosition->GetAttributeValue(BLOCKATTRIBUTE::GENERATIONPRIORITY);
+                int generatingPriority = loadingBlock->GetAttributeValue(BLOCKATTRIBUTE::GENERATIONPRIORITY);
+
+                if (generatedPriority > generatingPriority) continue;
             }
 
-            Block* bap = GetBlockAtPosition(blockData.blockPos + plantPos, 0).first;
-            if (bap == nullptr) printf("failed!\n");
+            SetBlockAtPosition(blockData.blockPos + plantPos, 0, blockData.blockType);
         }
     }
     else if (plantDensity < 0.2 && block->GetBlockType().blockID == GRASS) {
@@ -482,7 +498,7 @@ void Chunk::BreakBlockAtPosition(glm::vec3 _blockPos) {
     Chunk* blockChunk = GetChunkAtPosition(_blockPos, 0);
     if (blockChunk == nullptr) return;
 
-    // Fetch block being broken, if this is somehow null theres bigger issues at play
+    // Fetch block being broken, if this is somehow null theres probably bigger issues at play so just do nothing
     Block* block = blockChunk->GetBlockAtPosition(_blockPos, 0).first;
     if (block == nullptr) return;
 
@@ -684,8 +700,8 @@ float Chunk::GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, f
 
     BLOCKFACE face {};
     std::vector<Vertex> faceVerticies {};
-    float minZ {0}, maxZ {1};
-    float minX {0}, maxX {1};
+    float minZ {0}, maxZ {0};
+    float minX {0}, maxX {0};
 
     if (_direction == dirFront) face = BACK;
     if (_direction == dirBack) face = FRONT;
@@ -695,12 +711,15 @@ float Chunk::GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, f
     // Get min and max face verticies for x and z position
     faceVerticies = block.first->GetFaceVerticies({face}, block.second);
     for (auto& vertex : faceVerticies) {
-        vertex.position += glm::floor(_blockPos) + _direction;
-        if (vertex.position.z < minZ) minZ = vertex.position.z;
-        if (vertex.position.z > maxZ) maxZ = vertex.position.z;
+        if (vertex.position.z + glm::ceil(_blockPos.z) + _direction.z < minZ)
+            minZ = vertex.position.z + glm::ceil(_blockPos.z) + _direction.z;
+        if (vertex.position.z + glm::floor(_blockPos.z) + _direction.z > maxZ)
+            maxZ = vertex.position.z + glm::floor(_blockPos.z) + _direction.z;
 
-        if (vertex.position.x < minX) minX = vertex.position.x;
-        if (vertex.position.x > maxX) maxX = vertex.position.x;
+        if (vertex.position.x + glm::ceil(_blockPos.x) + _direction.x < minX)
+            minX = vertex.position.x + glm::ceil(_blockPos.x) + _direction.x;
+        if (vertex.position.x + glm::ceil(_blockPos.x) + _direction.x > maxX)
+            maxX = vertex.position.x + glm::floor(_blockPos.x) + _direction.x;
     }
 
     // Player is only blocked by the block if their position +- radius is within min and max bounds

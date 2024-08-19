@@ -71,7 +71,7 @@ inline std::unique_ptr<BlockVAOs> blockVAOmanager {};
  */
 
 enum BLOCKID : unsigned int {
-    TEST, GRASS, DIRT, STONE, WATER, AIR, SAND, LEAVES,
+    TEST, GRASS, DIRT, STONE, WATER, AIR, SAND, LEAVES, WOOD,
 };
 
 
@@ -104,7 +104,7 @@ struct BlockType {
  */
 
 enum class BLOCKATTRIBUTE {
-    TRANSPARENT, LIQUID, BREAKABLE, CANACCESSTHROUGHBLOCK, FACINGDIRECTION, ROTATION,
+    TRANSPARENT, LIQUID, BREAKABLE, CANACCESSTHROUGHBLOCK, FACINGDIRECTION, ROTATION, GENERATIONPRIORITY,
     // ... other block attributes
 };
 
@@ -140,6 +140,7 @@ class Block {
         int liquid = 0;
         int breakable = 1;
         int canInteractThroughBlock = 0;
+        int generationPriority = 2;
 
         // Visual Rotations
         bool topFaceLocked = true; // can only face up

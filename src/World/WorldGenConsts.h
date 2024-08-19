@@ -22,7 +22,7 @@ static const int MAXTEMP = 40;
 
 
 // MAX SIZE OF THE WORLD AREA TO BE LOADED
-static const int worldSize = 4;
+static const int worldSize = 16;
 static const int worldArea = worldSize * worldSize;
 
 static long long int worldSeed = time(nullptr);
