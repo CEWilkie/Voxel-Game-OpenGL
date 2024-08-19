@@ -5,6 +5,7 @@
 #ifndef UNTITLED7_CREATEBLOCK_H
 #define UNTITLED7_CREATEBLOCK_H
 
+#include "TerrainBlocks.h"
 #include "NaturalBlocks.h"
 
 // Create a new block instance from a particular ID and Variant upon request
@@ -42,6 +43,10 @@ inline std::unique_ptr<Block> CreateBlock(BlockType _blockData) {
 
         case BLOCKID::LEAVES:
             newBlock = std::make_unique<Leaves>(_variant);
+            break;
+
+        case BLOCKID::WOOD:
+            newBlock = std::make_unique<Wood>(_variant);
             break;
 
         default:

@@ -29,8 +29,8 @@ void World::Display() {
     // First draw in the skybox and decorations
     skybox->Display(&skyboxTransformation);
 
-    glEnable(GL_CULL_FACE);
     // Draw solid objects
+    glEnable(GL_CULL_FACE);
     for (int chunkX = 0; chunkX < worldSize; chunkX++) {
         for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
             worldChunks[chunkX][chunkZ]->DisplaySolid();
@@ -44,6 +44,7 @@ void World::Display() {
             worldChunks[chunkX][chunkZ]->DisplayTransparent();
         }
     }
+
 }
 
 void World::CheckCulling(const Camera &_camera) {

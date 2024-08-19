@@ -225,6 +225,9 @@ int Block::GetAttributeValue(BLOCKATTRIBUTE _attribute) const {
         case BLOCKATTRIBUTE::CANACCESSTHROUGHBLOCK:
             return canInteractThroughBlock;
 
+        case BLOCKATTRIBUTE::GENERATIONPRIORITY:
+            return generationPriority;
+
         default:
             return 0;
     }
