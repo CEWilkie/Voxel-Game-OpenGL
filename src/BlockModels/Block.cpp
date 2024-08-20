@@ -228,6 +228,9 @@ int Block::GetAttributeValue(BLOCKATTRIBUTE _attribute) const {
         case BLOCKATTRIBUTE::GENERATIONPRIORITY:
             return generationPriority;
 
+        case BLOCKATTRIBUTE::ENTITYCOLLISIONSOLID:
+            return entityCollisionSolid;
+
         default:
             return 0;
     }

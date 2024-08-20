@@ -54,6 +54,7 @@ Water::Water(int _variant) {
     liquid = 1;
     breakable = 0;
     canInteractThroughBlock = 1;
+    entityCollisionSolid = 0;
 }
 
 Air::Air(int _variant) {
@@ -78,4 +79,5 @@ Air::Air(int _variant) {
     breakable = 0;
     canInteractThroughBlock = 1;
     generationPriority = 0;
+    entityCollisionSolid = 0;
 }

@@ -656,7 +656,8 @@ Block* Chunk::GetBlockFromData(const BlockType& _blockType) {
  */
 
 float Chunk::GetTopLevelAtPosition(glm::vec3 _blockPos, float _radius) const {
-    if (GetBlockAtPosition(_blockPos + dirTop, 0).first->GetBlockType().blockID != AIR) {
+    Block* playerBlock = GetBlockAtPosition(_blockPos + dirTop, 0).first;
+    if (playerBlock != nullptr && playerBlock->GetAttributeValue(BLOCKATTRIBUTE::ENTITYCOLLISIONSOLID) != 0) {
         return GetTopLevelAtPosition(_blockPos + dirTop, _radius);
     }
 

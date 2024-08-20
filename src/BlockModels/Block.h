@@ -104,7 +104,7 @@ struct BlockType {
  */
 
 enum class BLOCKATTRIBUTE {
-    TRANSPARENT, LIQUID, BREAKABLE, CANACCESSTHROUGHBLOCK, FACINGDIRECTION, ROTATION, GENERATIONPRIORITY,
+    TRANSPARENT, LIQUID, BREAKABLE, CANACCESSTHROUGHBLOCK, FACINGDIRECTION, ROTATION, GENERATIONPRIORITY, ENTITYCOLLISIONSOLID
     // ... other block attributes
 };
 
@@ -141,6 +141,7 @@ class Block {
         int breakable = 1;
         int canInteractThroughBlock = 0;
         int generationPriority = 2;
+        int entityCollisionSolid = 1;
 
         // Visual Rotations
         bool topFaceLocked = true; // can only face up
