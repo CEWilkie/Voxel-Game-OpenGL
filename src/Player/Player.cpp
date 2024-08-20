@@ -258,8 +258,9 @@ void Player::UpdatePlayerChunk() {
 
     // If players chunk is not the same as currently stored player chunk, load/unload chunks
     if (pChunk!= nullptr) {
-        if (pChunk != playerChunk && playerChunk != nullptr)
+        if (pChunk != playerChunk && playerChunk != nullptr) {
             world->GenerateTerrain(pChunk->GetPosition());
+        }
 
         playerChunk = pChunk;
     }

@@ -31,8 +31,8 @@ void World::Display() {
 
     // Draw solid objects
     glEnable(GL_CULL_FACE);
-    for (int x = -loadRadius; x <= loadRadius; x++) {
-        for (int z = -loadRadius; z <= loadRadius; z++) {
+    for (int x = -loadRadius; x < loadRadius + 1; x++) {
+        for (int z = -loadRadius; z < loadRadius + 1; z++) {
             Chunk* chunk = GetChunkFromLoadPosition({x,0,z});
             if (chunk != nullptr) chunk->DisplaySolid();
         }
@@ -41,8 +41,8 @@ void World::Display() {
 
     // Draw transparent objects
     glEnable(GL_BLEND);
-    for (int x = -loadRadius; x <= loadRadius; x++) {
-        for (int z = -loadRadius; z <= loadRadius; z++) {
+    for (int x = -loadRadius; x < loadRadius + 1; x++) {
+        for (int z = -loadRadius; z < loadRadius + 1; z++) {
             Chunk* chunk = GetChunkFromLoadPosition({x,0,z});
             if (chunk != nullptr) chunk->DisplayTransparent();
         }
@@ -230,14 +230,14 @@ void World::GenerateTerrain(glm::vec3 _loadOrigin) {
     // Ensure that a chunk object is created for the whole area (if not already existing)
     for (int x = -worldSize/2; x < worldSize/2.0; x++) {
         for (int z = -worldSize/2; z < worldSize/2.0; z++) {
-            if (GetChunkAtChunkPosition({x, 0, z}) != nullptr)
+            if (GetChunkFromLoadPosition({x, 0, z}) != nullptr)
                 continue;
 
             // Get Chunk ChunkData
-            ChunkData chunkData = GenerateChunkData({x, z});
+            glm::vec3 chunkPos{loadingChunk.x - 1000 + x, 0, loadingChunk.y - 1000 + z};
+            ChunkData chunkData = GenerateChunkData({chunkPos.x, chunkPos.z});
             chunkData.biome = GenerateBiome(GetBiomeIDFromData(chunkData));
 
-            glm::vec3 chunkPos{loadingChunk.x - 1000 + x, 0, loadingChunk.y - 1000 + z};
             worldChunks[x + loadingChunk.x][z + loadingChunk.y] = std::make_unique<Chunk>(chunkPos, chunkData);
         }
     }
@@ -251,7 +251,7 @@ void World::GenerateTerrain(glm::vec3 _loadOrigin) {
             auto st = SDL_GetTicks64();
 
             for (int dir = 2; dir < numDirections; dir++)
-                adjacentChunks[dir-2] = GetChunkAtChunkPosition(glm::vec3(x, 0, z) + allDirections[dir]);
+                adjacentChunks[dir-2] = GetChunkFromLoadPosition(glm::vec3(x, 0, z) + allDirections[dir]);
 
             worldChunks[x + loadingChunk.x][z + loadingChunk.y]->SetAdjacentChunks(adjacentChunks);
 
