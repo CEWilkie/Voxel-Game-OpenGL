@@ -31,19 +31,23 @@ void World::Display() {
 
     // Draw solid objects
     glEnable(GL_CULL_FACE);
-    for (int chunkX = 0; chunkX < worldSize; chunkX++) {
-        for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
-            worldChunks[chunkX][chunkZ]->DisplaySolid();
+    for (int x = -loadRadius; x <= loadRadius; x++) {
+        for (int z = -loadRadius; z <= loadRadius; z++) {
+            Chunk* chunk = GetChunkFromLoadPosition({x,0,z});
+            if (chunk != nullptr) chunk->DisplaySolid();
         }
     }
     glDisable(GL_CULL_FACE);
 
     // Draw transparent objects
-    for (int chunkX = 0; chunkX < worldSize; chunkX++) {
-        for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
-            worldChunks[chunkX][chunkZ]->DisplayTransparent();
+    glEnable(GL_BLEND);
+    for (int x = -loadRadius; x <= loadRadius; x++) {
+        for (int z = -loadRadius; z <= loadRadius; z++) {
+            Chunk* chunk = GetChunkFromLoadPosition({x,0,z});
+            if (chunk != nullptr) chunk->DisplayTransparent();
         }
     }
+    glDisable(GL_BLEND);
 
 }
 
@@ -94,7 +98,7 @@ void World::SetSkyboxPosition(glm::vec3 _position) {
 
 void World::GenerateWorld() {
     // Generate the world terrain, and map biomes to the chunks
-    GenerateTerrain();
+    GenerateTerrain({0,0,0});
 
     printf("AVG CHUNK CREATION: %llu TICKS TAKEN\n", chunkAvgTicksTaken);
     printf("AVG MESH CREATION: %llu TICKS TAKEN\n", meshAvgTicksTaken);
@@ -215,37 +219,44 @@ Biome* World::GenerateBiome(BIOMEID _biomeID) {
 }
 
 
-void World::GenerateTerrain() {
-    // Ensure that a chunk object is created for the whole world
-    for (int x = 0; x < worldSize; x++) {
-        for (int z = 0; z < worldSize; z++) {
-            float chunkX = (float) x - worldSize / 2.0f;
-            float chunkZ = (float) z - worldSize / 2.0f;
+
+/*
+ * Generates the terrain around a given chunk. This chunk should be the chunk the player is within.
+ */
+
+void World::GenerateTerrain(glm::vec3 _loadOrigin) {
+    loadingChunk = {1000 + _loadOrigin.x, 1000 + _loadOrigin.z};  // for centre chunk
+
+    // Ensure that a chunk object is created for the whole area (if not already existing)
+    for (int x = -worldSize/2; x < worldSize/2.0; x++) {
+        for (int z = -worldSize/2; z < worldSize/2.0; z++) {
+            if (GetChunkAtChunkPosition({x, 0, z}) != nullptr)
+                continue;
 
             // Get Chunk ChunkData
-            ChunkData chunkData = GenerateChunkData({chunkX, chunkZ});
+            ChunkData chunkData = GenerateChunkData({x, z});
             chunkData.biome = GenerateBiome(GetBiomeIDFromData(chunkData));
 
-            glm::vec3 chunkPos{chunkX, 0, chunkZ};
-            worldChunks[x][z] = std::make_unique<Chunk>(chunkPos, chunkData);
-            nChunks++;
+            glm::vec3 chunkPos{loadingChunk.x - 1000 + x, 0, loadingChunk.y - 1000 + z};
+            worldChunks[x + loadingChunk.x][z + loadingChunk.y] = std::make_unique<Chunk>(chunkPos, chunkData);
         }
     }
 
     // Assign neighbouring chunks to created chunks and invoke terrain and mesh generation
-    for (int chunkX = 0; chunkX < worldSize; chunkX++) {
-        for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
+    for (int x = -worldSize / 2; x < worldSize / 2.0; x++) {
+        for (int z = -worldSize / 2; z < worldSize / 2.0; z++) {
             // FRONT, FRONTLEFT, LEFT, BACKLEFT, BACK, BACKRIGHT, RIGHT, FRONTRIGHT
             std::array<Chunk *, 8> adjacentChunks{nullptr};
 
-            for (int dir = 2; dir < numDirections; dir++) {
-                adjacentChunks[dir-2] = GetChunkAtPosition(glm::vec3{chunkX, 0, chunkZ} + allDirections[dir]);
-            }
-
             auto st = SDL_GetTicks64();
 
-            worldChunks[chunkX][chunkZ]->SetAdjacentChunks(adjacentChunks);
-            worldChunks[chunkX][chunkZ]->GenerateChunk();
+            for (int dir = 2; dir < numDirections; dir++)
+                adjacentChunks[dir-2] = GetChunkAtChunkPosition(glm::vec3(x, 0, z) + allDirections[dir]);
+
+            worldChunks[x + loadingChunk.x][z + loadingChunk.y]->SetAdjacentChunks(adjacentChunks);
+
+            if (!worldChunks[x + loadingChunk.x][z + loadingChunk.y]->Generated())
+                worldChunks[x + loadingChunk.x][z + loadingChunk.y]->GenerateChunk();
 
             auto et = SDL_GetTicks64();
 
@@ -254,14 +265,13 @@ void World::GenerateTerrain() {
             chunkAvgTicksTaken = chunkSumTicksTaken / nChunksCreated;
 
         }
-        printf("%d Chunk / %d Made. . . \n", nChunksCreated, worldArea);
     }
 
-    for (int chunkX = 0; chunkX < worldSize; chunkX++) {
-        for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
+    for (int x = -worldSize/2; x < worldSize/2.0; x++) {
+        for (int z = -worldSize/2; z < worldSize/2.0; z++) {
             auto st = SDL_GetTicks64();
 
-            worldChunks[chunkX][chunkZ]->CreateChunkMeshes();
+            worldChunks[x + loadingChunk.x][z + loadingChunk.y]->CreateChunkMeshes();
 
             auto et = SDL_GetTicks64();
 
@@ -273,11 +283,68 @@ void World::GenerateTerrain() {
     }
 }
 
-Chunk* World::GetChunkAtPosition(glm::vec3 _position) const {
-    if (_position.x < 0 || _position.x >= worldSize) return nullptr;
-    if (_position.z < 0 || _position.z >= worldSize) return nullptr;
 
-    return worldChunks[(int)_position.x][(int)_position.z].get();
+
+/*
+ * if the position index for the players current chunk is less than the radius chunks must be loaded within, then
+ * load more chunks, and unload the furthest chunks (shuffling the chunk indexes in the array)
+ */
+
+void World::LoadPlayerChunks(const Chunk* _playerChunk) {
+    // Mark chunks as unloaded around current playerLoadPosition
+    for (int x = -loadRadius; x < loadRadius + 1; x++) {
+        for (int z = -loadRadius; z < loadRadius + 1; z++) {
+            Chunk* chunk = GetChunkAtChunkPosition({x + loadingChunk.x, 0, z + loadingChunk.y});
+            if (chunk != nullptr) chunk->MarkInPlayerLoadArea(false);
+        }
+    }
+
+    // Mark chunks as loaded / load new chunks at new player load position
+    glm::ivec3 newLoadChunk = _playerChunk->GetPosition();
+    for (int x = -loadRadius; x < loadRadius + 1; x++) {
+        for (int z = -loadRadius; z < loadRadius + 1; z++) {
+            Chunk* chunk = GetChunkAtChunkPosition({x + newLoadChunk.x, 0, z + newLoadChunk.y});
+            if (chunk == nullptr) {
+                ChunkData chunkData = GenerateChunkData({x, z});
+                chunkData.biome = GenerateBiome(GetBiomeIDFromData(chunkData));
+
+                glm::vec3 chunkPos{x, 0, z};
+                worldChunks[x + loadingChunk.x][z + loadingChunk.y] = std::make_unique<Chunk>(chunkPos, chunkData);
+                chunk = worldChunks[x + loadingChunk.x][z + loadingChunk.y].get();
+            }
+            chunk->MarkInPlayerLoadArea(true);
+        }
+    }
+}
+
+
+
+Chunk* World::GetChunkAtPosition(glm::vec3 _blockPos) const {
+    _blockPos /= (float)chunkSize;
+    _blockPos += glm::vec3{1000,0,1000}; // centre of the worlds chunks
+
+    if (_blockPos.x < 0 || _blockPos.x >= 2000) return nullptr;
+    if (_blockPos.z < 0 || _blockPos.z >= 2000) return nullptr;
+
+    return worldChunks[(int)_blockPos.x][(int)_blockPos.z].get();
+}
+
+Chunk *World::GetChunkAtChunkPosition(glm::vec3 _chunkPos) const {
+    _chunkPos += glm::vec3{loadingChunk.x, 0, loadingChunk.y};
+
+    if (_chunkPos.x < 0 || _chunkPos.x >= 2000) return nullptr;
+    if (_chunkPos.z < 0 || _chunkPos.z >= 2000) return nullptr;
+
+    return worldChunks[(int)_chunkPos.x][(int)_chunkPos.z].get();
+}
+
+Chunk *World::GetChunkFromLoadPosition(glm::vec3 _chunkPos) const {
+    _chunkPos += glm::vec3{loadingChunk.x,0,loadingChunk.y}; // centre of the worlds chunks
+
+    if (_chunkPos.x < 0 || _chunkPos.x >= 2000) return nullptr;
+    if (_chunkPos.z < 0 || _chunkPos.z >= 2000) return nullptr;
+
+    return worldChunks[(int)_chunkPos.x][(int)_chunkPos.z].get();
 }
 
 Biome* World::GetBiome(BIOMEID _biomeID) {

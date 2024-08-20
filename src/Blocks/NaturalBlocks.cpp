@@ -11,8 +11,11 @@ Leaves::Leaves(int _variant) {
     if (_variant == 0) {
         origin = {1,1};
     }
+    if (_variant == 1) {
+        origin = {4, 2};
+        transparent = 1;
+    }
 
-    transparent = 2;
     generationPriority = 1;
 }
 

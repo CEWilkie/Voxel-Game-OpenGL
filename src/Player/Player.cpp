@@ -253,11 +253,16 @@ void Player::SwitchCamera(const std::uint8_t* _keyInputs) {
 }
 
 void Player::UpdatePlayerChunk() {
-    // Attempt to obtain the chunk of the player, this may be null
+    // The players chunk should always be at the centre of the world's chunk array {worldSize/2, worldSize/2}
+    Chunk* pChunk = world->GetChunkAtPosition(position);
 
-    glm::vec3 chunkPos = (position / (float)chunkSize);
-    chunkPos = {chunkPos.x + worldSize / 2.0f, chunkPos.y, chunkPos.z + worldSize/2.0f};
-    playerChunk = world->GetChunkAtPosition(chunkPos);
+    // If players chunk is not the same as currently stored player chunk, load/unload chunks
+    if (pChunk!= nullptr) {
+        if (pChunk != playerChunk && playerChunk != nullptr)
+            world->GenerateTerrain(pChunk->GetPosition());
+
+        playerChunk = pChunk;
+    }
 }
 
 

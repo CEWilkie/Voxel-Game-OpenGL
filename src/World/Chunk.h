@@ -75,6 +75,7 @@ class Chunk {
         Transformation cullingTransformation {};
         Transformation displayTransformation {};
         bool inCamera = true;
+        bool inPLayerLoadArea = false;
 
         // Chunk Terrain and Block Data
         std::vector<std::pair<std::unique_ptr<Block>, int>> uniqueBlocks {};                                            // block, count
@@ -107,9 +108,12 @@ class Chunk {
         [[nodiscard]] std::vector<BLOCKFACE> GetHiddenFaces(glm::vec3 _blockPos) const;
         [[nodiscard]] std::vector<BLOCKFACE> GetShowingFaces(glm::vec3 _blockPos) const;
         [[nodiscard]] MaterialMesh* GetMeshFromBlock(Block* _block);
+        [[nodiscard]] bool Generated() const { return generated; }
 
         // Chunk Culling
         void CheckCulling(const Camera& _camera);
+        void MarkInPlayerLoadArea(bool _inArea);
+        [[nodiscard]] bool InPlayerLoadArea() const { return inPLayerLoadArea; }
         [[nodiscard]] bool ChunkVisible() const { return inCamera; };
 
         // Chunk Terrain and Structures Generation

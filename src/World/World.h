@@ -17,7 +17,7 @@
 class Player;
 
 namespace WorldDataTypes {
-    typedef std::array<std::array<std::unique_ptr<Chunk>, worldSize>, worldSize> chunkArray;
+    typedef std::array<std::array<std::unique_ptr<Chunk>, 2000>, 2000> chunkArray;
     typedef std::array<std::unique_ptr<Biome>, worldArea> biomeMap;
 }
 
@@ -36,6 +36,8 @@ class World {
 
         int nChunks {};
         int displayingChunks {};
+
+        glm::ivec2 loadingChunk {1000, 1000}; // inits to origin
 
     public:
         World();
@@ -56,10 +58,16 @@ class World {
         static float GenerateBlockVegetation(glm::vec3 _blockPos, float _heat);
         static ChunkData GenerateChunkData(glm::vec2 _chunkPosition);
         Biome* GenerateBiome(BIOMEID _biomeID);
-        void GenerateTerrain();
+        void GenerateTerrain(glm::vec3 _loadOrigin);
+
+        // Loading / Unloading chunks around the players centre chunk
+        void LoadPlayerChunks(const Chunk* _playerChunk);
 
         // Getters
-        [[nodiscard]] Chunk* GetChunkAtPosition(glm::vec3 _position) const;
+        [[nodiscard]] Chunk* GetChunkAtPosition(glm::vec3 _blockPos) const;
+        [[nodiscard]] Chunk* GetChunkAtChunkPosition(glm::vec3 _chunkPos) const;
+        [[nodiscard]] Chunk* GetChunkFromLoadPosition(glm::vec3 _chunkPos) const;
+        [[nodiscard]] Chunk* GetWorldCentreChunk() const { return worldChunks[worldSize/2][worldSize/2].get(); }
         [[nodiscard]] Biome* GetBiome(BIOMEID _biomeID);
 };
 

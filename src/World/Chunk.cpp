@@ -330,7 +330,7 @@ std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _blockPos) const {
         }
 
         // transparent blocks only show when there is air
-        if (checkingBlock->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) > 0) {
+        if (checkingBlock->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 1) {
             // Is not air
             if (!BlockType::Compare(blockAtFace->GetBlockType(), {AIR, 0})) {
                 continue;
@@ -372,6 +372,9 @@ void Chunk::CheckCulling(const Camera& _camera) {
 }
 
 
+void Chunk::MarkInPlayerLoadArea(bool _inArea) {
+    inPLayerLoadArea = _inArea;
+}
 
 /*
  * Generates the chunk's blocks into the 3d terrain array using stored data maps
@@ -383,7 +386,7 @@ void Chunk::GenerateChunk() {
 
     // Generate any structures that appear
 
-
+    generated = true;
 }
 
 
@@ -430,7 +433,7 @@ void Chunk::CreateTerrain() {
         }
     }
 
-    generated = true;
+    inPLayerLoadArea = true;
 }
 
 
@@ -473,7 +476,7 @@ void Chunk::CreateVegitation(glm::vec3 _blockPos) {
         }
     }
     else if (plantDensity < 0.2 && block->GetBlockType().blockID == GRASS) {
-        SetBlockAtPosition(plantPos, 0, {LEAVES, 0});
+        SetBlockAtPosition(plantPos, 0, {LEAVES, 1});
     }
 
 
