@@ -68,7 +68,7 @@ void Player::HandleMovement(Uint64 _deltaTicks) {
             WalkingMovement(keyInputs, seconds);
     }
 
-    // Ensure that the new position remains within the boundaries (not travel through walls)
+    // Ensure that the new position remains within the boundaries (not travel through solid surfaces)
     EnforcePositionBoundaries(seconds);
 
     // Check for the player attempting to switch camera
@@ -76,7 +76,7 @@ void Player::HandleMovement(Uint64 _deltaTicks) {
 
     // Update camera position
     if (currentCamera == 1) {
-        usingCamera->MoveTo({position.x, position.y + 1, position.z});
+        usingCamera->MoveTo({position.x, position.y + 0.5, position.z});
     }
     else if (currentCamera == 3) {
         glm::vec3 thirdPersonPos = glm::vec3(position.x, position.y + 1, position.z) + normalUp - normalFront*3.0f;
@@ -85,7 +85,9 @@ void Player::HandleMovement(Uint64 _deltaTicks) {
     usingCamera->UpdateViewFrustrum();
 
     // Fetch new position bounds if the block the player is in has changed
-    if (lastPosition != position) { UpdatePlayerChunk(); }
+    if (lastPosition != position) {
+        UpdatePlayerChunk();
+    }
     UpdateMaxPositions();
 
     GetUnobstructedRayPosition();
@@ -253,7 +255,7 @@ void Player::SwitchCamera(const std::uint8_t* _keyInputs) {
 }
 
 void Player::UpdatePlayerChunk() {
-    // The players chunk should always be at the centre of the world's chunk array {worldSize/2, worldSize/2}
+    // chunk the player is in
     Chunk* pChunk = world->GetChunkAtPosition(position);
 
     // If players chunk is not the same as currently stored player chunk, load/unload chunks
@@ -262,6 +264,7 @@ void Player::UpdatePlayerChunk() {
             world->GenerateTerrain(pChunk->GetPosition());
         }
 
+        // update player chunk
         playerChunk = pChunk;
     }
 }
@@ -304,6 +307,7 @@ void Player::EnforcePositionBoundaries(float _seconds) {
 
     if (position.y < minY && lastPosition.y > position.y) {
         position.y = minY;
+        printf("miny %f\n", minY);
         timeSinceOnGround = 0;
         canJump = true;
     }

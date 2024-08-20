@@ -242,6 +242,9 @@ void World::GenerateTerrain(glm::vec3 _loadOrigin) {
         }
     }
 
+    chunkSumTicksTaken = 0;
+    nChunksCreated = 0;
+
     // Assign neighbouring chunks to created chunks and invoke terrain and mesh generation
     for (int x = -worldSize / 2; x < worldSize / 2.0; x++) {
         for (int z = -worldSize / 2; z < worldSize / 2.0; z++) {
@@ -255,17 +258,23 @@ void World::GenerateTerrain(glm::vec3 _loadOrigin) {
 
             worldChunks[x + loadingChunk.x][z + loadingChunk.y]->SetAdjacentChunks(adjacentChunks);
 
-            if (!worldChunks[x + loadingChunk.x][z + loadingChunk.y]->Generated())
+            if (!worldChunks[x + loadingChunk.x][z + loadingChunk.y]->Generated()) {
                 worldChunks[x + loadingChunk.x][z + loadingChunk.y]->GenerateChunk();
 
-            auto et = SDL_GetTicks64();
+                auto et = SDL_GetTicks64();
 
-            chunkSumTicksTaken += et - st;
-            nChunksCreated++;
-            chunkAvgTicksTaken = chunkSumTicksTaken / nChunksCreated;
-
+                chunkSumTicksTaken += et - st;
+                nChunksCreated++;
+                chunkAvgTicksTaken = chunkSumTicksTaken / nChunksCreated;
+            }
         }
     }
+
+    printf("%d CHUNKS LOADED IN %llu TICKS | AVG TICKS PER CHUNK %llu\n",
+           nChunksCreated, chunkSumTicksTaken, chunkAvgTicksTaken);
+
+    meshSumTicksTaken = 0;
+    nMeshesCreated = 0;
 
     for (int x = -worldSize/2; x < worldSize/2.0; x++) {
         for (int z = -worldSize/2; z < worldSize/2.0; z++) {
@@ -281,6 +290,9 @@ void World::GenerateTerrain(glm::vec3 _loadOrigin) {
 
         }
     }
+
+    printf("%d CHUNKS MESHED IN %llu TICKS | AVG TICKS PER CHUNK %llu\n",
+           nMeshesCreated, meshSumTicksTaken, meshAvgTicksTaken);
 }
 
 
