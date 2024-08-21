@@ -26,20 +26,26 @@ void MaterialMesh::AddVerticies(const std::vector<Vertex>& _verticies, const glm
     }
 
     oldMesh = true;
+    readyToBind = false;
 }
 
 void MaterialMesh::ResetVerticies() {
     vertexArray.clear();
-    nFaces = 0;
+    oldMesh = true;
+    readyToBind = false;
 }
 
 void MaterialMesh::BindMesh() {
+    if (vertexArrayObject == 0) {
+        glGenVertexArrays(1, &vertexArrayObject);
+        glGenBuffers(1, &vertexBufferObject);
+        glGenBuffers(1, &indexBufferObject);
+    }
     glBindVertexArray(vertexArrayObject);
 
     // populate indexArray
-    nFaces = (int)vertexArray.size() / 4;
     std::vector<GLuint> indexArray {};
-    for (int f = 0; f < nFaces; f++) {
+    for (int f = 0; f < (int)vertexArray.size()/4; f++) {
         indexArray.push_back(f*4 + 1);
         indexArray.push_back(f*4 + 3);
         indexArray.push_back(f*4 + 0);
@@ -48,11 +54,14 @@ void MaterialMesh::BindMesh() {
         indexArray.push_back(f*4 + 2);
     }
 
-//    printf("v %zu i %zu\n", vertexArray.size(), indexArray.size());
+    bufferVerticiesSize = (int)vertexArray.size() * 2;
+    boundFaces = (int)vertexArray.size()/4;
+
 
     // bind vertex buffer object
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(vertexArray.size() * sizeof(Vertex)), vertexArray.data(), GL_STATIC_DRAW);
+    GLCHECK(glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(vertexArray.size() * sizeof(Vertex)), vertexArray.data(), GL_STATIC_DRAW));
+//    glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(vertexArray.size() * sizeof(Vertex)), vertexArray.data());
 
     // Vertex Position Attributes
     glEnableVertexAttribArray(0);
@@ -64,7 +73,8 @@ void MaterialMesh::BindMesh() {
 
     // Bind index buffer
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(indexArray.size()*sizeof(GLuint)), indexArray.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(indexArray.size() * sizeof(GLuint)), indexArray.data(), GL_STATIC_DRAW);
+//    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, GLsizeiptr(indexArray.size()*sizeof(GLuint)), indexArray.data());
 
     // Unbind arrays / buffers
     glBindVertexArray(0);
@@ -75,14 +85,15 @@ void MaterialMesh::BindMesh() {
 }
 
 void MaterialMesh::UpdateMesh() {
+    if (vertexArray.empty()) return;
+
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
     glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(vertexArray.size() * sizeof(Vertex)), vertexArray.data());
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     // populate indexArray
-    nFaces = (int)vertexArray.size() / 4;
     std::vector<GLuint> indexArray {};
-    for (int f = 0; f < nFaces; f++) {
+    for (int f = 0; f < (int)vertexArray.size() / 4; f++) {
         indexArray.push_back(f*4 + 1);
         indexArray.push_back(f*4 + 3);
         indexArray.push_back(f*4 + 0);
@@ -99,8 +110,6 @@ void MaterialMesh::UpdateMesh() {
 }
 
 void MaterialMesh::DrawMesh(const Transformation& _transformation) const {
-    if (vertexArray.empty()) return; // nothing to draw
-
     // Bind object
     glBindVertexArray(vertexArrayObject);
 
@@ -116,6 +125,6 @@ void MaterialMesh::DrawMesh(const Transformation& _transformation) const {
     if (vtcOffsetLocation >= 0) glUniform2fv(vtcOffsetLocation, 1, &block->GetTextureOrigin()[0]);
 
     // Draw block mesh
-    glDrawElements(GL_TRIANGLES, 6*nFaces, GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, 6 * boundFaces, GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
 }

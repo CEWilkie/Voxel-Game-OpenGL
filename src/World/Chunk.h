@@ -75,7 +75,8 @@ class Chunk {
         Transformation cullingTransformation {};
         Transformation displayTransformation {};
         bool inCamera = true;
-        bool inPLayerLoadArea = false;
+        bool needsMeshUpdates = false;
+        bool unboundMeshChanges = false;
 
         // Chunk Terrain and Block Data
         std::vector<std::pair<std::unique_ptr<Block>, int>> uniqueBlocks {};                                            // block, count
@@ -101,10 +102,12 @@ class Chunk {
         void DisplayTransparent();
 
         // Chunk Block Meshes Creation / Updating
-        void BindChunkMeshes();
-        void UpdateMeshAtPosition(glm::vec3 _blockPos);
         void UpdateBlockMesh(Block* _meshBlock);
         void CreateChunkMeshes();
+        void MarkForMeshUpdates();
+        void BindChunkMeshes();
+        [[nodiscard]] bool NeedsMeshUpdates() const { return needsMeshUpdates; }
+        [[nodiscard]] bool UnboundMeshChanges() const { return unboundMeshChanges; }
         [[nodiscard]] std::vector<BLOCKFACE> GetHiddenFaces(glm::vec3 _blockPos) const;
         [[nodiscard]] std::vector<BLOCKFACE> GetShowingFaces(glm::vec3 _blockPos) const;
         [[nodiscard]] MaterialMesh* GetMeshFromBlock(Block* _block);
@@ -112,8 +115,6 @@ class Chunk {
 
         // Chunk Culling
         void CheckCulling(const Camera& _camera);
-        void MarkInPlayerLoadArea(bool _inArea);
-        [[nodiscard]] bool InPlayerLoadArea() const { return inPLayerLoadArea; }
         [[nodiscard]] bool ChunkVisible() const { return inCamera; };
 
         // Chunk Terrain and Structures Generation

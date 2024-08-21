@@ -6,6 +6,7 @@
 #define UNTITLED7_WORLD_H
 
 #include <memory>
+#include <thread>
 
 #include "../BlockModels/Block.h"
 #include "../Player/Player.h"
@@ -34,8 +35,14 @@ class World {
         std::vector<std::unique_ptr<Biome>> uniqueBiomes {};
         WorldDataTypes::biomeMap biomeMap {};
 
-        int nChunks {};
         int displayingChunks {};
+
+        // Threads
+        std::thread chunkBuilder;
+        std::thread chunkMesher;
+        void cbf() { while (threadsActive) GenerateTerrain(); }
+        void cmf() { while (threadsActive) GenerateMeshes(); }
+        bool threadsActive = false;
 
         glm::ivec2 loadingChunk {1000, 1000}; // inits to origin
 
@@ -52,21 +59,25 @@ class World {
         void SetSkyboxPosition(glm::vec3 _position);
 
         // Generation
-        void GenerateWorld();
+        void SetLoadingOrigin(const glm::vec3& _origin);
         static float GenerateBlockHeight(glm::vec2 _blockPos);
         static float GenerateBlockHeat(glm::vec3 _blockPos);
         static float GenerateBlockVegetation(glm::vec3 _blockPos, float _heat);
         static ChunkData GenerateChunkData(glm::vec2 _chunkPosition);
         Biome* GenerateBiome(BIOMEID _biomeID);
-        void GenerateTerrain(glm::vec3 _loadOrigin);
 
-        // Loading / Unloading chunks around the players centre chunk
-        void LoadPlayerChunks(const Chunk* _playerChunk);
+        void GenerateRequiredWorld();
+
+        // Chunk Generation Threads
+        void ToggleChunkThreads(bool _threadsActive);
+        void GenerateTerrain();
+        void GenerateMeshes();
+        void BindChunks() const;
 
         // Getters
         [[nodiscard]] Chunk* GetChunkAtPosition(glm::vec3 _blockPos) const;
-        [[nodiscard]] Chunk* GetChunkAtChunkPosition(glm::vec3 _chunkPos) const;
-        [[nodiscard]] Chunk* GetChunkFromLoadPosition(glm::vec3 _chunkPos) const;
+        [[nodiscard]] Chunk* GetChunkAtIndex(glm::vec3 _chunkPos) const;
+        [[nodiscard]] Chunk* GetChunkLoadRelative(glm::vec3 _chunkPos) const;
         [[nodiscard]] Chunk* GetWorldCentreChunk() const { return worldChunks[worldSize/2][worldSize/2].get(); }
         [[nodiscard]] Biome* GetBiome(BIOMEID _biomeID);
 };

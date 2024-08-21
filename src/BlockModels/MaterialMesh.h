@@ -22,10 +22,12 @@ class MaterialMesh {
         unsigned int indexBufferObject {};
 
         std::vector<Vertex> vertexArray {};
-        int nFaces = 0;
+        int bufferVerticiesSize = 0;
+        int boundFaces = 0;
 
         Block* block;
         bool oldMesh = true;
+        bool readyToBind = false;
 
     public:
         explicit MaterialMesh(Block* _block);
@@ -39,7 +41,9 @@ class MaterialMesh {
 
         // Mark meshes for recreation
         void MarkOld() { oldMesh = true; }
+        void MarkReadyToBind() { readyToBind = true; }
         [[nodiscard]] bool IsOld() const { return oldMesh; }
+        [[nodiscard]] bool ReadyToBind() const { return readyToBind; }
 
         // Mesh Display
         void DrawMesh(const Transformation& _transformation) const;

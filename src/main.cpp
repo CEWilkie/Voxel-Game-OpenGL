@@ -59,9 +59,11 @@ int main(int argc, char** argv){
     // Create StructureLoader
     structureLoader = std::make_unique<StructureLoader>();
 
-    // Create world
+    // Create world and enable chunk builder threads
     world = std::make_unique<World>();
-    world->GenerateWorld();
+    world->SetLoadingOrigin({0,0,0});
+    world->GenerateRequiredWorld();
+    world->ToggleChunkThreads(true);
 
     /*
      * PLAYER CREATION
@@ -70,7 +72,7 @@ int main(int argc, char** argv){
     printf("SPAWN POS %f %f %f\n", 0.5f, world->GenerateBlockHeight({0,0}), 0.5f);
 
     glm::vec3 startPos = {0.5f, world->GenerateBlockHeight({0,0}) + 1, 0.5f};
-    Player player {startPos, {0,0,1.0f}};
+    Player player {startPos, {0,0.01,1.0f}};
 
     // Set skybox dimensions with player camera
     world->SetSkyboxProperties(player);
@@ -212,6 +214,8 @@ int main(int argc, char** argv){
 
         world->SetSkyboxPosition(player.GetPosition());
 
+        world->BindChunks();
+
         /*
          * UPDATE DISPLAY
          */
@@ -228,6 +232,8 @@ int main(int argc, char** argv){
      * HANDLE END OF PROGRAM
      */
 
+    // End world chunkbuilder threads
+    world->ToggleChunkThreads(false);
     SDL_Quit();
 
     return 0;

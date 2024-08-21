@@ -150,6 +150,7 @@ void Chunk::DisplaySolid() {
     // Draw only the blocks that are solid
     for (const auto& mesh : blockMeshes) {
         if (mesh->GetBlock()->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 1) continue;
+
         mesh->DrawMesh(displayTransformation);
     }
 
@@ -170,6 +171,7 @@ void Chunk::DisplayTransparent() {
     // Draw only the blocks that are transparent
     for (const auto& mesh : blockMeshes) {
         if (mesh->GetBlock()->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 0) continue;
+
         mesh->DrawMesh(displayTransformation);
     }
 
@@ -181,25 +183,7 @@ void Chunk::DisplayTransparent() {
 
 
 
-/*
- * Bind the chunks meshes
- */
 
-void Chunk::BindChunkMeshes() {
-    for (auto& blockMesh : blockMeshes)
-        blockMesh->BindMesh();
-}
-
-
-
-/*
- * Updates the mesh of a block at a given position
- */
-
-void Chunk::UpdateMeshAtPosition(glm::vec3 _blockPos) {
-    Block* meshBlock = GetBlockAtPosition(_blockPos, 0).first;
-    UpdateBlockMesh(meshBlock);
-}
 
 
 
@@ -227,7 +211,8 @@ void Chunk::UpdateBlockMesh(Block* _meshBlock) {
         }
     }
 
-    blockMesh->BindMesh();
+    needsMeshUpdates = false;
+    unboundMeshChanges = true;
 }
 
 /*
@@ -238,7 +223,9 @@ void Chunk::UpdateBlockMesh(Block* _meshBlock) {
 
 void Chunk::CreateChunkMeshes() {
     for (auto& blockMesh : blockMeshes) {
-        if (blockMesh->IsOld()) blockMesh->ResetVerticies();
+        if (blockMesh->IsOld()) {
+            blockMesh->ResetVerticies();
+        }
     }
 
     for (int x = 0; x < chunkSize; x++) {
@@ -257,11 +244,31 @@ void Chunk::CreateChunkMeshes() {
     }
 
     for (auto& blockMesh : blockMeshes) {
-        if (blockMesh->IsOld()) blockMesh->BindMesh();
+        if (blockMesh->IsOld()) {
+            blockMesh->MarkReadyToBind();
+        }
     }
+
+    needsMeshUpdates = false;
+    unboundMeshChanges = true;
 }
 
 
+
+void Chunk::MarkForMeshUpdates() {
+    needsMeshUpdates = true;
+}
+
+
+void Chunk::BindChunkMeshes() {
+    for (auto& blockMesh : blockMeshes) {
+        if (blockMesh->ReadyToBind()) {
+            blockMesh->BindMesh();
+        }
+    }
+
+    unboundMeshChanges = false;
+}
 
 /*
  * Returns the FaceIDs of the obscured faces of a block at a given position. Faces should be fully obscured to be
@@ -372,9 +379,6 @@ void Chunk::CheckCulling(const Camera& _camera) {
 }
 
 
-void Chunk::MarkInPlayerLoadArea(bool _inArea) {
-    inPLayerLoadArea = _inArea;
-}
 
 /*
  * Generates the chunk's blocks into the 3d terrain array using stored data maps
@@ -433,7 +437,7 @@ void Chunk::CreateTerrain() {
         }
     }
 
-    inPLayerLoadArea = true;
+    MarkForMeshUpdates();
 }
 
 
@@ -443,6 +447,8 @@ void Chunk::CreateTerrain() {
  */
 
 void Chunk::CreateVegitation(glm::vec3 _blockPos) {
+    if (structureLoader == nullptr) return;
+
     float plantDensity = chunkData.plantMap[(int)_blockPos.x + (int)_blockPos.z * chunkSize];
 
     Block* block = GetBlockAtPosition(_blockPos, 0).first;
@@ -507,10 +513,11 @@ void Chunk::BreakBlockAtPosition(glm::vec3 _blockPos) {
 
     // Set the block being broken to AIR 0
     blockChunk->SetBlockAtPosition(_blockPos, 0, {AIR, 0});
+    blockChunk->MarkForMeshUpdates();
 
     // update blocks mesh
     MaterialMesh* blockMesh = blockChunk->GetMeshFromBlock(block);
-    if (blockMesh != nullptr) blockChunk->UpdateBlockMesh(block);
+    if (blockMesh != nullptr) blockMesh->MarkOld();
 
     // Update the meshes of each block adjacent to the block just broken
     std::array<glm::vec3, 7> blockPositions {_blockPos + dirTop, _blockPos + dirBottom, _blockPos + dirLeft,
@@ -518,9 +525,13 @@ void Chunk::BreakBlockAtPosition(glm::vec3 _blockPos) {
 
     for (auto& blockPosition : blockPositions) {
         Chunk* chunkAtPosition = blockChunk->GetChunkAtPosition(blockPosition, 0);
-        if (chunkAtPosition == nullptr) continue;
+        if (chunkAtPosition != nullptr) {
+            chunkAtPosition->MarkForMeshUpdates();
 
-        chunkAtPosition->UpdateBlockMesh(chunkAtPosition->GetBlockAtPosition(blockPosition, 0).first);
+            Block* chunkBlock = chunkAtPosition->GetBlockAtPosition(blockPosition, 0).first;
+            MaterialMesh* chunkMesh = chunkAtPosition->GetMeshFromBlock(chunkBlock);
+            if (chunkMesh != nullptr) chunkMesh->MarkOld();
+        }
     }
 
 }
@@ -541,35 +552,26 @@ void Chunk::PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType) {
     if (block == nullptr) return;
 
     blockChunk->SetChunkBlockAtPosition(_blockPos, _blockType);
+    blockChunk->MarkForMeshUpdates();
 
     // directions of adjacent blocks
     std::array<glm::vec3, 7> blockPositions {_blockPos + dirTop, _blockPos + dirBottom, _blockPos + dirLeft,
                                              _blockPos + dirRight, _blockPos + dirFront, _blockPos + dirBack};
 
-    // Mark meshes for recreation and have the mesh's parent chunks recreate them
-    std::vector<Chunk*> chunksToRemesh {};
-
     // Mark block's mesh for recreation and add block mesh's chunk to list
     MaterialMesh* blockMesh = blockChunk->GetMeshFromBlock(block);
-    if (blockMesh != nullptr) {
-        blockMesh->MarkOld();
-        chunksToRemesh.push_back(blockChunk);
-    }
+    if (blockMesh != nullptr) blockMesh->MarkOld();
 
     for (auto& blockPosition : blockPositions) {
         Chunk* chunkAtPosition = blockChunk->GetChunkAtPosition(blockPosition, 0);
-        if (chunkAtPosition == nullptr) continue;
+        if (chunkAtPosition != nullptr) {
+            chunkAtPosition->MarkForMeshUpdates();
 
-        Block* chunkBlock = chunkAtPosition->GetBlockAtPosition(blockPosition, 0).first;
-        MaterialMesh* chunkMesh = chunkAtPosition->GetMeshFromBlock(chunkBlock);
-        if (chunkMesh != nullptr) {
-            chunkMesh->MarkOld();
-            chunksToRemesh.push_back(chunkAtPosition);
+            Block* chunkBlock = chunkAtPosition->GetBlockAtPosition(blockPosition, 0).first;
+            MaterialMesh* chunkMesh = chunkAtPosition->GetMeshFromBlock(chunkBlock);
+            if (chunkMesh != nullptr) chunkMesh->MarkOld();
         }
     }
-
-    // Remesh chunks
-    for (auto& chunk : chunksToRemesh) chunk->CreateChunkMeshes();
 }
 
 

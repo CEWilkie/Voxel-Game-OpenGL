@@ -258,10 +258,10 @@ void Player::UpdatePlayerChunk() {
     // chunk the player is in
     Chunk* pChunk = world->GetChunkAtPosition(position);
 
-    // If players chunk is not the same as currently stored player chunk, load/unload chunks
+    // If players chunk is not the same as currently stored player chunk, update the world's loading origin
     if (pChunk!= nullptr) {
         if (pChunk != playerChunk && playerChunk != nullptr) {
-            world->GenerateTerrain(pChunk->GetPosition());
+            world->SetLoadingOrigin(pChunk->GetPosition());
         }
 
         // update player chunk
@@ -307,7 +307,6 @@ void Player::EnforcePositionBoundaries(float _seconds) {
 
     if (position.y < minY && lastPosition.y > position.y) {
         position.y = minY;
-        printf("miny %f\n", minY);
         timeSinceOnGround = 0;
         canJump = true;
     }
