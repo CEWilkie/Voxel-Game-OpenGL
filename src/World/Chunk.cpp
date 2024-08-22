@@ -328,6 +328,10 @@ std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _blockPos) const {
     Block* checkingBlock = GetBlockAtPosition(_blockPos, 0).first;
     if (checkingBlock == nullptr) return {}; // Could not find block
 
+    // if the block cannot have obscured faces
+    if (checkingBlock->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 15)
+        return {FRONT, BACK};
+
     // Check for non-transparent block on each face (or non-same transparent block for a transparent block)
     for (int i = 0; i < faces.size(); i++) {
         Block* blockAtFace = GetBlockAtPosition(_blockPos + positionOffsets[i], 0).first;
@@ -489,7 +493,7 @@ void Chunk::CreateVegitation(glm::vec3 _blockPos) {
         }
     }
     else if (plantDensity < 0.2 && block->GetBlockType().blockID == GRASS) {
-        SetBlockAtPosition(plantPos, 0, {LEAVES, 0});
+        SetBlockAtPosition(plantPos, 0, {GRASSPLANT, 0});
     }
 
 
@@ -709,7 +713,8 @@ float Chunk::GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, f
     // 2 blocks (to prevent stop-starting player movement if they move faster than 1 block/second)
     // also applies for air or liquid blocks
     ChunkDataTypes::ChunkBlock block = GetBlockAtPosition(_blockPos + _direction, 0);
-    if (block.first == nullptr || block.first->GetBlockType().blockID == AIR || block.first->GetAttributeValue(BLOCKATTRIBUTE::LIQUID) > 0) {
+    if (block.first == nullptr || block.first->GetBlockType().blockID == AIR || block.first->GetAttributeValue(BLOCKATTRIBUTE::LIQUID) > 0 ||
+    block.first->GetAttributeValue(BLOCKATTRIBUTE::ENTITYCOLLISIONSOLID) == 0) {
         if (_direction.x != 0) return floorf(_blockPos.x) + _direction.x * 2.0f;
         if (_direction.y != 0) return floorf(_blockPos.y) + _direction.y * 2.0f;
         if (_direction.z != 0) return floorf(_blockPos.z) + _direction.z * 2.0f;

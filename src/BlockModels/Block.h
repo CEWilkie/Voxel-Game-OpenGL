@@ -52,6 +52,10 @@ struct BlockVAOs {
     static std::vector<Vertex> FullblockVA();
     static std::vector<GLuint> FullblockIA();
 
+    // VAO Creation for PlantBlock
+    static std::vector<Vertex> PlantblockVA();
+    static std::vector<GLuint> PlantblockIA();
+
     // ...
 
     // Bind the block vertex data
@@ -71,7 +75,7 @@ inline std::unique_ptr<BlockVAOs> blockVAOmanager {};
  */
 
 enum BLOCKID : unsigned int {
-    TEST, GRASS, DIRT, STONE, WATER, AIR, SAND, LEAVES, WOOD,
+    TEST, GRASS, DIRT, STONE, WATER, AIR, SAND, LEAVES, WOOD, GRASSPLANT,
 };
 
 

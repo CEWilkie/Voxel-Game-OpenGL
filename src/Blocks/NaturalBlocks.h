@@ -21,5 +21,11 @@ class Wood : public Block {
         explicit Wood(int _variant);
 };
 
+class GrassPlant : public Block {
+    private:
+
+    public:
+        explicit GrassPlant(int _variant);
+};
 
 #endif //UNTITLED7_NATURALBLOCKS_H

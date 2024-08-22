@@ -29,3 +29,16 @@ Wood::Wood(int _variant) {
 
     transparent = 0;
 }
+
+GrassPlant::GrassPlant(int _variant) {
+    blockModel = PLANT;
+
+    blockData = {BLOCKID::GRASSPLANT, _variant};
+    sheet = TEXTURESHEET::NATURAL;
+
+    origin = {2, 0};
+
+    transparent = 15;
+    generationPriority = 1;
+    entityCollisionSolid = 0;
+}

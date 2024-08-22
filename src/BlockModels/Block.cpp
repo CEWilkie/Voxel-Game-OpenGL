@@ -75,6 +75,28 @@ std::vector<GLuint> BlockVAOs::FullblockIA() {
     };
 }
 
+std::vector<Vertex> BlockVAOs::PlantblockVA() {
+    return {
+        // SIDE 1
+            { glm::vec3(0.0f, 0.0f, 0.0f),  {0, 0} },            // TOPLEFT VERTEX
+            { glm::vec3(1.0f, 0.0f, 1.0f),  {1, 0} },            // TOPRIGHT VERTEX
+            { glm::vec3(0.0f, -1.0f, 0.0f), {0, 1} },            // BOTTOMLEFT VERTEX
+            { glm::vec3(1.0f, -1.0f, 1.0f), {1, 1} },            // BOTTOMRIGHT VERTEX
+
+        // SIDE 2
+            { glm::vec3(1.0f, 0.0f, 0.0f),  {0, 0} },            // TOPLEFT VERTEX
+            { glm::vec3(0.0f, 0.0f, 1.0f),  {1, 0} },            // TOPRIGHT VERTEX
+            { glm::vec3(1.0f, -1.0f, 0.0f), {0, 1} },            // BOTTOMLEFT VERTEX
+            { glm::vec3(0.0f, -1.0f, 1.0f), {1, 1} },            // BOTTOMRIGHT VERTEX
+    };
+}
+
+std::vector<GLuint> BlockVAOs::PlantblockIA() {
+    return {
+        1, 0, 3, 3, 0, 2,
+        5, 4, 7, 7, 4, 6,
+    };
+}
 
 
 void BlockVAOs::BindBlockModels() const {
@@ -116,6 +138,10 @@ std::vector<GLuint> BlockVAOs::GetBaseIndexArray(BLOCKMODEL _model) {
             indexArray = FullblockIA();
             break;
 
+        case PLANT:
+            indexArray = PlantblockIA();
+            break;
+
             // ...
 
         default:
@@ -130,6 +156,10 @@ std::vector<Vertex> BlockVAOs::GetBaseVertexArray(BLOCKMODEL _model) {
     switch (_model) {
         case FULL:
             vertexArray = FullblockVA();
+            break;
+
+        case PLANT:
+            vertexArray = PlantblockVA();
             break;
 
             // ...
@@ -194,7 +224,7 @@ void Block::Display(Transformation* _t) {
     if (canFogLocation >= 0) glUniform1i(canFogLocation, 0);
 
     // Draw Block
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, (int)blockVAOmanager->GetBaseIndexArray(blockModel).size(), GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
 }
 
@@ -305,6 +335,8 @@ std::vector<Vertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &_faces
             vertexArray.push_back(faceVertex);
             usedIndicies.push_back(baseIndexArray[i]);
         }
+
+        if (blockModel == PLANT && face == _faces[1]) return vertexArray;
     }
 
     return vertexArray;
