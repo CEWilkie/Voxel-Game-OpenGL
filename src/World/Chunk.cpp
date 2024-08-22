@@ -336,11 +336,18 @@ std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _blockPos) const {
             continue;
         }
 
-        // transparent blocks only show when there is air
+        // transparency 1 blocks only show when there is air adjacent
         if (checkingBlock->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 1) {
             // Is not air
             if (!BlockType::Compare(blockAtFace->GetBlockType(), {AIR, 0})) {
                 continue;
+            }
+        }
+
+        // transparency 2 blocks hide back, left or bottom faces which are obscured by non transparency 1 blocks
+        if (checkingBlock->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 2) {
+            if (blockAtFace->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) != 1) {
+                if (faces[i] == BACK || faces[i] == LEFT || faces[i] == BOTTOM) continue;
             }
         }
 
@@ -425,7 +432,7 @@ void Chunk::CreateTerrain() {
 
                 // give block a random rotation and facing direction
                 terrain[x][y][z].second.topFaceDirection = block->GetRandomTopFaceDirection();
-                terrain[x][y][z].second.rotation = block->GetRandomRotation();
+                terrain[x][y][z].second.halfRightRotations = block->GetRandomRotation();
 
             }
 
@@ -482,7 +489,7 @@ void Chunk::CreateVegitation(glm::vec3 _blockPos) {
         }
     }
     else if (plantDensity < 0.2 && block->GetBlockType().blockID == GRASS) {
-        SetBlockAtPosition(plantPos, 0, {LEAVES, 1});
+        SetBlockAtPosition(plantPos, 0, {LEAVES, 0});
     }
 
 

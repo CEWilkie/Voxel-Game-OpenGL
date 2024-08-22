@@ -281,6 +281,7 @@ void World::GenerateTerrain() {
             Chunk* chunk = GetChunkAtIndex(chunkPos);
             if (chunk == nullptr) continue;
 
+            // Generate new chunks
             chunk->SetAdjacentChunks(adjacentChunks);
             if (!chunk->Generated()) {
                 chunk->GenerateChunk();
@@ -291,6 +292,8 @@ void World::GenerateTerrain() {
                 nChunksCreated++;
                 chunkAvgTicksTaken = chunkSumTicksTaken / nChunksCreated;
             }
+
+            // Mark chunk
         }
     }
 

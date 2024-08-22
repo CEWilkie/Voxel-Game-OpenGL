@@ -23,7 +23,7 @@
  */
 
 enum BLOCKMODEL {
-    FULL, nModels
+    FULL, PLANT, nModels
 };
 
 /*
@@ -117,10 +117,10 @@ enum class BLOCKATTRIBUTE {
  */
 
 struct BlockAttributes {
-    int rotation = 0;
-    int topFaceDirection = DIRECTION::UP;
+    GLbyte halfRightRotations = 0;
+    GLbyte topFaceDirection = DIRECTION::UP;
 
-    [[nodiscard]] int GetAttributeValue(BLOCKATTRIBUTE _attribute) const;
+    [[nodiscard]] GLbyte GetAttributeValue(BLOCKATTRIBUTE _attribute) const;
 };
 
 
@@ -136,12 +136,12 @@ class Block {
         glm::vec2 origin {1,1};
 
         // Block Data Attributes
-        int transparent = 0;
-        int liquid = 0;
-        int breakable = 1;
-        int canInteractThroughBlock = 0;
-        int generationPriority = 2;
-        int entityCollisionSolid = 1;
+        GLbyte transparent = 0;
+        GLbyte liquid = 0;
+        GLbyte breakable = 1;
+        GLbyte canInteractThroughBlock = 0;
+        GLbyte generationPriority = 2;
+        GLbyte entityCollisionSolid = 1;
 
         // Visual Rotations
         bool topFaceLocked = true; // can only face up
@@ -163,7 +163,7 @@ class Block {
 
         // BlockAttributes
         [[nodiscard]] BlockType GetBlockType() const { return blockData; }
-        [[nodiscard]] int GetAttributeValue(BLOCKATTRIBUTE _attribute) const;
+        [[nodiscard]] GLbyte GetAttributeValue(BLOCKATTRIBUTE _attribute) const;
 
         // Block Face Culling
         [[nodiscard]] DIRECTION GetRandomTopFaceDirection() const;

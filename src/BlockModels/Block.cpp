@@ -146,13 +146,13 @@ std::vector<Vertex> BlockVAOs::GetBaseVertexArray(BLOCKMODEL _model) {
 
 
 
-int BlockAttributes::GetAttributeValue(BLOCKATTRIBUTE _attribute) const {
+GLbyte BlockAttributes::GetAttributeValue(BLOCKATTRIBUTE _attribute) const {
     switch (_attribute) {
         case BLOCKATTRIBUTE::FACINGDIRECTION:
             return topFaceDirection;
 
         case BLOCKATTRIBUTE::ROTATION:
-            return rotation;
+            return halfRightRotations;
 
         default:
             return 0;
@@ -215,7 +215,7 @@ void Block::DisplayWireframe(Transformation *_transformation) {
     glLineWidth(1.0f);
 }
 
-int Block::GetAttributeValue(BLOCKATTRIBUTE _attribute) const {
+GLbyte Block::GetAttributeValue(BLOCKATTRIBUTE _attribute) const {
     switch (_attribute) {
         case BLOCKATTRIBUTE::TRANSPARENT:
             return transparent;
@@ -256,16 +256,14 @@ DIRECTION Block::GetRandomTopFaceDirection() const {
 }
 
 /*
- * Returns a value which is a permitted rotation value around the facing direction for the block. Angle is always a
- * multiple of 90 (aka right-angled). Should rotation be locked, then the angle will always be 0. Angle is in degrees,
+ * returns random 2n value. 2n*45 = angle (degrees). Rotation value of blocks permits only glbyte (-128 -> 127) values,
+ * so use as a multiple of 45. Should rotation be locked, then the angle will always be 0. Angle is in degrees,
  * may require converting to radians for glm functions.
  */
 
 int Block::GetRandomRotation() const {
     if (rotationLocked) return 0;
-
-    // random right angle
-    return (rand() % 4 + 0) * 90;
+    return (rand() % 4 + 0) * 2;
 }
 
 
@@ -275,7 +273,7 @@ std::vector<Vertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &_faces
     std::vector<Vertex> baseVertexArray = blockVAOmanager->GetBaseVertexArray(blockModel);
     std::vector<Vertex> vertexArray {};
 
-    float angleDeg = (float)_blockAttributes.GetAttributeValue(BLOCKATTRIBUTE::ROTATION);
+    float angleDeg = (float)_blockAttributes.GetAttributeValue(BLOCKATTRIBUTE::ROTATION) * 45.0f;
     glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f),glm::radians(angleDeg),dirTop);
 
     // For each requested face

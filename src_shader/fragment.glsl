@@ -38,6 +38,9 @@ void main() {
         color = v_vertexTextureColorOverride;
     }
 
+    // if the color has no alpha, discard it and prevent it blocking other pixels behind it
+    if (color.a <= 0.0f) discard;
+
     // Fog
     if (uCanFog == 1 && FogFactor() != 0) {
         color.a = min(1-FogFactor(), color.a);

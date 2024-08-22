@@ -9,11 +9,11 @@ Leaves::Leaves(int _variant) {
     sheet = TEXTURESHEET::NATURAL;
 
     if (_variant == 0) {
-        origin = {1,1};
+        origin = {4,2};
+        transparent = 2;
     }
     if (_variant == 1) {
-        origin = {4, 2};
-        transparent = 1;
+        origin = {1, 1};
     }
 
     generationPriority = 1;
