@@ -37,10 +37,12 @@ void MaterialMesh::ResetVerticies() {
 
 void MaterialMesh::BindMesh() {
     if (vertexArrayObject == 0) {
+        // For when the material mesh is created by the chunk meshing thread
         glGenVertexArrays(1, &vertexArrayObject);
         glGenBuffers(1, &vertexBufferObject);
         glGenBuffers(1, &indexBufferObject);
     }
+
     glBindVertexArray(vertexArrayObject);
 
     // populate indexArray
@@ -114,8 +116,8 @@ void MaterialMesh::DrawMesh(const Transformation& _transformation) const {
     glBindVertexArray(vertexArrayObject);
 
     // Update uniform
-    GLint modelMatrixLocation = glGetUniformLocation(window.GetShader(), "uModelMatrix");
-    if (modelMatrixLocation < 0) printf("mesh location not found [uModelMatrix]\n");
+    GLint modelMatrixLocation = glGetUniformLocation(window.GetShader(), "matricies.uModelMatrix");
+    if (modelMatrixLocation < 0) printf("mesh location not found [matricies.uModelMatrix]\n");
     if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &_transformation.GetModelMatrix()[0][0]);
 
     // Set texture information
@@ -123,6 +125,10 @@ void MaterialMesh::DrawMesh(const Transformation& _transformation) const {
     GLint vtcOffsetLocation = glGetUniformLocation(window.GetShader(), "uVertexTextureCoordOffset");
     if (vtcOffsetLocation < 0) printf("sun location not found [uVertexTextureCoordOffset]\n");
     if (vtcOffsetLocation >= 0) glUniform2fv(vtcOffsetLocation, 1, &block->GetTextureOrigin()[0]);
+
+    GLint canFogLocation = glGetUniformLocation(window.GetShader(), "uCanFog");
+    if (canFogLocation < 0) printf("block location not found [uCanFog]\n");
+    if (canFogLocation >= 0) glUniform1i(canFogLocation, 1);
 
     // Draw block mesh
     glDrawElements(GL_TRIANGLES, 6 * boundFaces, GL_UNSIGNED_INT, nullptr);

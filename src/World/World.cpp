@@ -16,9 +16,15 @@ World::World() {
     GLint uLocation;
     uLocation = glGetUniformLocation(window.GetShader(), "worldAmbients.lightingStrength");
     if (uLocation < 0) printf("location not found [worldAmbients.lightingStrength]\n");
-    else {
-        glUniform1f(uLocation, 1.0f);
-    }
+    else glUniform1f(uLocation, 1.0f);
+
+    uLocation = glGetUniformLocation(window.GetShader(), "worldAmbients.minFogDistance");
+    if (uLocation < 0) printf("location not found [worldAmbients.minFogDistance]\n");
+    else glUniform1f(uLocation, (loadRadius-1) * chunkSize);
+
+    uLocation = glGetUniformLocation(window.GetShader(), "worldAmbients.maxFogDistance");
+    if (uLocation < 0) printf("location not found [worldAmbients.maxFogDistance]\n");
+    else glUniform1f(uLocation, loadRadius * chunkSize);
 
     glEnable(GL_DEPTH_TEST);
 }
@@ -30,6 +36,8 @@ World::~World() {
 }
 
 void World::Display() {
+    glEnable(GL_BLEND);
+
     // First draw in the skybox and decorations
     skybox->Display(&skyboxTransformation);
 
@@ -46,14 +54,12 @@ void World::Display() {
     glDisable(GL_CULL_FACE);
 
     // Draw transparent objects
-    glEnable(GL_BLEND);
     for (int x = -loadRadius + 1; x < loadRadius; x++) {
         for (int z = -loadRadius + 1; z < loadRadius + 10; z++) {
             Chunk* chunk = GetChunkLoadRelative({x, 0, z});
             if (chunk != nullptr) chunk->DisplayTransparent();
         }
     }
-    glDisable(GL_BLEND);
 
 }
 

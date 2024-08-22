@@ -56,12 +56,12 @@ TextureData::TextureData(const std::string& _texturePath) {
     while (surface->pitch%alignment) alignment>>=1; // x%1==0 for any x
     glPixelStorei(GL_UNPACK_ALIGNMENT,alignment);
 
-    // Set texture stretch properties
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
     // TextureData wrapping
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+
+    // Set texture minification / magnification properties (near/far distances)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     // TextureData environment interactions
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -69,8 +69,6 @@ TextureData::TextureData(const std::string& _texturePath) {
     // Store image data
     glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, surface->w, surface->h, 0,
                  textureFormat, GL_UNSIGNED_BYTE, surface->pixels);
-
-    glGenerateMipmap(GL_TEXTURE_2D);
 
     // Unbind
     SDL_FreeSurface(surface);

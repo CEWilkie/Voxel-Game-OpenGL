@@ -11,8 +11,8 @@ Camera::Camera() {
     // Set the perspective of the camera and update the uniform matrix in the shader
     perspective = glm::perspective(glm::radians(fovAngleY), window.GetAspectRatio(),
                                    minDistance, maxDistance);
-    GLint uLocation = glGetUniformLocation(window.GetShader(), "uProjectionMatrix");
-    if (uLocation < 0) printf("location not found [uProjectionMatrix]");
+    GLint uLocation = glGetUniformLocation(window.GetShader(), "matricies.uProjectionMatrix");
+    if (uLocation < 0) printf("location not found [matricies.uProjectionMatrix]");
     else {
         glUniformMatrix4fv(uLocation, 1, GL_FALSE, &perspective[0][0]);
     }
@@ -52,8 +52,8 @@ void Camera::SetAngle(double _angleVert, double _angleHoriz) {
 void Camera::UpdateLookatUniform() const {
     GLint uLocation;
 
-    uLocation = glGetUniformLocation(window.GetShader(), "uViewMatrix");
-    if (uLocation < 0) printf("location not found [uViewMatrix]");
+    uLocation = glGetUniformLocation(window.GetShader(), "matricies.uViewMatrix");
+    if (uLocation < 0) printf("location not found [matricies.uViewMatrix]");
     else {
         glUniformMatrix4fv(uLocation, 1, GL_FALSE, &GetViewMatrix()[0][0]);
     }

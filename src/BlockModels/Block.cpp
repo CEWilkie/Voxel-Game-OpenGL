@@ -179,8 +179,8 @@ void Block::Display(Transformation* _t) {
     glBindVertexArray(blockVAOmanager->vertexArrayObject[blockModel]);
 
     // Update uniform
-    GLint modelMatrixLocation = glGetUniformLocation(window.GetShader(), "uModelMatrix");
-    if (modelMatrixLocation < 0) printf("block location not found [uModelMatrix]\n");
+    GLint modelMatrixLocation = glGetUniformLocation(window.GetShader(), "matricies.uModelMatrix");
+    if (modelMatrixLocation < 0) printf("block location not found [matricies.uModelMatrix]\n");
     if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &_t->GetModelMatrix()[0][0]);
 
     // Apply Texture
@@ -188,6 +188,10 @@ void Block::Display(Transformation* _t) {
     GLint uniformLocation = glGetUniformLocation(window.GetShader(), "uVertexTextureCoordOffset");
     if (uniformLocation < 0) printf("block location not found [uVertexTextureCoordOffset]\n");
     if (uniformLocation >= 0) glUniform2fv(uniformLocation, 1, &origin[0]);
+
+    GLint canFogLocation = glGetUniformLocation(window.GetShader(), "uCanFog");
+    if (canFogLocation < 0) printf("block location not found [uCanFog]\n");
+    if (canFogLocation >= 0) glUniform1i(canFogLocation, 0);
 
     // Draw Block
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
