@@ -351,8 +351,8 @@ std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _blockPos) const {
             }
         }
 
-        // Normal blocks may show if the block on the face is transparent
-        else if (blockAtFace->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 0) {
+        // obscure face always if the block there is non-transparent
+        if (blockAtFace->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 0) {
             continue;
         }
 
@@ -772,7 +772,7 @@ float Chunk::GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, f
  */
 
 Chunk* Chunk::GetChunkAtPosition(glm::vec3& _blockPos, int _depth) const {
-    if (_depth > 1) return nullptr;
+    if (_depth > 2) return nullptr;
     else _depth++;
 
     // FRONT, FRONTLEFT, LEFT, BACKLEFT, BACK, BACKRIGHT, RIGHT, FRONTRIGHT

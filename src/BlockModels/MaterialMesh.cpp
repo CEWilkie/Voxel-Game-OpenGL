@@ -43,27 +43,19 @@ void MaterialMesh::BindMesh() {
         glGenBuffers(1, &indexBufferObject);
     }
 
-    glBindVertexArray(vertexArrayObject);
-
-    // populate indexArray
-    std::vector<GLuint> indexArray {};
-    for (int f = 0; f < (int)vertexArray.size()/4; f++) {
-        indexArray.push_back(f*4 + 1);
-        indexArray.push_back(f*4 + 3);
-        indexArray.push_back(f*4 + 0);
-        indexArray.push_back(f*4 + 0);
-        indexArray.push_back(f*4 + 3);
-        indexArray.push_back(f*4 + 2);
+    // Recreate the buffers only when more verticies than current size need to be written. Else glBufferSubData
+    if ((int)vertexArray.size() < bufferVerticiesSize) {
+        return UpdateMesh();
     }
 
-    bufferVerticiesSize = (int)vertexArray.size() * 2;
-    boundFaces = (int)vertexArray.size()/4;
+    // Ensure a minimum buffer size of 300 verticies is created to prevent excessive recreation for small buffers
+    bufferVerticiesSize = std::max(300, (int)vertexArray.size() * 2);
 
+    glBindVertexArray(vertexArrayObject);
 
     // bind vertex buffer object
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    GLCHECK(glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(vertexArray.size() * sizeof(Vertex)), vertexArray.data(), GL_STATIC_DRAW));
-//    glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(vertexArray.size() * sizeof(Vertex)), vertexArray.data());
+    glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(bufferVerticiesSize * sizeof(Vertex)), nullptr, GL_DYNAMIC_DRAW);
 
     // Vertex Position Attributes
     glEnableVertexAttribArray(0);
@@ -75,19 +67,18 @@ void MaterialMesh::BindMesh() {
 
     // Bind index buffer
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(indexArray.size() * sizeof(GLuint)), indexArray.data(), GL_STATIC_DRAW);
-//    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, GLsizeiptr(indexArray.size()*sizeof(GLuint)), indexArray.data());
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(bufferVerticiesSize * sizeof(GLuint)), nullptr, GL_DYNAMIC_DRAW);
 
     // Unbind arrays / buffers
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    oldMesh = false;
+    UpdateMesh();
 }
 
 void MaterialMesh::UpdateMesh() {
-    if (vertexArray.empty()) return;
+
 
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
     glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(vertexArray.size() * sizeof(Vertex)), vertexArray.data());
@@ -108,6 +99,8 @@ void MaterialMesh::UpdateMesh() {
     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, GLsizeiptr(indexArray.size()*sizeof(GLuint)), indexArray.data());
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+
+    boundFaces = (int)vertexArray.size()/4;
     oldMesh = false;
 }
 

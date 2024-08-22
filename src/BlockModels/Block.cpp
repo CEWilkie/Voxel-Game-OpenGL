@@ -26,40 +26,40 @@ std::vector<Vertex> BlockVAOs::FullblockVA() {
     // [POSITION], [TEXCOORD], both values are offsets relative to the set origin points
     return {
             // Front
-            { glm::vec3(0.0f, 0.0f, 0.0f),  glm::vec2(0.0f, 0.0f) },            // TOPLEFT VERTEX
-            { glm::vec3(0.0f, 0.0f, 1.0f),  glm::vec2(1.0f, 0.0f) },            // TOPRIGHT VERTEX
-            { glm::vec3(0.0f, -1.0f, 0.0f), glm::vec2(0.0f, 1.0f) },            // BOTTOMLEFT VERTEX
-            { glm::vec3(0.0f, -1.0f, 1.0f), glm::vec2(1.0f, 1.0f) },            // BOTTOMRIGHT VERTEX
+            { glm::vec3(0.0f, 0.0f, 0.0f),  {0, 0} },            // TOPLEFT VERTEX
+            { glm::vec3(0.0f, 0.0f, 1.0f),  {1, 0} },            // TOPRIGHT VERTEX
+            { glm::vec3(0.0f, -1.0f, 0.0f), {0, 1} },            // BOTTOMLEFT VERTEX
+            { glm::vec3(0.0f, -1.0f, 1.0f), {1, 1} },            // BOTTOMRIGHT VERTEX
 
             // Left
-            { glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(-1.0f, 0.0f) },            // TOPLEFT VERTEX
-            { glm::vec3(1.0f, -1.0f, 0.0f),glm::vec2(-1.0f, 1.0f) },            // BOTTOMLEFT VERTEX
-//            { glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f) },            //  VERTEX
-//            { glm::vec3(0.0f, -1.0f, 0.0f),glm::vec2(0.0f, 1.0f) },            //  VERTEX
+            { glm::vec3(1.0f, 0.0f, 0.0f),  {-1, 0} },            // TOPLEFT VERTEX
+            { glm::vec3(1.0f, -1.0f, 0.0f), {-1, 1} },            // BOTTOMLEFT VERTEX
+//            { glm::vec3(0.0f, 0.0f, 0.0f), {0.0f, 0.0f} },            //  VERTEX
+//            { glm::vec3(0.0f, -1.0f, 0.0f), {0.0f, 1.0f} },            //  VERTEX
 
             // Right
-            { glm::vec3(1.0f, 0.0f, 1.0f),  glm::vec2(2.0f, 0.0f) },            // TOPRIGHT VERTEX
-            { glm::vec3(1.0f, -1.0f, 1.0f), glm::vec2(2.0f, 1.0f) },            // BOTTOMRIGHT VERTEX
-//            { glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f) },            //  VERTEX
-//            { glm::vec3(0.0f, -1.0f, 1.0f),glm::vec2(1.0f, 1.0f) },            //  VERTEX
+            { glm::vec3(1.0f, 0.0f, 1.0f),   {2, 0} },            // TOPRIGHT VERTEX
+            { glm::vec3(1.0f, -1.0f, 1.0f),  {2, 1} },            // BOTTOMRIGHT VERTEX
+//            { glm::vec3(0.0f, 0.0f, 0.0f), {1.0f, 0.0f}) },            //  VERTEX
+//            { glm::vec3(0.0f, -1.0f, 1.0f), {1.0f, 1.0f}) },            //  VERTEX
 
             // Back
-            { glm::vec3(1.0f, 0.0f, 0.0f),  glm::vec2(3.0f, 0.0f) },             // TOPRIGHT VERTEX
-            { glm::vec3(1.0f, -1.0f, 0.0f),  glm::vec2(3.0f, 1.0f) },             // BOTTOMRIGHT VERTEX
-//            { glm::vec3(1.0f, 0.0f, 1.0f), glm::vec2(2.0f, 0.0f) },            //  VERTEX
-//            { glm::vec3(1.0f, -1.0f, 1.0f),glm::vec2(2.0f, 1.0f) },            //  VERTEX
+            { glm::vec3(1.0f, 0.0f, 0.0f),   {3, 0} },             // TOPRIGHT VERTEX
+            { glm::vec3(1.0f, -1.0f, 0.0f),  {3, 1} },             // BOTTOMRIGHT VERTEX
+//            { glm::vec3(1.0f, 0.0f, 1.0f), {2.0f, 0.0f}) },            //  VERTEX
+//            { glm::vec3(1.0f, -1.0f, 1.0f), {2.0f, 1.0f}) },            //  VERTEX
 
             // Top
-            { glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, -1.0f) },            // TOPLEFT VERTEX
-            { glm::vec3(1.0f, 0.0f, 1.0f), glm::vec2(1.0f, -1.0f) },            // TOPRIGHT VERTEX
-//            { glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f) },            //  VERTEX
-//            { glm::vec3(0.0f, 0.0f, 1.0f),glm::vec2(1.0f, 0.0f) },            //  VERTEX
+            { glm::vec3(1.0f, 0.0f, 0.0f),   {0, -1} },            // TOPLEFT VERTEX
+            { glm::vec3(1.0f, 0.0f, 1.0f),   {1, -1} },            // TOPRIGHT VERTEX
+//            { glm::vec3(0.0f, 0.0f, 0.0f), {0.0f, 0.0f}) },            //  VERTEX
+//            { glm::vec3(0.0f, 0.0f, 1.0f), {1.0f, 0.0f}) },            //  VERTEX
 
             // Bottom
-            { glm::vec3(1.0f, -1.0f, 0.0f),glm::vec2(0.0f, 2.0f) },            // BACKLEFT VERTEX
-            { glm::vec3(1.0f, -1.0f, 1.0f),glm::vec2(1.0f, 2.0f) },            // BACKRIGHT VERTEX
-//            { glm::vec3(0.0f, -1.0f, 0.0f), glm::vec2(0.0f, -1.0f) },            //  VERTEX
-//            { glm::vec3(0.0f, -1.0f, 1.0f),glm::vec2(1.0f, -1.0f) },            //  VERTEX
+            { glm::vec3(1.0f, -1.0f, 0.0f),  {0, 2} },            // BACKLEFT VERTEX
+            { glm::vec3(1.0f, -1.0f, 1.0f),  {1, 2} },            // BACKRIGHT VERTEX
+//            { glm::vec3(0.0f, -1.0f, 0.0f), {0.0f, -1.0f}) },            //  VERTEX
+//            { glm::vec3(0.0f, -1.0f, 1.0f), {1.0f, -1.0f}) },            //  VERTEX
 
     };
 }
@@ -97,7 +97,7 @@ void BlockVAOs::BindBlockModels() const {
 
         // Texture Data Attribute
         glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, textureCoord));
+        glVertexAttribPointer(1, 2, GL_BYTE, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, textureCoord));
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject[model]);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(indexArray.size() * sizeof(GLuint)), indexArray.data(), GL_STATIC_DRAW);
