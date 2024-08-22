@@ -686,9 +686,9 @@ float Chunk::GetTopLevelAtPosition(glm::vec3 _blockPos, float _radius) const {
             glm::vec3 position{x/100.0, y, z/100.0};
             Block* block = GetBlockAtPosition(position, 0).first;
 
-            // If no block found / air, or if it is a liquid (ie: water) then do not apply topLevel
+            // If no block found / air, or if it is a liquid (ie: water) / non-solid then do not apply topLevel
             if (block == nullptr || block->GetBlockType().blockID == AIR) continue;
-            if (block->GetAttributeValue(BLOCKATTRIBUTE::LIQUID) > 0) continue;
+            if (block->GetAttributeValue(BLOCKATTRIBUTE::ENTITYCOLLISIONSOLID) == 0) continue;
 
             // blockHeight + y in chunk + chunkHeight
             float blockTL = 1.0f + y + chunkPosition.y*(float)chunkSize;
@@ -713,7 +713,7 @@ float Chunk::GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, f
     // 2 blocks (to prevent stop-starting player movement if they move faster than 1 block/second)
     // also applies for air or liquid blocks
     ChunkDataTypes::ChunkBlock block = GetBlockAtPosition(_blockPos + _direction, 0);
-    if (block.first == nullptr || block.first->GetBlockType().blockID == AIR || block.first->GetAttributeValue(BLOCKATTRIBUTE::LIQUID) > 0 ||
+    if (block.first == nullptr || block.first->GetBlockType().blockID == AIR ||
     block.first->GetAttributeValue(BLOCKATTRIBUTE::ENTITYCOLLISIONSOLID) == 0) {
         if (_direction.x != 0) return floorf(_blockPos.x) + _direction.x * 2.0f;
         if (_direction.y != 0) return floorf(_blockPos.y) + _direction.y * 2.0f;
