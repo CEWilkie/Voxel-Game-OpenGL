@@ -20,7 +20,7 @@ World::World() {
 
     uLocation = glGetUniformLocation(window.GetShader(), "worldAmbients.minFogDistance");
     if (uLocation < 0) printf("location not found [worldAmbients.minFogDistance]\n");
-    else glUniform1f(uLocation, (loadRadius-1) * chunkSize);
+    else glUniform1f(uLocation, (loadRadius - 1) * chunkSize);
 
     uLocation = glGetUniformLocation(window.GetShader(), "worldAmbients.maxFogDistance");
     if (uLocation < 0) printf("location not found [worldAmbients.maxFogDistance]\n");
@@ -35,11 +35,11 @@ World::~World() {
     chunkMesher.join();
 }
 
-void World::Display() {
+void World::Display() const {
     glEnable(GL_BLEND);
 
     // First draw in the skybox and decorations
-    skybox->Display(&skyboxTransformation);
+    skybox->Display(skyboxTransformation);
 
     // Draw solid objects
     glEnable(GL_CULL_FACE);
@@ -86,7 +86,7 @@ void World::CheckCulling(const Camera &_camera) {
 void World::SetSkyboxProperties(const Player& player) {
     // Determine max distance for skybox
     std::pair<float, float> minMax = player.GetUsingCamera()->GetMinMaxDistance();
-    double maxSqrd = std::pow(minMax.second*2, 2.0);
+    double maxSqrd = std::pow(minMax.second, 2.0);
 
     // Set skybox scale
     skyboxTransformation.SetScale({float(sqrt(maxSqrd / 3)), float(sqrt(maxSqrd / 3)), float(sqrt(maxSqrd / 3))});

@@ -160,8 +160,8 @@ class Block {
         ~Block();
 
         // Model Display
-        void Display(Transformation* _t);
-        void DisplayWireframe(Transformation* _transformation);
+        void Display(const Transformation& _t) const;
+        void DisplayWireframe(const Transformation& _transformation) const;
         [[nodiscard]] glm::vec2 GetTextureOrigin() const { return origin; }
         [[nodiscard]] TEXTURESHEET GetTextureSheet() const { return sheet; }
 

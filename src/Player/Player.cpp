@@ -47,7 +47,7 @@ void Player::Display() {
             glm::vec3 pos = glm::floor(unobstructedRayPosition) + playerChunk->GetPosition() * (float)chunkSize;
             t.SetPosition(pos);
             t.UpdateModelMatrix();
-            targetBlock->DisplayWireframe(&t);
+            targetBlock->DisplayWireframe(t);
         }
     }
 }

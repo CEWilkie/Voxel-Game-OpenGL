@@ -26,38 +26,38 @@ std::vector<Vertex> BlockVAOs::FullblockVA() {
     // [POSITION], [TEXCOORD], both values are offsets relative to the set origin points
     return {
             // Front
-            { glm::vec3(0.0f, 0.0f, 0.0f),  {0, 0} },            // TOPLEFT VERTEX
-            { glm::vec3(0.0f, 0.0f, 1.0f),  {1, 0} },            // TOPRIGHT VERTEX
-            { glm::vec3(0.0f, -1.0f, 0.0f), {0, 1} },            // BOTTOMLEFT VERTEX
-            { glm::vec3(0.0f, -1.0f, 1.0f), {1, 1} },            // BOTTOMRIGHT VERTEX
+            { glm::vec3(0.0f, 0.0f, 0.0f),  glm::vec2{0.0f, 0.0f} },            // TOPLEFT VERTEX
+            { glm::vec3(0.0f, 0.0f, 1.0f),  glm::vec2{1.0f, 0.0f} },            // TOPRIGHT VERTEX
+            { glm::vec3(0.0f, -1.0f, 0.0f), glm::vec2{0.0f, 1.0f} },            // BOTTOMLEFT VERTEX
+            { glm::vec3(0.0f, -1.0f, 1.0f), glm::vec2{1.0f, 1.0f} },            // BOTTOMRIGHT VERTEX
 
             // Left
-            { glm::vec3(1.0f, 0.0f, 0.0f),  {-1, 0} },            // TOPLEFT VERTEX
-            { glm::vec3(1.0f, -1.0f, 0.0f), {-1, 1} },            // BOTTOMLEFT VERTEX
+            { glm::vec3(1.0f, 0.0f, 0.0f),  glm::vec2{-1.0f, 0.0f} },            // TOPLEFT VERTEX
+            { glm::vec3(1.0f, -1.0f, 0.0f), glm::vec2{-1.0f, 1.0f} },            // BOTTOMLEFT VERTEX
 //            { glm::vec3(0.0f, 0.0f, 0.0f), {0.0f, 0.0f} },            //  VERTEX
 //            { glm::vec3(0.0f, -1.0f, 0.0f), {0.0f, 1.0f} },            //  VERTEX
 
             // Right
-            { glm::vec3(1.0f, 0.0f, 1.0f),   {2, 0} },            // TOPRIGHT VERTEX
-            { glm::vec3(1.0f, -1.0f, 1.0f),  {2, 1} },            // BOTTOMRIGHT VERTEX
+            { glm::vec3(1.0f, 0.0f, 1.0f),   glm::vec2{2.0f, 0.0f} },            // TOPRIGHT VERTEX
+            { glm::vec3(1.0f, -1.0f, 1.0f),  glm::vec2{2.0f, 1.0f} },            // BOTTOMRIGHT VERTEX
 //            { glm::vec3(0.0f, 0.0f, 0.0f), {1.0f, 0.0f}) },            //  VERTEX
 //            { glm::vec3(0.0f, -1.0f, 1.0f), {1.0f, 1.0f}) },            //  VERTEX
 
             // Back
-            { glm::vec3(1.0f, 0.0f, 0.0f),   {3, 0} },             // TOPRIGHT VERTEX
-            { glm::vec3(1.0f, -1.0f, 0.0f),  {3, 1} },             // BOTTOMRIGHT VERTEX
+            { glm::vec3(1.0f, 0.0f, 0.0f),   glm::vec2{3.0f, 0.0f} },             // TOPRIGHT VERTEX
+            { glm::vec3(1.0f, -1.0f, 0.0f),  glm::vec2{3.0f, 1.0f} },             // BOTTOMRIGHT VERTEX
 //            { glm::vec3(1.0f, 0.0f, 1.0f), {2.0f, 0.0f}) },            //  VERTEX
 //            { glm::vec3(1.0f, -1.0f, 1.0f), {2.0f, 1.0f}) },            //  VERTEX
 
             // Top
-            { glm::vec3(1.0f, 0.0f, 0.0f),   {0, -1} },            // TOPLEFT VERTEX
-            { glm::vec3(1.0f, 0.0f, 1.0f),   {1, -1} },            // TOPRIGHT VERTEX
+            { glm::vec3(1.0f, 0.0f, 0.0f),   glm::vec2{0.0f, -1.0f} },            // TOPLEFT VERTEX
+            { glm::vec3(1.0f, 0.0f, 1.0f),   glm::vec2{1.0f, -1.0f} },            // TOPRIGHT VERTEX
 //            { glm::vec3(0.0f, 0.0f, 0.0f), {0.0f, 0.0f}) },            //  VERTEX
 //            { glm::vec3(0.0f, 0.0f, 1.0f), {1.0f, 0.0f}) },            //  VERTEX
 
             // Bottom
-            { glm::vec3(1.0f, -1.0f, 0.0f),  {0, 2} },            // BACKLEFT VERTEX
-            { glm::vec3(1.0f, -1.0f, 1.0f),  {1, 2} },            // BACKRIGHT VERTEX
+            { glm::vec3(1.0f, -1.0f, 0.0f),  glm::vec2{0.0f, 2.0f} },            // BACKLEFT VERTEX
+            { glm::vec3(1.0f, -1.0f, 1.0f),  glm::vec2{1.0f, 2.0f} },            // BACKRIGHT VERTEX
 //            { glm::vec3(0.0f, -1.0f, 0.0f), {0.0f, -1.0f}) },            //  VERTEX
 //            { glm::vec3(0.0f, -1.0f, 1.0f), {1.0f, -1.0f}) },            //  VERTEX
 
@@ -100,8 +100,8 @@ std::vector<GLuint> BlockVAOs::PlantblockIA() {
 
 
 void BlockVAOs::BindBlockModels() const {
-    // Obtain vertex data for each model, and bind to VAO
-    for (int model = 0; model < nModels; model++) {
+    // Obtain vertex data for each model, and bind to a unique VAO
+    for (int model = FULL; model < nModels; model++) {
         // Bind VAO
         glBindVertexArray(vertexArrayObject[model]);
 
@@ -119,7 +119,7 @@ void BlockVAOs::BindBlockModels() const {
 
         // Texture Data Attribute
         glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_BYTE, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, textureCoord));
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, textureCoord));
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject[model]);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(indexArray.size() * sizeof(GLuint)), indexArray.data(), GL_STATIC_DRAW);
@@ -202,7 +202,7 @@ Block::~Block() = default;
 
 
 
-void Block::Display(Transformation* _t) {
+void Block::Display(const Transformation& _t) const {
     if (blockData.blockID == BLOCKID::AIR && blockData.variantID == 0) return;
 
     // Bind to the model
@@ -211,7 +211,7 @@ void Block::Display(Transformation* _t) {
     // Update uniform
     GLint modelMatrixLocation = glGetUniformLocation(window.GetShader(), "matricies.uModelMatrix");
     if (modelMatrixLocation < 0) printf("block location not found [matricies.uModelMatrix]\n");
-    if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &_t->GetModelMatrix()[0][0]);
+    if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &_t.GetModelMatrix()[0][0]);
 
     // Apply Texture
     textureManager->EnableTextureSheet(sheet);
@@ -224,11 +224,11 @@ void Block::Display(Transformation* _t) {
     if (canFogLocation >= 0) glUniform1i(canFogLocation, 0);
 
     // Draw Block
-    glDrawElements(GL_TRIANGLES, (int)blockVAOmanager->GetBaseIndexArray(blockModel).size(), GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
 }
 
-void Block::DisplayWireframe(Transformation *_transformation) {
+void Block::DisplayWireframe(const Transformation& _transformation) const {
 
     // Apply black border and set to line mode
     glm::vec4 borderCol{0,0,0,255}, noCol{0,0,0,0};

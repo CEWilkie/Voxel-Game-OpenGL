@@ -51,7 +51,7 @@ class World {
         ~World();
 
         // Display
-        void Display();
+        void Display() const;
         void CheckCulling(const Camera& _camera);
 
         // Skybox and Decoratives

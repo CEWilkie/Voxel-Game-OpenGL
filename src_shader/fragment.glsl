@@ -42,7 +42,7 @@ void main() {
     if (color.a <= 0.0f) discard;
 
     // Fog
-    if (uCanFog == 1 && FogFactor() != 0) {
+    if (uCanFog == 1) {
         color.a = min(1-FogFactor(), color.a);
     }
 

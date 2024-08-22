@@ -35,7 +35,7 @@ class Camera {
         // View Frustrum vars
         float fovAngleY = 45.0f;
         float minDistance = 0.1f;
-        float maxDistance = 16*16.0f;
+        float maxDistance = 32 * 16.0f;
 
     public:
         Camera();
