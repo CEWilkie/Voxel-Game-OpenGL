@@ -10,8 +10,18 @@
 #include "../Window.h"
 
 World::World() {
-    // Create skybox
+    // Create skybox, sun and moon
     skybox = CreateBlock({BLOCKID::AIR, 1});
+    sun = CreateBlock({AIR, 2});
+    moon = CreateBlock({AIR, 3});
+
+    sunTransformation = Transformation();
+    sunTransformation.SetScale({15.0f, 15.0f, 15.0f});
+    sunTransformation.UpdateModelMatrix();
+
+    moonTransformation = Transformation();
+    moonTransformation.SetScale({12.0f, 12.0f, 12.0f});
+    moonTransformation.UpdateModelMatrix();
 
     GLint uLocation;
     uLocation = glGetUniformLocation(window.GetShader(), "worldAmbients.lightingStrength");
@@ -40,6 +50,8 @@ void World::Display() const {
 
     // First draw in the skybox and decorations
     skybox->Display(skyboxTransformation);
+    sun->Display(sunTransformation);
+    moon->Display(moonTransformation);
 
     // Draw solid objects
     glEnable(GL_CULL_FACE);
@@ -89,20 +101,82 @@ void World::SetSkyboxProperties(const Player& player) {
     double maxSqrd = std::pow(minMax.second, 2.0);
 
     // Set skybox scale
-    skyboxTransformation.SetScale({float(sqrt(maxSqrd / 3)), float(sqrt(maxSqrd / 3)), float(sqrt(maxSqrd / 3))});
+    skyboxTransformation.SetScale({float(sqrt(maxSqrd)), float(sqrt(maxSqrd)), float(sqrt(maxSqrd))});
 
     // Set skybox position centred on the player
     SetSkyboxPosition(player.GetPosition());
 }
 
 void World::SetSkyboxPosition(glm::vec3 _position) {
-    glm::vec3 originFromCentre{_position - (skyboxTransformation.GetLocalScale() / 2.0f)};
+    glm::vec3 originFromCentre;
+
+    // Skybox
+    originFromCentre = glm::vec3{_position - (skyboxTransformation.GetLocalScale() / 2.0f)};
     originFromCentre.y += skyboxTransformation.GetLocalScale().y;
     skyboxTransformation.SetPosition(originFromCentre);
-
     skyboxTransformation.UpdateModelMatrix();
+
+    // Sun
+    originFromCentre = _position - sunTransformation.GetLocalScale() / 2.0f;
+    originFromCentre.y += sunTransformation.GetLocalScale().y;
+
+    glm::mat4 sunAngle = glm::rotate(glm::mat4(1.0f), glm::radians(-((float)worldTime-(7*60)) * 0.125f), dirBack);
+    glm::vec3 sunPos{originFromCentre.x, originFromCentre.y, originFromCentre.z};
+    glm::vec3 sunOffset = sunAngle * glm::vec4(0.0f, 0.0f, 180.0f, 1.0f);
+
+    sunTransformation.SetPosition(sunPos + sunOffset);
+    sunTransformation.UpdateModelMatrix();
+
+    // Moon
+    originFromCentre = _position - moonTransformation.GetLocalScale() / 2.0f;
+    originFromCentre.y += moonTransformation.GetLocalScale().y;
+
+    glm::vec3 moonPos{originFromCentre.x, originFromCentre.y, originFromCentre.z};
+    moonPos += -sunAngle * glm::vec4(0.0f, 0.0f, 180.0f, 1.0f);
+
+    moonTransformation.SetPosition(moonPos);
+    moonTransformation.UpdateModelMatrix();
 }
 
+
+void World::UpdateWorldTime(Uint64 _deltaTicks) {
+    worldTicks += _deltaTicks;
+    if (worldTicks >= 1000) {
+        auto timeTicks = std::div((int)worldTicks, 1000);
+        worldTime += timeTicks.quot;
+        worldTicks = timeTicks.rem;
+    }
+
+    if (worldTime >= 24 * 60) {
+        auto daysTime = std::div((int)worldTime, 24 * 60);
+        worldDays += daysTime.quot;
+        worldTime = daysTime.rem;
+    }
+
+    // Ambient lighting
+    float min = 0.05f, max = 1.0f;
+    int time = (int)worldTime;
+    float lightLevel = max;
+
+    if (time >= 6*60 && time < 7*60) {
+        lightLevel = ((float)time - 6*60.0f) / ((7*60.0f) - (6*60.0f));
+    }
+    else if (time <= 19*60 && time > 18*60) {
+        lightLevel = 1 - ((float)time - 18*60.0f)/ ((19*60.0f) - (18*60.0f));
+    }
+    else if ((time < 6*60) || (time > 19*60)) {
+        lightLevel = min;
+    }
+
+    lightLevel = std::min(lightLevel, max);
+    lightLevel = std::max(lightLevel, min);
+
+    // Ambient Lighting
+    GLint uLocation;
+    uLocation = glGetUniformLocation(window.GetShader(), "worldAmbients.lightingStrength");
+    if (uLocation < 0) printf("location not found [worldAmbients.lightingStrength]\n");
+    else glUniform1f(uLocation, lightLevel);
+}
 
 /*
  * WORLD GENERATION

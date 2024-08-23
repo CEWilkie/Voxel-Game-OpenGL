@@ -24,11 +24,14 @@ namespace WorldDataTypes {
 
 class World {
     private:
-        Transformation skyboxTransformation;
+        Transformation skyboxTransformation, sunTransformation, moonTransformation;
         std::unique_ptr<Block> skybox;
 
-        // Sky decos: clouds, sun, moon, stars, night, etc
-        // ...
+        // Sky decos: clouds, sun, moon, stars, etc
+        std::unique_ptr<Block> sun, moon;
+        unsigned int worldTicks = 0;
+        unsigned int worldTime = 7*60; // minutes
+        unsigned int worldDays = 0;
 
         // World Generation
         WorldDataTypes::chunkArray worldChunks {};
@@ -57,6 +60,7 @@ class World {
         // Skybox and Decoratives
         void SetSkyboxProperties(const Player& player);
         void SetSkyboxPosition(glm::vec3 _position);
+        void UpdateWorldTime(Uint64 _deltaTicks);
 
         // Generation
         void SetLoadingOrigin(const glm::vec3& _origin);

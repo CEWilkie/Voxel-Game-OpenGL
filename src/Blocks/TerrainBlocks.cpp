@@ -64,14 +64,14 @@ Air::Air(int _variant) {
 
     // Variants used for the skybox decorations
     if (_variant == 1) { // skybox
-        origin = {1,1};
+        origin = {10,2};
     }
 
     if (_variant == 2) { // sun
         origin = {4,2};
     }
 
-    if (_variant == 2) { // moon
+    if (_variant == 3) { // moon
         origin = {7,1};
     }
 
