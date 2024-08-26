@@ -10,7 +10,7 @@
  * STONE
  */
 
-Stone::Stone(int _variant) {
+Stone::Stone(GLbyte _variant) {
     blockData = {BLOCKID::STONE, _variant};
 
     // Set the texture and texture origin
@@ -18,7 +18,7 @@ Stone::Stone(int _variant) {
     origin = {1,1};
 }
 
-Dirt::Dirt(int _variant) {
+Dirt::Dirt(GLbyte _variant) {
     blockData = {BLOCKID::DIRT, _variant};
 
     // Set the texture and texture origin
@@ -26,7 +26,7 @@ Dirt::Dirt(int _variant) {
     origin = {4,2};
 }
 
-Grass::Grass(int _variant) {
+Grass::Grass(GLbyte _variant) {
     blockData = {BLOCKID::GRASS, _variant};
 
     // Set the texture and texture origin
@@ -34,7 +34,7 @@ Grass::Grass(int _variant) {
     origin = {7,1};
 }
 
-Sand::Sand(int _variant) {
+Sand::Sand(GLbyte _variant) {
     blockData = {BLOCKID::SAND, _variant};
 
     // Set texture and texture origin
@@ -42,7 +42,7 @@ Sand::Sand(int _variant) {
     origin = {13, 1};
 }
 
-Water::Water(int _variant) {
+Water::Water(GLbyte _variant) {
     blockData = {BLOCKID::WATER, _variant};
 
     // Set the texture and texture origin
@@ -57,7 +57,7 @@ Water::Water(int _variant) {
     entityCollisionSolid = 0;
 }
 
-Air::Air(int _variant) {
+Air::Air(GLbyte _variant) {
     blockData = {BLOCKID::AIR, _variant};
 
     sheet = TEXTURESHEET::WORLD;

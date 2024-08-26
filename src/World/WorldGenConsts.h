@@ -52,7 +52,10 @@ inline Uint64 meshSumTicksTaken = 0;
 
 // CHUNK TYPEDEFS
 namespace ChunkDataTypes {
-    typedef std::pair<Block*, BlockAttributes> ChunkBlock;
+    struct ChunkBlock {
+        BlockType type {AIR, 0};
+        BlockAttributes attributes;
+    };
     typedef std::array<std::array<std::array<ChunkBlock, chunkSize>, chunkHeight>, chunkSize> TerrainArray;
     typedef std::array<std::array<std::array<float, chunkSize>, chunkHeight>, chunkSize> DensityArray;
     typedef std::array<float, chunkArea> DataMap;

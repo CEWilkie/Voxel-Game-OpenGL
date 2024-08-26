@@ -291,9 +291,9 @@ DIRECTION Block::GetRandomTopFaceDirection() const {
  * may require converting to radians for glm functions.
  */
 
-int Block::GetRandomRotation() const {
+GLbyte Block::GetRandomRotation() const {
     if (rotationLocked) return 0;
-    return (rand() % 4 + 0) * 2;
+    return GLbyte((rand() % 4 + 0) * 2);
 }
 
 

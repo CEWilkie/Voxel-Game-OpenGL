@@ -14,7 +14,7 @@ class Stone : public Block {
     private:
 
     public:
-        explicit Stone(int _variant);
+        explicit Stone(GLbyte _variant);
 };
 
 
@@ -23,7 +23,7 @@ class Dirt : public Block {
 
 
     public:
-        explicit Dirt(int _variant);
+        explicit Dirt(GLbyte _variant);
 };
 
 class Grass : public Block {
@@ -31,27 +31,27 @@ class Grass : public Block {
 
 
     public:
-        explicit Grass(int _variant);
+        explicit Grass(GLbyte _variant);
 };
 
 class Sand : public Block {
     private:
 
     public:
-        explicit Sand(int _variant);
+        explicit Sand(GLbyte _variant);
 };
 
 class Water : public Block {
     private:
 
     public:
-        explicit Water(int _variant);
+        explicit Water(GLbyte _variant);
 };
 
 class Air : public Block {
     private:
 
     public:
-        explicit Air(int _variant);
+        explicit Air(GLbyte _variant);
 };
 #endif //UNTITLED7_TERRAINBLOCKS_H

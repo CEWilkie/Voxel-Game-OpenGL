@@ -12,50 +12,50 @@
 inline std::unique_ptr<Block> CreateBlock(BlockType _blockData) {
     std::unique_ptr<Block> newBlock {};
 
-    BLOCKID _id = _blockData.blockID;
-    int _variant = _blockData.variantID;
+    BLOCKID id = _blockData.blockID;
+    GLbyte variant = _blockData.variantID;
 
     // In order of likelihood to appear to save search time
-    switch (_id) {
+    switch (id) {
         case BLOCKID::AIR:
-            newBlock = std::make_unique<Air>(_variant);
+            newBlock = std::make_unique<Air>(variant);
             break;
 
         case BLOCKID::STONE:
-            newBlock = std::make_unique<Stone>(_variant);
+            newBlock = std::make_unique<Stone>(variant);
             break;
 
         case BLOCKID::DIRT:
-            newBlock = std::make_unique<Dirt>(_variant);
+            newBlock = std::make_unique<Dirt>(variant);
             break;
 
         case BLOCKID::WATER:
-            newBlock = std::make_unique<Water>(_variant);
+            newBlock = std::make_unique<Water>(variant);
             break;
 
         case BLOCKID::GRASS:
-            newBlock = std::make_unique<Grass>(_variant);
+            newBlock = std::make_unique<Grass>(variant);
             break;
 
         case BLOCKID::SAND:
-            newBlock = std::make_unique<Sand>(_variant);
+            newBlock = std::make_unique<Sand>(variant);
             break;
 
         case BLOCKID::LEAVES:
-            newBlock = std::make_unique<Leaves>(_variant);
+            newBlock = std::make_unique<Leaves>(variant);
             break;
 
         case BLOCKID::GRASSPLANT:
-            newBlock = std::make_unique<GrassPlant>(_variant);
+            newBlock = std::make_unique<GrassPlant>(variant);
             break;
 
         case BLOCKID::WOOD:
-            newBlock = std::make_unique<Wood>(_variant);
+            newBlock = std::make_unique<Wood>(variant);
             break;
 
         default:
             // Block not defined
-            newBlock = std::make_unique<TestBlock>(_variant);
+            newBlock = std::make_unique<TestBlock>(variant);
     }
 
     return newBlock;

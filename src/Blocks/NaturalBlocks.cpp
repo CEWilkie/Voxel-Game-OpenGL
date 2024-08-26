@@ -4,7 +4,7 @@
 
 #include "NaturalBlocks.h"
 
-Leaves::Leaves(int _variant) {
+Leaves::Leaves(GLbyte _variant) {
     blockData = {BLOCKID::LEAVES, _variant};
     sheet = TEXTURESHEET::NATURAL;
 
@@ -19,7 +19,7 @@ Leaves::Leaves(int _variant) {
     generationPriority = 1;
 }
 
-Wood::Wood(int _variant) {
+Wood::Wood(GLbyte _variant) {
     blockData = {BLOCKID::WOOD, _variant};
     sheet = TEXTURESHEET::NATURAL;
 
@@ -30,7 +30,7 @@ Wood::Wood(int _variant) {
     transparent = 0;
 }
 
-GrassPlant::GrassPlant(int _variant) {
+GrassPlant::GrassPlant(GLbyte _variant) {
     blockModel = PLANT;
 
     blockData = {BLOCKID::GRASSPLANT, _variant};

@@ -108,8 +108,8 @@ class Chunk {
         void BindChunkMeshes();
         [[nodiscard]] bool NeedsMeshUpdates() const { return needsMeshUpdates; }
         [[nodiscard]] bool UnboundMeshChanges() const { return unboundMeshChanges; }
-        [[nodiscard]] std::vector<BLOCKFACE> GetHiddenFaces(glm::vec3 _blockPos) const;
-        [[nodiscard]] std::vector<BLOCKFACE> GetShowingFaces(glm::vec3 _blockPos) const;
+        [[nodiscard]] std::vector<BLOCKFACE> GetHiddenFaces(glm::vec3 _blockPos);
+        [[nodiscard]] std::vector<BLOCKFACE> GetShowingFaces(glm::vec3 _blockPos);
         [[nodiscard]] MaterialMesh* GetMeshFromBlock(Block* _block);
         [[nodiscard]] bool Generated() const { return generated; }
 
@@ -130,8 +130,8 @@ class Chunk {
         [[nodiscard]] ChunkDataTypes::ChunkBlock GetBlockAtPosition(glm::vec3 _blockPos, int _depth) const;
 
         // Chunk-Entity Collision
-        [[nodiscard]] float GetTopLevelAtPosition(glm::vec3 _blockPos, float _radius) const;
-        [[nodiscard]] float GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, float _radius) const;
+        [[nodiscard]] float GetTopLevelAtPosition(glm::vec3 _blockPos, float _radius) ;
+        [[nodiscard]] float GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, float _radius) ;
 
         //
         [[nodiscard]] Block* GetBlockFromData(const BlockType& _blockType);

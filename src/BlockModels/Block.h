@@ -87,16 +87,20 @@ enum BLOCKID : unsigned int {
 
 struct BlockType {
     BLOCKID blockID {BLOCKID::AIR};
-    int variantID {0};
+    GLbyte variantID {0};
 
-    static bool Compare(const BlockType& A, const BlockType& B) {
+    static bool IsSame(const BlockType& A, const BlockType& B) {
         return A.blockID == B.blockID && A.variantID == B.variantID;
     }
 
     friend bool operator==(const BlockType& A, const BlockType& B) {
-        return Compare(A, B);
+        return IsSame(A, B);
     }
-};
+
+    friend bool operator!=(const BlockType& A, const BlockType& B) {
+        return !IsSame(A, B);
+    }
+} __attribute__((packed));
 
 
 
@@ -171,7 +175,7 @@ class Block {
 
         // Block Face Culling
         [[nodiscard]] DIRECTION GetRandomTopFaceDirection() const;
-        [[nodiscard]] int GetRandomRotation() const;
+        [[nodiscard]] GLbyte GetRandomRotation() const;
         [[nodiscard]] std::vector<Vertex> GetFaceVerticies(const std::vector<BLOCKFACE>& _faces, const BlockAttributes& _blockAttributes) const;
 };
 
@@ -189,7 +193,7 @@ class TestBlock : public Block {
     private:
 
     public:
-        explicit TestBlock(int _variant) {
+        explicit TestBlock(GLbyte _variant) {
             blockData = {BLOCKID::TEST, _variant};
             sheet = TEXTURESHEET::TEST16;
 

@@ -11,21 +11,21 @@ class Leaves : public Block {
     private:
 
     public:
-        explicit Leaves(int _variant);
+        explicit Leaves(GLbyte _variant);
 };
 
 class Wood : public Block {
     private:
 
     public:
-        explicit Wood(int _variant);
+        explicit Wood(GLbyte _variant);
 };
 
 class GrassPlant : public Block {
     private:
 
     public:
-        explicit GrassPlant(int _variant);
+        explicit GrassPlant(GLbyte _variant);
 };
 
 #endif //UNTITLED7_NATURALBLOCKS_H
