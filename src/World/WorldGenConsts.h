@@ -28,7 +28,6 @@ static const int worldArea = worldSize * worldSize;
 
 static long long int worldSeed = time(nullptr);
 
-
 /*
  * CHUNK VALUES
  */

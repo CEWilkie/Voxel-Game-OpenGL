@@ -63,7 +63,6 @@ int main(int argc, char** argv){
     world = std::make_unique<World>();
     world->SetLoadingOrigin({0,0,0});
     world->GenerateRequiredWorld();
-    world->ToggleChunkThreads(true);
 
     /*
      * PLAYER CREATION
@@ -104,10 +103,10 @@ int main(int argc, char** argv){
 
         Uint64 startTick = SDL_GetTicks64();
         deltaTicks = startTick - endTick;
-        if (deltaTicks < 1000 / target) {
-            SDL_Delay(Uint32((1000 / target) - deltaTicks));
-            deltaTicks = SDL_GetTicks64() - endTick;
-        }
+//        if (deltaTicks < 1000 / target) {
+//            SDL_Delay(Uint32((1000 / target) - deltaTicks));
+//            deltaTicks = SDL_GetTicks64() - endTick;
+//        }
         endTick = startTick;
 
         frames += 1;
@@ -240,8 +239,6 @@ int main(int argc, char** argv){
      * HANDLE END OF PROGRAM
      */
 
-    // End world chunkbuilder threads
-    world->ToggleChunkThreads(false);
     SDL_Quit();
 
     return 0;

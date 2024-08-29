@@ -14,8 +14,13 @@
 
 #include "Chunk.h"
 #include "Biome.h"
+#include "ChunkThreads.h"
 
 class Player;
+
+enum class THREAD {
+        CHUNKBUILDING, CHUNKMESHING, CHUNKLIGHTING // ...
+};
 
 namespace WorldDataTypes {
     typedef std::array<std::array<std::unique_ptr<Chunk>, 2000>, 2000> chunkArray;
@@ -41,11 +46,8 @@ class World {
         int displayingChunks {};
 
         // Threads
-        std::thread chunkBuilder;
-        std::thread chunkMesher;
-        void cbf() { while (threadsActive) GenerateTerrain(); }
-        void cmf() { while (threadsActive) GenerateMeshes(); }
-        bool threadsActive = false;
+        ChunkThreads chunkBuilderThread;
+        ChunkThreads chunkMesherThread;
 
         glm::ivec2 loadingChunk {1000, 1000}; // inits to origin
 
@@ -62,18 +64,25 @@ class World {
         void SetSkyboxPosition(glm::vec3 _position);
         void UpdateWorldTime(Uint64 _deltaTicks);
 
-        // Generation
-        void SetLoadingOrigin(const glm::vec3& _origin);
+        // Thread Functions
+        void CreateChunk(const glm::ivec2& _chunkPos);
+        void CreateChunkAtIndex(const glm::ivec2& _chunkPos, const ChunkData& _chunkData);
+
+        void GenerateChunk(const glm::ivec2& _chunkPos);
+        void GenerateChunkMesh(const glm::ivec2& _chunkPos) const;
+
+        // ChunkData Generation functions
         static float GenerateBlockHeight(glm::vec2 _blockPos);
         static float GenerateBlockHeat(glm::vec3 _blockPos);
         static float GenerateBlockVegetation(glm::vec3 _blockPos, float _heat);
         static ChunkData GenerateChunkData(glm::vec2 _chunkPosition);
         Biome* GenerateBiome(BIOMEID _biomeID);
 
+
+        void SetLoadingOrigin(const glm::vec3& _origin);
         void GenerateRequiredWorld();
 
         // Chunk Generation Threads
-        void ToggleChunkThreads(bool _threadsActive);
         void GenerateTerrain();
         void GenerateMeshes();
         void BindChunks() const;
@@ -84,6 +93,19 @@ class World {
         [[nodiscard]] Chunk* GetChunkLoadRelative(glm::vec3 _chunkPos) const;
         [[nodiscard]] Chunk* GetWorldCentreChunk() const { return worldChunks[worldSize/2][worldSize/2].get(); }
         [[nodiscard]] Biome* GetBiome(BIOMEID _biomeID);
+
+        [[nodiscard]] ChunkThreads* GetThread(THREAD _thread) {
+            switch (_thread) {
+                case THREAD::CHUNKBUILDING:
+                    return &chunkBuilderThread;
+
+                case THREAD::CHUNKMESHING:
+                    return &chunkMesherThread;
+
+                default:
+                    return nullptr;
+            }
+        }
 };
 
 inline std::unique_ptr<World> world {};

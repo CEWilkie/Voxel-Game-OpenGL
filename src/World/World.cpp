@@ -37,12 +37,16 @@ World::World() {
     else glUniform1f(uLocation, loadRadius * chunkSize);
 
     glEnable(GL_DEPTH_TEST);
+
+
+
+    chunkBuilderThread.StartThread();
+    chunkMesherThread.StartThread();
 }
 
 World::~World() {
-    ToggleChunkThreads(false);
-    chunkBuilder.join();
-    chunkMesher.join();
+    chunkBuilderThread.EndThread();
+    chunkMesherThread.EndThread();
 }
 
 void World::Display() const {
@@ -183,20 +187,109 @@ void World::UpdateWorldTime(Uint64 _deltaTicks) {
  */
 
 void World::GenerateRequiredWorld() {
-    GenerateTerrain();
-    GenerateMeshes();
-    BindChunks();
-}
+    ThreadAction createChunkRegion{{0, 0}, std::bind(&World::CreateChunk, this, std::placeholders::_1)};
+    chunkBuilderThread.AddPriorityActionRegion(createChunkRegion, loadRadius);
 
-void World::ToggleChunkThreads(bool _threadsActive) {
-    threadsActive = _threadsActive;
+    while (chunkBuilderThread.HasActions()) {
+        // wait
+        SDL_Delay(10);
+    }
 
-    // Set up the chunk builder and mesher threads for world generation
-    if (threadsActive) {
-        chunkBuilder = std::thread(&World::cbf, this);
-        chunkMesher = std::thread(&World::cmf, this);
+    if (nChunksCreated != 0) {
+        printf("%d CHUNKS LOADED IN %llu TICKS | AVG TICKS PER CHUNK %llu\n",
+               nChunksCreated, chunkSumTicksTaken, chunkAvgTicksTaken);
+    }
+
+    while (chunkMesherThread.HasActions()) {
+        // wait
+        SDL_Delay(10);
+    }
+
+    if (nMeshesCreated != 0) {
+        printf("%d CHUNKS MESHED IN %llu TICKS | AVG TICKS PER CHUNK %llu\n",
+               nMeshesCreated, meshSumTicksTaken, meshAvgTicksTaken);
     }
 }
+
+void World::CreateChunk(const glm::ivec2& _chunkPos) {
+    // Chunk object already exists, dont overwrite
+    glm::vec3 chunkIndex{_chunkPos.x + 1000, 0, _chunkPos.y + 1000};
+    if (GetChunkAtIndex(chunkIndex) != nullptr) {
+        return;
+    }
+
+    // Get ChunkData and create the chunk
+    ChunkData chunkData = GenerateChunkData(_chunkPos);
+    chunkData.biome = GenerateBiome(GetBiomeIDFromData(chunkData));
+    CreateChunkAtIndex(_chunkPos + glm::ivec2{1000,1000}, chunkData);
+
+    // now add that region of chunks to be built by the chunkBuilder
+    ThreadAction generateChunk{_chunkPos, std::bind(&World::GenerateChunk, this, std::placeholders::_1)};
+    chunkBuilderThread.AddActions({generateChunk});
+}
+
+void World::GenerateChunk(const glm::ivec2& _chunkPos) {
+    auto st = SDL_GetTicks64();
+    glm::vec3 chunkPos{_chunkPos.x + 1000, 0, _chunkPos.y + 1000};
+
+    Chunk* chunk = GetChunkAtIndex(chunkPos);
+    if (chunk == nullptr) {
+        // if this situation occurs, probably will be multiple visible generation issues with cross-chunk structures
+        CreateChunk(_chunkPos);
+        chunk = GetChunkAtIndex(chunkPos);
+        if (chunk == nullptr) return;
+    }
+
+    // Set the adjacent chunks
+    std::array<Chunk*, 8> adjacentChunks{nullptr};
+    for (int dir = 2; dir < numDirections; dir++)
+        adjacentChunks[dir - 2] = GetChunkAtIndex(chunkPos + allDirections[dir]);
+
+    chunk->SetAdjacentChunks(adjacentChunks);
+
+    // Generate the chunk's blocks
+    if (!chunk->Generated()) {
+        chunk->GenerateChunk();
+
+        auto et = SDL_GetTicks64();
+
+        chunkSumTicksTaken += et - st;
+        nChunksCreated++;
+        chunkAvgTicksTaken = chunkSumTicksTaken / nChunksCreated;
+    }
+
+    // Create the displayable mesh
+    ThreadAction createMesh{_chunkPos, std::bind(&World::GenerateChunkMesh, this, std::placeholders::_1)};
+    chunkMesherThread.AddActions({createMesh});
+}
+
+
+void World::GenerateChunkMesh(const glm::ivec2 &_chunkPos) const {
+    glm::vec3 chunkIndex = {_chunkPos.x + 1000, 0, _chunkPos.y + 1000};
+
+    Chunk* chunk = GetChunkAtIndex(chunkIndex);
+    if (chunk != nullptr && chunk->Generated() && chunk->NeedsMeshUpdates()) {
+        auto st = SDL_GetTicks64();
+        chunk->CreateChunkMeshes();
+
+        auto et = SDL_GetTicks64();
+
+        meshSumTicksTaken += et - st;
+        nMeshesCreated++;
+        meshAvgTicksTaken = meshSumTicksTaken / nMeshesCreated;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 float World::GenerateBlockHeight(glm::vec2 _blockPos) {
@@ -425,7 +518,13 @@ void World::BindChunks() const {
 
 
 
+void World::CreateChunkAtIndex(const glm::ivec2& _chunkPos, const ChunkData& _chunkData) {
+    if (_chunkPos.x < 0 || _chunkPos.x >= 2000) return;
+    if (_chunkPos.y < 0 || _chunkPos.y >= 2000) return;
 
+    glm::vec3 pos{_chunkPos.x-1000, 0, _chunkPos.y-1000};
+    worldChunks[_chunkPos.x][_chunkPos.y] = std::make_unique<Chunk>(pos, _chunkData);
+}
 
 Chunk* World::GetChunkAtPosition(glm::vec3 _blockPos) const {
     _blockPos /= (float)chunkSize;

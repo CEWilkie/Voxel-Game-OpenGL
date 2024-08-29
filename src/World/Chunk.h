@@ -134,7 +134,7 @@ class Chunk {
         [[nodiscard]] float GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, float _radius) ;
 
         //
-        [[nodiscard]] Block* GetBlockFromData(const BlockType& _blockType);
+        [[nodiscard]] Block& GetBlockFromData(const BlockType& _blockType);
         [[nodiscard]] glm::vec3 GetPosition() const { return chunkPosition; }
         [[nodiscard]] Chunk* GetChunkAtPosition(glm::vec3& _blockPos, int _depth) const;
 };

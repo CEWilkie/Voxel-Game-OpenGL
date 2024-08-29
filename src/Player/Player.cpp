@@ -42,15 +42,13 @@ void Player::Display() {
     // Display frame of targeting block
     if (lookingAtInteractable) {
         ChunkDataTypes::ChunkBlock targetBlock = playerChunk->GetBlockAtPosition(unobstructedRayPosition, 0);
-        Block* targetBlockPtr = playerChunk->GetBlockFromData(targetBlock.type);
+        Block targetBlockPtr = playerChunk->GetBlockFromData(targetBlock.type);
 
-        if (targetBlockPtr != nullptr) {
-            Transformation t;
-            glm::vec3 pos = glm::floor(unobstructedRayPosition) + playerChunk->GetPosition() * (float)chunkSize;
-            t.SetPosition(pos);
-            t.UpdateModelMatrix();
-            targetBlockPtr->DisplayWireframe(t);
-        }
+        Transformation t;
+        glm::vec3 pos = glm::floor(unobstructedRayPosition) + playerChunk->GetPosition() * (float)chunkSize;
+        t.SetPosition(pos);
+        t.UpdateModelMatrix();
+        targetBlockPtr.DisplayWireframe(t);
     }
 }
 
@@ -323,12 +321,11 @@ void Player::GetMovementFriction() {
     glm::vec3 blockPos = position - (playerChunk->GetPosition() * (float) chunkSize);
 
     ChunkDataTypes::ChunkBlock block = playerChunk->GetBlockAtPosition(blockPos, 0);
-    Block *playerBlock = playerChunk->GetBlockFromData(block.type);
-    if (playerBlock == nullptr) return;
+    Block playerBlock = playerChunk->GetBlockFromData(block.type);
 
     // If player is in a liquid then reset jump time
     inLiquid = false;
-    if (playerBlock->GetAttributeValue(BLOCKATTRIBUTE::LIQUID) > 0) {
+    if (playerBlock.GetAttributeValue(BLOCKATTRIBUTE::LIQUID) > 0) {
         canJump = true;
         inLiquid = true;
     }
@@ -427,19 +424,17 @@ void Player::GetUnobstructedRayPosition() {
 
     for (int r = 0; r < (int)accuracy; r++) {
         ChunkDataTypes::ChunkBlock blockAtPosition = playerChunk->GetBlockAtPosition(rayPosition, 0);
-        Block* blockPtr = playerChunk->GetBlockFromData(blockAtPosition.type);
+        Block blockPtr = playerChunk->GetBlockFromData(blockAtPosition.type);
 
-        if (blockPtr != nullptr) {
-            // if the block is breakable, end early
-            if (blockPtr->GetAttributeValue(BLOCKATTRIBUTE::BREAKABLE) > 0) {
-                lookingAtInteractable = true;
-                break;
-            }
+        // if the block is breakable, end early
+        if (blockPtr.GetAttributeValue(BLOCKATTRIBUTE::BREAKABLE) > 0) {
+            lookingAtInteractable = true;
+            break;
+        }
 
-            // block not breakable, however only proceed if the player can access through the block
-            if (blockPtr->GetAttributeValue(BLOCKATTRIBUTE::CANACCESSTHROUGHBLOCK) == 0) {
-                break;
-            }
+        // block not breakable, however only proceed if the player can access through the block
+        if (blockPtr.GetAttributeValue(BLOCKATTRIBUTE::CANACCESSTHROUGHBLOCK) == 0) {
+            break;
         }
 
         // next position
@@ -451,8 +446,14 @@ void Player::GetUnobstructedRayPosition() {
 
 void Player::BreakBlock(glm::vec3 _rayPosition) {
     if (!lookingAtInteractable) return;
-
     playerChunk->BreakBlockAtPosition(_rayPosition);
+
+    // Add the chunks and the region to the chunk mesher thread as priority
+    ChunkThreads* mesher = world->GetThread(THREAD::CHUNKMESHING);
+
+    glm::ivec2 pos{playerChunk->GetPosition().x, playerChunk->GetPosition().z};
+    ThreadAction action{pos, std::bind(&World::GenerateChunkMesh, world.get(), std::placeholders::_1)};
+    mesher->AddPriorityActionRegion(action, 1);
 }
 
 void Player::PlaceBlock(glm::vec3 _rayPosition) {
@@ -460,4 +461,11 @@ void Player::PlaceBlock(glm::vec3 _rayPosition) {
 
     _rayPosition -= glm::normalize(facingDirection) * (range/20.0f);
     playerChunk->PlaceBlockAtPosition(_rayPosition, {STONE, 0});
+
+    // Add the chunks and the region to the chunk mesher thread as priority
+    ChunkThreads* mesher = world->GetThread(THREAD::CHUNKMESHING);
+
+    glm::ivec2 pos{playerChunk->GetPosition().x, playerChunk->GetPosition().z};
+    ThreadAction action{pos, std::bind(&World::GenerateChunkMesh, world.get(), std::placeholders::_1)};
+    mesher->AddPriorityActionRegion(action, 1);
 }

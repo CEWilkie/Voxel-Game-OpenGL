@@ -18,6 +18,13 @@ TextureManager::TextureManager() {
         textureSheetMap[TEXTURESHEET::TEST16] = std::make_unique<TextureData>(*textureData);
     }
 
+    // Font texture atlas
+    textureData = new TextureData("../resources/voxelFont16x.png");
+    if (textureData->IsTextureValid()) {
+        textureData->SetTextureSheetGrid({16, 16});
+        textureSheetMap[TEXTURESHEET::WORLD] = std::make_unique<TextureData>(*textureData);
+    }
+
     // skybox textures
 
     textureData = new TextureData("../resources/skybox16x.png");
