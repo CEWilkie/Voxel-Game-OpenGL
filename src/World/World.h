@@ -69,7 +69,7 @@ class World {
         void CreateChunkAtIndex(const glm::ivec2& _chunkPos, const ChunkData& _chunkData);
 
         void GenerateChunk(const glm::ivec2& _chunkPos);
-        void GenerateChunkMesh(const glm::ivec2& _chunkPos) const;
+        void GenerateChunkMesh(const glm::ivec2& _chunkPos);
 
         // ChunkData Generation functions
         static float GenerateBlockHeight(glm::vec2 _blockPos);

@@ -189,11 +189,15 @@ void World::UpdateWorldTime(Uint64 _deltaTicks) {
 void World::GenerateLoadedWorld() {
     // Ensure chunks exist for loading region (and border) area
     ThreadAction createChunkRegion{loadingChunk, std::bind(&World::CreateChunk, this, std::placeholders::_1)};
-    chunkBuilderThread.AddPriorityActionRegion(createChunkRegion, loadRadius + 1);
+    chunkBuilderThread.AddPriorityActionRegion(createChunkRegion, loadRadius + 2);
 
     // Generate the chunks within the loading region (and not border), this will be done after the chunks are created
     ThreadAction generateChunk{loadingChunk, std::bind(&World::GenerateChunk, this, std::placeholders::_1)};
-    chunkBuilderThread.AddActionRegion(generateChunk, loadRadius);
+    chunkBuilderThread.AddActionRegion(generateChunk, loadRadius + 1);
+
+    // Mesh the chunks within the loading region
+    ThreadAction createMesh{loadingChunk, std::bind(&World::GenerateChunkMesh, this, std::placeholders::_1)};
+    chunkMesherThread.AddActionRegion(createMesh, loadRadius);
 }
 
 void World::CreateChunk(const glm::ivec2& _chunkPos) {
@@ -239,18 +243,14 @@ void World::GenerateChunk(const glm::ivec2& _chunkPos) {
         nChunksCreated++;
         chunkAvgTicksTaken = chunkSumTicksTaken / nChunksCreated;
     }
-
-    // Create the displayable mesh
-    ThreadAction createMesh{_chunkPos, std::bind(&World::GenerateChunkMesh, this, std::placeholders::_1)};
-    chunkMesherThread.AddActions({createMesh});
 }
 
 
-void World::GenerateChunkMesh(const glm::ivec2 &_chunkPos) const {
+void World::GenerateChunkMesh(const glm::ivec2 &_chunkPos) {
     glm::vec3 chunkIndex = {_chunkPos.x + 1000, 0, _chunkPos.y + 1000};
 
     Chunk* chunk = GetChunkAtIndex(chunkIndex);
-    if (chunk != nullptr && chunk->Generated() && chunk->NeedsMeshUpdates()) {
+    if (chunk != nullptr && chunk->RegionGenerated() && chunk->NeedsMeshUpdates()) {
         auto st = SDL_GetTicks64();
         chunk->CreateChunkMeshes();
 
@@ -259,6 +259,11 @@ void World::GenerateChunkMesh(const glm::ivec2 &_chunkPos) const {
         meshSumTicksTaken += et - st;
         nMeshesCreated++;
         meshAvgTicksTaken = meshSumTicksTaken / nMeshesCreated;
+    }
+    else if (chunk == nullptr || !chunk->RegionGenerated()) {
+        // Waiting on the chunk to be made / generate
+        ThreadAction meshChunk{_chunkPos, std::bind(&World::GenerateChunkMesh, this, std::placeholders::_1)};
+        chunkMesherThread.AddActions({meshChunk});
     }
 }
 

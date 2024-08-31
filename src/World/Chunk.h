@@ -92,7 +92,6 @@ class Chunk {
         [[nodiscard]] std::vector<BLOCKFACE> GetHiddenFaces(glm::vec3 _blockPos);
         [[nodiscard]] std::vector<BLOCKFACE> GetShowingFaces(glm::vec3 _blockPos);
         [[nodiscard]] MaterialMesh* GetMeshFromBlock(const BlockType& _blockType);
-        [[nodiscard]] bool Generated() const { return generated; }
 
         // Chunk Culling
         void CheckCulling(const Camera& _camera);
@@ -103,6 +102,8 @@ class Chunk {
         void CreateTerrain();
         void CreateVegitation(glm::vec3 _blockPos);
         void SetAdjacentChunks(const std::array<Chunk*, 8>& _chunks);
+        [[nodiscard]] bool Generated() const { return generated; }
+        [[nodiscard]] bool RegionGenerated() const;
 
         // Chunk Block Interaction
         void BreakBlockAtPosition(glm::vec3 _blockPos);

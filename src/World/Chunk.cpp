@@ -405,6 +405,18 @@ void Chunk::SetAdjacentChunks(const std::array<Chunk*, 8> &_chunks) {
 }
 
 
+/*
+ * Checks if any adjacent chunk, or this chunk is not generated. Returns true if all chunks (and this chunk) have
+ * been generated
+ */
+
+bool Chunk::RegionGenerated() const {
+    return generated &&
+    !std::any_of(adjacentChunks.begin(), adjacentChunks.end(), [](Chunk* adjacentChunk){
+        if (adjacentChunk == nullptr) return false;
+        else return !adjacentChunk->Generated();
+    });
+}
 
 /*
  * Set the block at the given block position to air, and update the meshes of the broken block, and surrounding blocks

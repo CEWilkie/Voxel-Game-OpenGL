@@ -317,7 +317,6 @@ std::vector<Vertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &_faces
 
             // Store Vertex and used Index
             Vertex faceVertex = baseVertexArray[baseIndexArray[i]];
-//
 //            if (face == TOP || face == BOTTOM) {
 //                faceVertex.position = rotationY * glm::vec4(faceVertex.position, 1.0f);
 //                if (angleDeg == 90.0f) {
