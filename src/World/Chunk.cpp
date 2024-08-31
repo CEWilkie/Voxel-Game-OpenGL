@@ -13,102 +13,6 @@
 #include "LoadStructure.h"
 
 /*
- * SUBCHUNK
- */
-
-ChunkNode::ChunkNode(Block* _nodeBlock, glm::vec3 _blockPos, Chunk* _root) {
-    rootChunk = _root;
-    nodeBlock = _nodeBlock;
-
-    // set position
-    position = _blockPos;
-}
-
-ChunkNode::ChunkNode(std::vector<std::unique_ptr<ChunkNode>> _subNodes, Chunk* _root) {
-    rootChunk = _root;
-    subNodes = std::move(_subNodes);
-
-    // Set scale of the node
-    scale = subNodes.front()->scale * 2;
-
-    // Set position of the node
-    position = subNodes.front()->position;
-    for (const auto& subNode : subNodes) {
-        glm::vec3 subNodePosition = subNode->position;
-        if (subNodePosition.x < position.x && subNodePosition.y > position.y && subNodePosition.z < position.z)
-            position = subNodePosition;
-    }
-
-    // Check if all subnodes are of the same block type
-    if (subNodes.front()->isSingleType) {
-        Block* firstBlock = subNodes.front()->nodeBlock;
-        for (const auto& subNode : subNodes) {
-            if (firstBlock == subNode->nodeBlock) continue; // both air blocks -> same type
-
-            // sub node is not of a singular block type, cannot merge
-            if (!subNode->isSingleType) {
-                isSingleType = false;
-                break;
-            }
-
-            // Checking air nodes
-            if (firstBlock == nullptr && subNode->nodeBlock != nullptr ||
-                    firstBlock != nullptr && subNode->nodeBlock == nullptr) {
-                isSingleType = false;
-                break;
-            }
-
-            // sub node block type is not the same as the first node, cannot merge
-            if (!BlockType::IsSame(subNode->nodeBlock->GetBlockType(), firstBlock->GetBlockType())) {
-                isSingleType = false;
-                break;
-            }
-        }
-    }
-    else isSingleType = false;
-
-    // If they are the same, use their blockData for the chunk
-    if (isSingleType) {
-        // Drop subNodes
-        nodeBlock = subNodes.front()->nodeBlock;
-        subNodes.clear();
-    }
-}
-ChunkNode::~ChunkNode() = default;
-
-
-
-void ChunkNode::UpdateMaterialMesh(MaterialMesh* _mesh) {
-    // Traverse node tree until reaching single-type nodes
-    for (auto& subNode : subNodes)
-        subNode->UpdateMaterialMesh(_mesh);
-
-    // Not single type or air block, cannot create a material mesh for the node
-    if (!isSingleType || nodeBlock == nullptr || nodeBlock->GetBlockType().blockID == AIR) return;
-
-    // Not matching type of the mesh
-    if (!BlockType::IsSame(_mesh->GetBlock()->GetBlockType(), nodeBlock->GetBlockType())) return;
-
-    glm::vec3 cOrigin = position - rootChunk->GetPosition() * (float)chunkSize;
-    glm::vec3 cMax = {cOrigin.x + scale, cOrigin.y + scale, cOrigin.z + scale};
-
-    for (int x = (int)cOrigin.x; x < (int)cMax.x; x++) {
-        for (int y = (int)cOrigin.y; y < (int)cMax.y; y++) {
-            for (int z = (int)cOrigin.z; z < (int)cMax.z; z++) {
-
-            }
-        }
-    }
-}
-
-
-
-
-
-
-
-
-/*
  * CHUNK
  */
 
@@ -126,9 +30,6 @@ Chunk::Chunk(const glm::vec3& _chunkPosition, ChunkData _chunkData) {
     // Create bounding box for the chunk (assume max 16x16x16 volume)
     boxBounds = std::move(GenerateBoxBounds({{glm::vec3(0,0,0)},
                                              {glm::vec3(chunkSize,chunkSize,chunkSize)}}));
-
-    // Guarantee Air Block
-    uniqueBlocks.emplace_back(CreateBlock({AIR, 0}), 1);
 
     // Set chunkData
     chunkData = _chunkData;
@@ -148,10 +49,9 @@ void Chunk::DisplaySolid() {
     if (USE_WIREFRAME) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // Draw only the blocks that are solid
-    for (const auto& mesh : blockMeshes) {
-        if (mesh->GetBlock()->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 1) continue;
-
-        mesh->DrawMesh(displayTransformation);
+    for (const auto& mesh : uniqueMeshMap) {
+        if (mesh.second->GetBlock()->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 1) continue;
+        mesh.second->DrawMesh(displayTransformation);
     }
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -169,10 +69,9 @@ void Chunk::DisplayTransparent() {
     if (USE_WIREFRAME) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // Draw only the blocks that are transparent
-    for (const auto& mesh : blockMeshes) {
-        if (mesh->GetBlock()->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 0) continue;
-
-        mesh->DrawMesh(displayTransformation);
+    for (const auto& mesh : uniqueMeshMap) {
+        if (mesh.second->GetBlock()->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 0) continue;
+        mesh.second->DrawMesh(displayTransformation);
     }
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -193,7 +92,7 @@ void Chunk::DisplayTransparent() {
  */
 
 void Chunk::UpdateBlockMesh(Block* _meshBlock) {
-    MaterialMesh* blockMesh = GetMeshFromBlock(_meshBlock);
+    MaterialMesh* blockMesh = GetMeshFromBlock(_meshBlock->GetBlockType());
     if (blockMesh == nullptr || blockMesh->GetBlock()->GetBlockType().blockID == AIR) return;
 
     blockMesh->ResetVerticies();
@@ -204,7 +103,7 @@ void Chunk::UpdateBlockMesh(Block* _meshBlock) {
                 ChunkDataTypes::ChunkBlock block = GetBlockAtPosition({x,y,z}, 0);
                 Block blockPtr = GetBlockFromData(block.type);
 
-                if (BlockType::IsSame(block.type, _meshBlock->GetBlockType())) {
+                if (block.type == _meshBlock->GetBlockType()) {
                     std::vector<Vertex> verticies = blockPtr.GetFaceVerticies(GetShowingFaces({x,y,z}), block.attributes);
                     blockMesh->AddVerticies(verticies, {x,y,z});
                 }
@@ -223,37 +122,32 @@ void Chunk::UpdateBlockMesh(Block* _meshBlock) {
  */
 
 void Chunk::CreateChunkMeshes() {
-    for (auto& blockMesh : blockMeshes) {
-        if (blockMesh->IsOld()) {
-            blockMesh->ResetVerticies();
+    for (auto& mesh : uniqueMeshMap) {
+        if (mesh.second->IsOld()) {
+            mesh.second->ResetVerticies();
         }
     }
 
-    auto s = SDL_GetTicks64();
     for (int x = 0; x < chunkSize; x++) {
         for (int z = 0; z < chunkSize; z++) {
-            for (int y = 0; y < chunkHeight; y++) {
-
-
-                ChunkDataTypes::ChunkBlock block = GetBlockAtPosition({x,y,z}, 0);
+            for (int y = chunkHeight - 1; y > -1; y--) {
+                ChunkDataTypes::ChunkBlock block = GetChunkBlockAtPosition({x,y,z});
                 if (block.type.blockID == AIR) continue;
 
-                Block blockPtr = GetBlockFromData(block.type);
-                MaterialMesh* blockMesh = GetMeshFromBlock(&GetBlockFromData(block.type));
-                if (blockMesh == nullptr || !blockMesh->IsOld()) continue;
+                MaterialMesh* blockMesh = GetMeshFromBlock(block.type);
+                if (!blockMesh->IsOld()) continue;
 
                 // Add verticies to mesh
+                Block blockPtr = GetBlockFromData(block.type);
                 std::vector<Vertex> verticies = blockPtr.GetFaceVerticies(GetShowingFaces({x,y,z}), block.attributes);
                 blockMesh->AddVerticies(verticies, {x,y,z});
             }
         }
     }
 
-    printf("time taken : %llu\n", SDL_GetTicks64() - s);
-
-    for (auto& blockMesh : blockMeshes) {
-        if (blockMesh->IsOld()) {
-            blockMesh->MarkReadyToBind();
+    for (auto& mesh : uniqueMeshMap) {
+        if (mesh.second->IsOld()) {
+            mesh.second->MarkReadyToBind();
         }
     }
 
@@ -269,9 +163,9 @@ void Chunk::MarkForMeshUpdates() {
 
 
 void Chunk::BindChunkMeshes() {
-    for (auto& blockMesh : blockMeshes) {
-        if (blockMesh->ReadyToBind()) {
-            blockMesh->BindMesh();
+    for (auto& mesh : uniqueMeshMap) {
+        if (mesh.second->ReadyToBind()) {
+            mesh.second->BindMesh();
         }
     }
 
@@ -291,7 +185,7 @@ std::vector<BLOCKFACE> Chunk::GetHiddenFaces(glm::vec3 _blockPos) {
             glm::vec3{1,0,0}, glm::vec3{0, 0, 1}, glm::vec3{0, 0, -1}};
 
     ChunkDataTypes::ChunkBlock checkingBlock = GetBlockAtPosition(_blockPos, 0);
-    if (BlockType::IsSame(checkingBlock.type, {AIR, 0})) return faces; // Air block
+    if (checkingBlock.type == BlockType{AIR, 0}) return faces; // Air block
     Block checkingPtr = GetBlockFromData(checkingBlock.type);
 
     for (int i = 0; i < faces.size(); i++) {
@@ -301,7 +195,7 @@ std::vector<BLOCKFACE> Chunk::GetHiddenFaces(glm::vec3 _blockPos) {
         // transparent blocks only show when there is air
         if (checkingPtr.GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 1) {
             // Is air, face is not hidden
-            if (BlockType::IsSame(checkingBlock.type, {AIR, 0})) {
+            if (checkingBlock.type != BlockType{AIR, 0}) {
                 continue;
             }
         }
@@ -330,38 +224,38 @@ std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _blockPos) {
             dirTop, dirBottom, dirFront,
             dirBack, dirRight, dirLeft};
 
-    // Get block being checked
-    ChunkDataTypes::ChunkBlock checkingBlock = GetBlockAtPosition(_blockPos, 0);
-    if (BlockType::IsSame(checkingBlock.type, {AIR, 0})) return {}; // Air block
-    Block checkingPtr = GetBlockFromData(checkingBlock.type);
+    // Get block being checked, if it is an air block, no faces are returned
+    ChunkDataTypes::ChunkBlock checkingBlockData = GetBlockAtPosition(_blockPos, 0);
+    Block checkingBlock = GetBlockFromData(checkingBlockData.type);
+    if (checkingBlockData.type == BlockType{AIR, 0}) return {};
 
     // if the block cannot have obscured faces
-    if (checkingPtr.GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 15)
+    if (checkingBlock.GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 15)
         return {FRONT, BACK};
 
     // Check for non-transparent block on each face (or non-same transparent block for a transparent block)
     for (int i = 0; i < faces.size(); i++) {
-        ChunkDataTypes::ChunkBlock blockAtFace = GetBlockAtPosition(_blockPos + positionOffsets[i], 0);
-        Block facePtr = GetBlockFromData(blockAtFace.type);
+        ChunkDataTypes::ChunkBlock faceBlockData = GetBlockAtPosition(_blockPos + positionOffsets[i], 0);
+        Block faceBlock = GetBlockFromData(faceBlockData.type);
+
+        // obscure face always if the block there is non-transparent
+        if (faceBlock.GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 0) {
+            continue;
+        }
 
         // transparency 1 blocks only show when there is air adjacent
-        if (checkingPtr.GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 1) {
+        if (checkingBlock.GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 1) {
             // Is not air
-            if (!BlockType::IsSame(blockAtFace.type, {AIR, 0})) {
+            if (faceBlockData.type != BlockType{AIR, 0}) {
                 continue;
             }
         }
 
         // transparency 2 blocks hide back, left or bottom faces which are obscured by non transparency 1 blocks
-        if (checkingPtr.GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 2) {
-            if (facePtr.GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) != 1) {
+        if (checkingBlock.GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 2) {
+            if (faceBlock.GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) != 1) {
                 if (faces[i] == BACK || faces[i] == LEFT || faces[i] == BOTTOM) continue;
             }
-        }
-
-        // obscure face always if the block there is non-transparent
-        if (facePtr.GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 0) {
-            continue;
         }
 
         showingFaces.push_back(faces[i]);
@@ -370,17 +264,12 @@ std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _blockPos) {
     return showingFaces;
 }
 
-MaterialMesh* Chunk::GetMeshFromBlock(Block* _block) {
-    if (_block == nullptr) return nullptr;
-
-    // Check for mesh in unique meshes vector
-    for (const auto& mesh : blockMeshes) {
-        if (mesh->GetBlock()->GetBlockType() == _block->GetBlockType()) return mesh.get();
+MaterialMesh* Chunk::GetMeshFromBlock(const BlockType& _blockType) {
+    if (uniqueMeshMap[_blockType] == nullptr) {
+        uniqueMeshMap[_blockType] = std::make_unique<MaterialMesh>(&GetBlockFromData(_blockType));
     }
 
-    // No mesh found for specified block -> create a new mesh for that block
-    blockMeshes.push_back(std::make_unique<MaterialMesh>(_block));
-    return blockMeshes.back().get();
+    return uniqueMeshMap[_blockType].get();
 }
 
 
@@ -429,7 +318,7 @@ void Chunk::CreateTerrain() {
                 // block attempting to generate, then ignore new gen attempt. Equivalent gen priority sees newest
                 // generation overwrite
 
-                if (!BlockType::IsSame(terrain[x][y][z].type, {AIR, 0})) {
+                if (terrain[x][y][z].type != BlockType{AIR, 0}) {
                     Block generatedBlock = GetBlockFromData(terrain[x][y][z].type);
                     GLbyte generatedPriority = generatedBlock.GetAttributeValue(BLOCKATTRIBUTE::GENERATIONPRIORITY);
                     GLbyte generatingPriority = generatingBlock.GetAttributeValue(BLOCKATTRIBUTE::GENERATIONPRIORITY);
@@ -488,7 +377,7 @@ void Chunk::CreateVegitation(glm::vec3 _blockPos) {
             Block loadingBlock = GetBlockFromData(blockData.blockType);
 
             // Ensure vegetation can overwrite any current blocks in that position
-            if (!BlockType::IsSame(blockAtPosition.type, {AIR, 0})) {
+            if (blockAtPosition.type != BlockType{AIR, 0}) {
                 Block generatedBlock = GetBlockFromData(blockAtPosition.type);
                 GLbyte generatedPriority = generatedBlock.GetAttributeValue(BLOCKATTRIBUTE::GENERATIONPRIORITY);
                 GLbyte generatingPriority = loadingBlock.GetAttributeValue(BLOCKATTRIBUTE::GENERATIONPRIORITY);
@@ -544,7 +433,7 @@ void Chunk::PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType) {
                                              _blockPos + dirRight, _blockPos + dirFront, _blockPos + dirBack};
 
     // Mark block's mesh for recreation and add block mesh's chunk to list
-    MaterialMesh* blockMesh = blockChunk->GetMeshFromBlock(&blockChunk->GetBlockFromData(_blockType));
+    MaterialMesh* blockMesh = blockChunk->GetMeshFromBlock(_blockType);
     if (blockMesh != nullptr) blockMesh->MarkOld();
 
     for (auto& blockPosition : blockPositions) {
@@ -553,7 +442,7 @@ void Chunk::PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType) {
             chunkAtPosition->MarkForMeshUpdates();
 
             ChunkDataTypes::ChunkBlock chunkBlock = chunkAtPosition->GetBlockAtPosition(blockPosition, 0);
-            MaterialMesh* chunkMesh = chunkAtPosition->GetMeshFromBlock(&GetBlockFromData(chunkBlock.type));
+            MaterialMesh* chunkMesh = chunkAtPosition->GetMeshFromBlock(chunkBlock.type);
             if (chunkMesh != nullptr) chunkMesh->MarkOld();
         }
     }
@@ -568,18 +457,8 @@ void Chunk::PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType) {
 void Chunk::SetChunkBlockAtPosition(const glm::vec3 &_blockPos, const BlockType& _blockType) {
     terrain[(int)_blockPos.x][(int)_blockPos.y][(int)_blockPos.z].type = _blockType;
 
-    // Check if material is new to the chunk
-    if (!std::any_of(uniqueBlocks.begin(), uniqueBlocks.end(),
-                     [&](std::pair<std::unique_ptr<Block>, int> &uniqueBlock) {
-        // Block is unique
-        if (!BlockType::IsSame(uniqueBlock.first->GetBlockType(), _blockType)) return false;
-
-        // Already exists, increment count
-        uniqueBlock.second += 1;
-        return true;
-    })) {
-        // create a new block of the specified type, and create mesh for block
-        uniqueBlocks.emplace_back(CreateBlock(_blockType), 1);
+    if (uniqueBlockMap[_blockType] == nullptr) {
+        uniqueBlockMap[_blockType] = CreateBlock(_blockType);
     }
 }
 
@@ -626,14 +505,11 @@ ChunkDataTypes::ChunkBlock Chunk::GetBlockAtPosition(glm::vec3 _blockPos, int _d
  */
 
 Block& Chunk::GetBlockFromData(const BlockType& _blockType) {
-    for (const auto& block : uniqueBlocks) {
-        if (BlockType::IsSame(block.first->GetBlockType(), _blockType))
-            return *block.first;
+    if (uniqueBlockMap[_blockType] == nullptr) {
+        uniqueBlockMap[_blockType] = CreateBlock(_blockType);
     }
 
-    // No block found with specified data, so it is new to the chunk -> add to uniqueBlocks
-    uniqueBlocks.emplace_back(CreateBlock(_blockType), 1);
-    return *uniqueBlocks.back().first;
+    return *uniqueBlockMap[_blockType];
 }
 
 

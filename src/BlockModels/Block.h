@@ -89,20 +89,22 @@ struct BlockType {
     BLOCKID blockID {BLOCKID::AIR};
     GLbyte variantID {0};
 
-    static bool IsSame(const BlockType& A, const BlockType& B) {
+    friend bool operator==(const BlockType& A, const BlockType& B) {
         return A.blockID == B.blockID && A.variantID == B.variantID;
     }
 
-    friend bool operator==(const BlockType& A, const BlockType& B) {
-        return IsSame(A, B);
-    }
-
     friend bool operator!=(const BlockType& A, const BlockType& B) {
-        return !IsSame(A, B);
+        return !(A == B);
     }
 } __attribute__((packed));
 
-
+// Required for map to hash the BlockType
+template <>
+struct std::hash<BlockType> {
+    size_t operator()(const BlockType& A) const {
+        return (std::hash<BLOCKID>()(A.blockID)) ^ (std::hash<GLbyte>()(A.variantID));
+    }
+};
 
 /*
  * Enums for each attribute that a block uses. Attributes when applied to a block should refer to an int value which

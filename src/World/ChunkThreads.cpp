@@ -53,6 +53,11 @@ void ChunkThreads::EndThread() {
     enabled = false;
     threadCV.notify_one();
 
+    // Remove remaining tasks
+    queueMutex.lock();
+    actionQueue.clear();
+    queueMutex.unlock();
+
     // thread will perform final operations and end
 }
 
@@ -81,9 +86,34 @@ void ChunkThreads::ThreadLoop() {
         actionQueue.pop_front();
         queueMutex.unlock();
 
+        auto st = std::chrono::high_resolution_clock::now();
         currentAction.DoAction();
+        auto et = std::chrono::high_resolution_clock::now();
+
+        auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(et - st).count();
+        if (duration > 500000) {
+            actionsCompleted++;
+            sumNStaken += duration;
+        }
 
         // next action ...
+
+//        if (duration > 50'000000) { // greater than 50ms
+//            avgNStaken = sumNStaken / actionsCompleted;
+//            printf("NOITCE: LAST ACTION TOOK %llu MS\n", duration / 1000000);
+//            printf("%d ACTIONS COMPLETED, %zu REMAIN IN QUEUE | CURRENT AVERAGE MS PER ACTION %llu\n",
+//                   actionsCompleted, actionQueue.size(), avgNStaken / 1000000);
+//        }
+
+        if (actionQueue.empty() && actionsCompleted > 0) {
+            avgNStaken = sumNStaken / actionsCompleted;
+            printf("SINCE LAST ACTIONS . . .");
+            printf("%d ACTIONS COMPLETED IN %llu MS | AVG MS PER ACTION %llu\n",
+                   actionsCompleted, sumNStaken / 1000000, avgNStaken / 1000000);
+
+            actionsCompleted = 0;
+            sumNStaken = 0;
+        }
     }
 
     finished = true;

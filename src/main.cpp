@@ -62,7 +62,7 @@ int main(int argc, char** argv){
     // Create world and enable chunk builder threads
     world = std::make_unique<World>();
     world->SetLoadingOrigin({0,0,0});
-    world->GenerateRequiredWorld();
+    world->GenerateLoadedWorld();
 
     /*
      * PLAYER CREATION
@@ -81,13 +81,52 @@ int main(int argc, char** argv){
      */
 
     // Trap mouse to screen and hide it
-    SDL_SetWindowGrab(window.WindowPtr(), SDL_TRUE);
+    SDL_bool grabMouse = SDL_TRUE;
+    SDL_SetWindowGrab(window.WindowPtr(), grabMouse);
     SDL_ShowCursor(SDL_DISABLE);
 
-    // Render Loop
     bool running = true;
     bool escToggled = false;
-    SDL_bool grabMouse = SDL_TRUE;
+
+    // Whilst the world is still loading, hold the user here
+    auto build = world->GetThread(THREAD::CHUNKBUILDING);
+    auto mesh = world->GetThread(THREAD::CHUNKMESHING);
+
+    while (build->HasActions() || mesh->HasActions()) {
+        // SDL EVENTS
+        SDL_Event event;
+        while (SDL_PollEvent(&event) != 0) {
+            if (event.type == SDL_QUIT) {
+                running = false;
+                build->EndThread();
+                mesh->EndThread();
+            }
+        }
+
+        // KEYBOARD STATES
+        const std::uint8_t* state = SDL_GetKeyboardState(nullptr);
+
+        // LOCK / UNLOCK MOUSE TO SCREEN
+        if (state[SDL_SCANCODE_ESCAPE]) {
+            // Guard against escape being set to false after 2 frame press
+            if (!escToggled) {
+                // Set mouse pos to centre to prevent change in looking target on resume
+                int maxx, maxy;
+                window.GetWindowSize(maxx, maxy);
+                SDL_WarpMouseInWindow(window.WindowPtr(), maxx/2, maxy/2);
+
+                // lock mouse to window
+                grabMouse = (grabMouse == SDL_TRUE) ? SDL_FALSE : SDL_TRUE;
+                SDL_SetWindowGrab(window.WindowPtr(), grabMouse);
+                SDL_ShowCursor((grabMouse == SDL_TRUE) ? SDL_DISABLE : SDL_ENABLE);
+            }
+
+            escToggled = true;
+        }
+        if (!state[SDL_SCANCODE_ESCAPE]) escToggled = false;
+    }
+
+    // Render Loop
     Uint64 deltaTicks, endTick = SDL_GetTicks64();
     glm::mat4 lastViewMatrix {};
 
@@ -103,10 +142,10 @@ int main(int argc, char** argv){
 
         Uint64 startTick = SDL_GetTicks64();
         deltaTicks = startTick - endTick;
-//        if (deltaTicks < 1000 / target) {
-//            SDL_Delay(Uint32((1000 / target) - deltaTicks));
-//            deltaTicks = SDL_GetTicks64() - endTick;
-//        }
+        if (deltaTicks < 1000 / target) {
+            SDL_Delay(Uint32((1000 / target) - deltaTicks));
+            deltaTicks = SDL_GetTicks64() - endTick;
+        }
         endTick = startTick;
 
         frames += 1;

@@ -119,7 +119,7 @@ void Player::FlyingMovement(const std::uint8_t* _keyInputs, float _seconds) {
         moveDirection -= normalUp;
     }
     if (_keyInputs[SDL_SCANCODE_LCTRL]) {
-        maxHorizSpeed = 22.5f;
+        maxHorizSpeed = 27.5f;
     }
     if (!_keyInputs[SDL_SCANCODE_LCTRL]) {
         maxHorizSpeed = 15.0f;
@@ -262,6 +262,7 @@ void Player::UpdatePlayerChunk() {
     if (pChunk!= nullptr) {
         if (pChunk != playerChunk && playerChunk != nullptr) {
             world->SetLoadingOrigin(pChunk->GetPosition());
+            world->GenerateLoadedWorld();
         }
 
         // update player chunk

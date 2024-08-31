@@ -49,24 +49,12 @@ inline Uint64 meshAvgTicksTaken = 0;
 inline Uint64 meshSumTicksTaken = 0;
 
 
-// CHUNK TYPEDEFS
-namespace ChunkDataTypes {
-    struct ChunkBlock {
-        BlockType type {AIR, 0};
-        BlockAttributes attributes;
-    };
-    typedef std::array<std::array<std::array<ChunkBlock, chunkSize>, chunkHeight>, chunkSize> TerrainArray;
-    typedef std::array<std::array<std::array<float, chunkSize>, chunkHeight>, chunkSize> DensityArray;
-    typedef std::array<float, chunkArea> DataMap;
-}
-
-
 /*
  * MOVEMENT VALUES
  */
 
 const inline float JUMPHEIGHT = 1.2f;
-const inline float JUMPDURATION = 0.2f;
+const inline float JUMPDURATION = 0.15f;
 const inline float GRAVITY = -(JUMPHEIGHT / (2 * std::pow(JUMPDURATION, 2.0f)));
 const inline float JUMPSPEED = sqrtf(2 * JUMPHEIGHT * -GRAVITY);
 

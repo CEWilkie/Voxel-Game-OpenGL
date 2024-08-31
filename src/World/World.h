@@ -49,7 +49,7 @@ class World {
         ChunkThreads chunkBuilderThread;
         ChunkThreads chunkMesherThread;
 
-        glm::ivec2 loadingChunk {1000, 1000}; // inits to origin
+        glm::ivec2 loadingChunk {0, 0}; // centre
 
     public:
         World();
@@ -80,11 +80,8 @@ class World {
 
 
         void SetLoadingOrigin(const glm::vec3& _origin);
-        void GenerateRequiredWorld();
+        void GenerateLoadedWorld();
 
-        // Chunk Generation Threads
-        void GenerateTerrain();
-        void GenerateMeshes();
         void BindChunks() const;
 
         // Getters

@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <memory>
+#include <unordered_map>
 
 #include "../Blocks/TerrainBlocks.h"
 #include "../BlockModels/ModelTransformations.h"
@@ -16,39 +17,19 @@
 #include "WorldGenConsts.h"
 #include "Biome.h"
 
-class Chunk;
+// CHUNK TYPEDEFS
+namespace ChunkDataTypes {
+    struct ChunkBlock {
+        BlockType type {AIR, 0};
+        BlockAttributes attributes;
+    };
 
-/*
- * Legacy stuff for octree implementations. Currently not used in favour of a more simple 3d-array approach for
- * chunk blocks. Going to leave the code in the files for the potential of future re-implementation.
- */
-
-class ChunkNode {
-    protected:
-        // Tree objects
-        Chunk* rootChunk {};
-        std::vector<std::unique_ptr<ChunkNode>> subNodes {};
-        Block* nodeBlock {};
-
-        // Positioning
-        float scale = 1;
-        glm::vec3 position {0,0,0};
-
-        // Merge nodes
-        bool isSingleType = true;
-
-    public:
-        ChunkNode(Block* _nodeBlock, glm::vec3  _blockPos, Chunk* _root);
-        ChunkNode(std::vector<std::unique_ptr<ChunkNode>> _subNodes, Chunk* _root);
-        ~ChunkNode();
-
-        // Node material mesh creation
-        void UpdateMaterialMesh(MaterialMesh* _mesh);
-};
+    typedef std::array<std::array<std::array<ChunkBlock, chunkSize>, chunkHeight>, chunkSize> TerrainArray;
+    typedef std::array<std::array<std::array<float, chunkSize>, chunkHeight>, chunkSize> DensityArray;
+    typedef std::array<float, chunkArea> DataMap;
 
 
-
-
+}
 
 /*
  * Simple data struct used to hold various maps of the chunk's blocks and biome information.
@@ -79,8 +60,8 @@ class Chunk {
         bool unboundMeshChanges = false;
 
         // Chunk Terrain and Block Data
-        std::vector<std::pair<std::unique_ptr<Block>, int>> uniqueBlocks {};                                            // block, count
-        std::vector<std::unique_ptr<MaterialMesh>> blockMeshes {};                                                      // for each unique block
+        std::unordered_map<BlockType, std::unique_ptr<Block>> uniqueBlockMap {};
+        std::unordered_map<BlockType, std::unique_ptr<MaterialMesh>> uniqueMeshMap {};
         ChunkDataTypes::TerrainArray terrain {};
         bool generated = false;
 
@@ -110,7 +91,7 @@ class Chunk {
         [[nodiscard]] bool UnboundMeshChanges() const { return unboundMeshChanges; }
         [[nodiscard]] std::vector<BLOCKFACE> GetHiddenFaces(glm::vec3 _blockPos);
         [[nodiscard]] std::vector<BLOCKFACE> GetShowingFaces(glm::vec3 _blockPos);
-        [[nodiscard]] MaterialMesh* GetMeshFromBlock(Block* _block);
+        [[nodiscard]] MaterialMesh* GetMeshFromBlock(const BlockType& _blockType);
         [[nodiscard]] bool Generated() const { return generated; }
 
         // Chunk Culling

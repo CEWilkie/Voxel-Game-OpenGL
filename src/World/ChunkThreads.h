@@ -11,6 +11,7 @@
 
 #include <queue>
 #include <functional>
+#include <chrono>
 
 #include "Chunk.h"
 
@@ -46,6 +47,11 @@ class ChunkThreads {
         // Thread functionality
         void ThreadLoop();
         std::thread chunkThread;
+
+        // action time measurements
+        int actionsCompleted = 0;
+        Uint64 avgNStaken = 0.0;
+        Uint64 sumNStaken = 0.0;
 
     public:
         ChunkThreads();
