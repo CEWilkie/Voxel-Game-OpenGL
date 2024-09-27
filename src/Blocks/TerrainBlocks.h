@@ -54,4 +54,10 @@ class Air : public Block {
     public:
         explicit Air(GLbyte _variant);
 };
+
+class UnbreakableBlock : public Block
+{
+    public:
+        explicit UnbreakableBlock(GLbyte _variant);
+};
 #endif //UNTITLED7_TERRAINBLOCKS_H

@@ -81,3 +81,14 @@ Air::Air(GLbyte _variant) {
     generationPriority = 0;
     entityCollisionSolid = 0;
 }
+
+UnbreakableBlock::UnbreakableBlock(GLbyte _variant)
+{
+    blockData = {BLOCKID::UNBREAKABLEBLOCK, _variant};
+
+    sheet = TEXTURESHEET::TERRAIN;
+    origin = {1,1};
+
+    breakable = 0;
+
+}

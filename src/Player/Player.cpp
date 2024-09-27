@@ -447,6 +447,13 @@ void Player::GetUnobstructedRayPosition() {
 
 void Player::BreakBlock(glm::vec3 _rayPosition) {
     if (!lookingAtInteractable) return;
+
+    // Ensure block is breakable by player
+    ChunkDataTypes::ChunkBlock blockdata = playerChunk->GetBlockAtPosition(_rayPosition, 0);
+    auto block = playerChunk->GetBlockFromData(blockdata.type);
+    if (block.GetAttributeValue(BLOCKATTRIBUTE::BREAKABLE) <= 0) return;
+
+    // Break block
     playerChunk->BreakBlockAtPosition(_rayPosition);
 
     // Add the chunks and the region to the chunk mesher thread as priority

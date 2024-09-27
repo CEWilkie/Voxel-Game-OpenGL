@@ -53,6 +53,10 @@ inline std::unique_ptr<Block> CreateBlock(BlockType _blockData) {
             newBlock = std::make_unique<Wood>(variant);
             break;
 
+        case BLOCKID::UNBREAKABLEBLOCK:
+            newBlock = std::make_unique<UnbreakableBlock>(variant);
+            break;
+
         default:
             // Block not defined
             newBlock = std::make_unique<TestBlock>(variant);

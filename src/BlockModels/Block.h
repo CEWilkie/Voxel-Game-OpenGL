@@ -75,7 +75,7 @@ inline std::unique_ptr<BlockVAOs> blockVAOmanager {};
  */
 
 enum BLOCKID : unsigned int {
-    TEST, GRASS, DIRT, STONE, WATER, AIR, SAND, LEAVES, WOOD, GRASSPLANT,
+    TEST, GRASS, DIRT, STONE, WATER, AIR, SAND, LEAVES, WOOD, GRASSPLANT, UNBREAKABLEBLOCK,
 };
 
 
