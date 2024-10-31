@@ -20,14 +20,13 @@
  */
 
 struct ThreadAction {
-    glm::ivec2 chunkPos {0,0};
-    std::function<void(const glm::ivec2&)> function {};
+    std::function<void(const glm::ivec2&, const glm::vec3&)> function {};
+    glm::ivec2 chunkPos {0, 0};
+    glm::vec3 chunkBlock {0, 0, 0};
 
     // Functionality
-    void DoAction() const { function(chunkPos); }
+    void DoAction() const { function(chunkPos, chunkBlock); }
 };
-
-
 
 /*
  *
