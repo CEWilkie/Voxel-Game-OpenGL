@@ -41,7 +41,7 @@ class MaterialMesh {
 
         // Mark meshes for recreation
         void MarkOld() { oldMesh = true; }
-        void MarkReadyToBind() { readyToBind = true; }
+        void MarkReadyToBind() {readyToBind = true; }
         [[nodiscard]] bool IsOld() const { return oldMesh; }
         [[nodiscard]] bool ReadyToBind() const { return readyToBind; }
 

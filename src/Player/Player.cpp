@@ -275,6 +275,9 @@ void Player::UpdateMaxPositions() {
     // if a chunk was not obtained, dont update the previous min max values
     if (playerChunk == nullptr) return;
 
+    // if player in fly mode, ignore
+    if (movementMode == MOVEMENTMODE::FLYING) return;
+
     // Get block position in chunk player is currently inside of
     glm::vec3 blockPos = position - (playerChunk->GetPosition() * (float)chunkSize);
 
@@ -446,6 +449,7 @@ void Player::GetUnobstructedRayPosition() {
 }
 
 void Player::BreakBlock(glm::vec3 _rayPosition) {
+    using namespace std::placeholders;
     if (!lookingAtInteractable) return;
 
     // Ensure block is breakable by player
@@ -460,11 +464,12 @@ void Player::BreakBlock(glm::vec3 _rayPosition) {
     ChunkThreads* mesher = world->GetThread(THREAD::CHUNKMESHING);
 
     glm::ivec2 pos{playerChunk->GetPosition().x, playerChunk->GetPosition().z};
-    ThreadAction action{pos, std::bind(&World::GenerateChunkMesh, world.get(), std::placeholders::_1)};
+    ThreadAction action{std::bind(&World::GenerateChunkMesh, world.get(), _1, _2), pos};
     mesher->AddPriorityActionRegion(action, 1);
 }
 
 void Player::PlaceBlock(glm::vec3 _rayPosition) {
+    using namespace std::placeholders;
     if (!lookingAtInteractable) return;
 
     _rayPosition -= glm::normalize(facingDirection) * (range/20.0f);
@@ -474,6 +479,6 @@ void Player::PlaceBlock(glm::vec3 _rayPosition) {
     ChunkThreads* mesher = world->GetThread(THREAD::CHUNKMESHING);
 
     glm::ivec2 pos{playerChunk->GetPosition().x, playerChunk->GetPosition().z};
-    ThreadAction action{pos, std::bind(&World::GenerateChunkMesh, world.get(), std::placeholders::_1)};
+    ThreadAction action{std::bind(&World::GenerateChunkMesh, world.get(), _1, _2), pos};
     mesher->AddPriorityActionRegion(action, 1);
 }

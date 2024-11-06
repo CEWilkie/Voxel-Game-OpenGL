@@ -232,8 +232,10 @@ void World::GenerateChunk(const glm::ivec2& _chunkPos, const glm::vec3& _blockPo
 
     // Set the adjacent chunks
     std::array<Chunk*, 8> adjacentChunks{nullptr};
-    for (int dir = 2; dir < numDirections; dir++)
+    for (int dir = 2; dir < numDirections; dir++) {
         adjacentChunks[dir - 2] = GetChunkAtIndex(chunkPos + allDirections[dir]);
+        if (adjacentChunks[dir - 2] == nullptr) printf("bad chunk!");
+    }
 
     chunk->SetAdjacentChunks(adjacentChunks);
 

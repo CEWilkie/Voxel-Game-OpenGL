@@ -123,14 +123,16 @@ void Chunk::UpdateBlockMesh(Block* _meshBlock) {
 
 void Chunk::CreateChunkMeshes() {
     for (auto& mesh : uniqueMeshMap) {
+
         if (mesh.second->IsOld()) {
+
             mesh.second->ResetVerticies();
         }
     }
 
-    for (int x = 0; x < chunkSize; x++) {
-        for (int z = 0; z < chunkSize; z++) {
-            for (int y = chunkHeight - 1; y > -1; y--) {
+    for (int x = 0; x < chunkSize; ++x) {
+        for (int z = 0; z < chunkSize; ++z) {
+            for (int y = 0; y < chunkHeight; ++y) {
                 ChunkDataTypes::ChunkBlock block = GetChunkBlockAtPosition({x,y,z});
                 if (block.type.blockID == AIR) continue;
 
@@ -437,22 +439,28 @@ void Chunk::PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType) {
     Chunk* blockChunk = GetChunkAtPosition(_blockPos, 0);
     if (blockChunk == nullptr) return;
 
-    blockChunk->SetChunkBlockAtPosition(_blockPos, _blockType);
-    blockChunk->MarkForMeshUpdates();
-
     // directions of adjacent blocks
-    std::array<glm::vec3, 7> blockPositions {_blockPos + dirTop, _blockPos + dirBottom, _blockPos + dirLeft,
+    std::array<glm::vec3, 7> blockPositions {_blockPos, _blockPos + dirTop, _blockPos + dirBottom, _blockPos + dirLeft,
                                              _blockPos + dirRight, _blockPos + dirFront, _blockPos + dirBack};
 
-    // Mark block's mesh for recreation and add block mesh's chunk to list
-    MaterialMesh* blockMesh = blockChunk->GetMeshFromBlock(_blockType);
-    if (blockMesh != nullptr) blockMesh->MarkOld();
+    // Mark original block's mesh for recreation and add original block mesh's chunk to list
+    ChunkDataTypes::ChunkBlock originalBlock = blockChunk->GetBlockAtPosition(_blockPos, 0);
+    MaterialMesh* blockMesh = blockChunk->GetMeshFromBlock(originalBlock.type);
+    if (blockMesh != nullptr) {
+        if (blockMesh->GetBlock()->GetBlockType().blockID == STONE) printf("STONE");
+        blockMesh->MarkOld();
+    }
+
+    // Place new block at position
+    blockChunk->SetChunkBlockAtPosition(_blockPos, _blockType);
+    blockChunk->MarkForMeshUpdates();
 
     for (auto& blockPosition : blockPositions) {
         Chunk* chunkAtPosition = blockChunk->GetChunkAtPosition(blockPosition, 0);
         if (chunkAtPosition != nullptr) {
             chunkAtPosition->MarkForMeshUpdates();
 
+            // mark new block's mesh and meshes of adjacent blocks for updates
             ChunkDataTypes::ChunkBlock chunkBlock = chunkAtPosition->GetBlockAtPosition(blockPosition, 0);
             MaterialMesh* chunkMesh = chunkAtPosition->GetMeshFromBlock(chunkBlock.type);
             if (chunkMesh != nullptr) chunkMesh->MarkOld();

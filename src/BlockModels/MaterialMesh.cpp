@@ -69,6 +69,9 @@ void MaterialMesh::BindMesh() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(bufferVerticiesSize * sizeof(GLuint)), nullptr, GL_DYNAMIC_DRAW);
 
+    // update bound value
+    boundFaces = (int)vertexArray.size() / 4;
+
     // Unbind arrays / buffers
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -78,15 +81,16 @@ void MaterialMesh::BindMesh() {
 }
 
 void MaterialMesh::UpdateMesh() {
-
-
+    // Bind face verticies to buffer
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
     glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(vertexArray.size() * sizeof(Vertex)), vertexArray.data());
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+    boundFaces = (int)vertexArray.size() / 4;
+
     // populate indexArray
     std::vector<GLuint> indexArray {};
-    for (int f = 0; f < (int)vertexArray.size() / 4; f++) {
+    for (int f = 0; f < boundFaces; f++) {
         indexArray.push_back(f*4 + 1);
         indexArray.push_back(f*4 + 3);
         indexArray.push_back(f*4 + 0);
@@ -99,8 +103,6 @@ void MaterialMesh::UpdateMesh() {
     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, GLsizeiptr(indexArray.size()*sizeof(GLuint)), indexArray.data());
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-
-    boundFaces = (int)vertexArray.size()/4;
     oldMesh = false;
 }
 

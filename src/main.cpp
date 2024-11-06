@@ -242,13 +242,19 @@ int main(int argc, char** argv){
             double fps = frames / seconds;
             printf("FPS: %f | TARGET FPS: %d | %%MATCH: %f%%\n", fps, target, (double(fps)/target) * 100.0);
 
-            // reset fps counter every 10 seconds as it would become too unrepresentative of any sudden dips / changes
+            // reset fps counter every second as it would become too unrepresentative of any sudden dips / changes
             // to fps
 
-            if (ticks >= 1000 * 10) {
+            if (ticks >= 1000 * 1) {
                 ticks = 0;
                 frames = 0;
             }
+        }
+
+        // player coords
+        if (state[SDL_SCANCODE_C]) {
+            auto pos = player.GetPosition();
+            printf("x %f y %f z %f\n", pos.x, pos.y, pos.z);
         }
 
         /*
