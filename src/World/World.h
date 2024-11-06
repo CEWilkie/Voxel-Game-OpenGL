@@ -46,9 +46,9 @@ class World {
         int displayingChunks {};
 
         // Threads
-        ChunkThreads chunkBuilderThread;
-        ChunkThreads chunkMesherThread;
-        ChunkThreads chunkLoaderThread;
+        ChunkThreads chunkBuilderThread = ChunkThreads("BUILDER_THREAD");
+        ChunkThreads chunkMesherThread = ChunkThreads("MESHER_THREAD");
+        ChunkThreads chunkLoaderThread = ChunkThreads("LOADER_THREAD");
 
         glm::ivec2 loadingChunk {0, 0}; // centre
 

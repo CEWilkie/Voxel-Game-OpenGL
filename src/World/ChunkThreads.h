@@ -28,6 +28,20 @@ struct ThreadAction {
     void DoAction() const { function(chunkPos, chunkBlock); }
 };
 
+
+
+/*
+ *
+ */
+
+struct ActionTimer {
+    int actionsCompleted = 0;
+    Uint64 avgNStaken = 0;
+    Uint64 sumNStaken = 0;
+};
+
+
+
 /*
  *
  */
@@ -48,22 +62,31 @@ class ChunkThreads {
         std::thread chunkThread;
 
         // action time measurements
-        int actionsCompleted = 0;
-        Uint64 avgNStaken = 0.0;
-        Uint64 sumNStaken = 0.0;
+        ActionTimer allActions;
+        ActionTimer longActions;
+
+        // Thread Name (primarily for debugging)
+        std::string threadName {"UNNAMED_THREAD"};
 
     public:
         ChunkThreads();
+        explicit ChunkThreads(const std::string& _threadName);
         ~ChunkThreads();
 
+        // Thread Management
         void StartThread();
         void EndThread();
 
+        // Adding new actions to be completed in the thread
         void AddActions(const std::vector<ThreadAction>& _actions);
         void AddPriorityActions(const std::vector<ThreadAction>& _actions);
         void AddActionRegion(const ThreadAction& _originAction, int _radius);
         void AddPriorityActionRegion(const ThreadAction& _originAction, int _radius);
 
+        // Debug Output
+        void PrintThreadResults();
+
+        //
         [[nodiscard]] bool HasActions() const {
             return !actionQueue.empty();
         }

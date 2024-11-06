@@ -10,6 +10,10 @@
  */
 
 ChunkThreads::ChunkThreads() = default;
+ChunkThreads::ChunkThreads(const std::string& _threadName) {
+    threadName = _threadName;
+}
+
 
 /*
  * Ensures thread rejoins the main thread before program closure.
@@ -91,12 +95,12 @@ void ChunkThreads::ThreadLoop() {
         auto et = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(et - st).count();
+        allActions.actionsCompleted++;
+        allActions.sumNStaken += duration;
         if (duration > 500000) {
-            actionsCompleted++;
-            sumNStaken += duration;
+            longActions.actionsCompleted++;
+            longActions.sumNStaken += duration;
         }
-
-        // next action ...
 
 //        if (duration > 50'000000) { // greater than 50ms
 //            avgNStaken = sumNStaken / actionsCompleted;
@@ -105,15 +109,8 @@ void ChunkThreads::ThreadLoop() {
 //                   actionsCompleted, actionQueue.size(), avgNStaken / 1000000);
 //        }
 
-        if (actionQueue.empty() && actionsCompleted > 0) {
-            avgNStaken = sumNStaken / actionsCompleted;
-            printf("SINCE LAST ACTIONS . . .");
-            printf("%d ACTIONS COMPLETED IN %llu MS | AVG MS PER ACTION %llu\n",
-                   actionsCompleted, sumNStaken / 1000000, avgNStaken / 1000000);
-
-            actionsCompleted = 0;
-            sumNStaken = 0;
-        }
+        // debug statements
+        PrintThreadResults();
     }
 
     finished = true;
@@ -192,4 +189,35 @@ void ChunkThreads::AddPriorityActionRegion(const ThreadAction& _originAction, in
 
     // Notify thread that chunks have been added if it is waiting on more chunks
     threadCV.notify_one();
+}
+
+
+
+/*
+ * Output to console the time results for thread actions undertaken.
+ * Occurs only when no more actions are currently present
+ */
+
+void ChunkThreads::PrintThreadResults() {
+    if (!actionQueue.empty()) return;
+
+    if (longActions.actionsCompleted > 0) {
+        longActions.avgNStaken = longActions.sumNStaken / longActions.actionsCompleted;
+        printf("<%s> SINCE LAST ACTIONS . . .", threadName.c_str());
+        printf("%d ACTIONS COMPLETED IN %llu MS | AVG MS PER ACTION %llu\n",
+               longActions.actionsCompleted, longActions.sumNStaken / 1000000, longActions.avgNStaken / 1000000);
+
+        longActions.actionsCompleted = 0;
+        longActions.sumNStaken = 0;
+    }
+
+    if (allActions.actionsCompleted > 0) {
+        allActions.avgNStaken = allActions.sumNStaken / allActions.actionsCompleted;
+        printf("<%s> SINCE LAST ACTIONS . . .", threadName.c_str());
+        printf("%d ACTIONS COMPLETED IN %llu MS | AVG MS PER ACTION %llu\n",
+               allActions.actionsCompleted, allActions.sumNStaken / 1000000, allActions.avgNStaken / 1000000);
+
+        allActions.actionsCompleted = 0;
+        allActions.sumNStaken = 0;
+    }
 }
