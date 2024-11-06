@@ -58,6 +58,7 @@ class Chunk {
         bool inCamera = true;
         bool needsMeshUpdates = false;
         bool unboundMeshChanges = false;
+        bool loaded = true;
 
         // Chunk Terrain and Block Data
         std::unordered_map<BlockType, std::unique_ptr<Block>> uniqueBlockMap {};
@@ -96,6 +97,8 @@ class Chunk {
         // Chunk Culling
         void CheckCulling(const Camera& _camera);
         [[nodiscard]] bool ChunkVisible() const { return inCamera; };
+        void MarkLoaded(bool _loaded) { loaded = _loaded; };
+        [[nodiscard]] bool ChunkLoaded() const { return loaded; };
 
         // Chunk Terrain and Structures Generation
         void GenerateChunk();

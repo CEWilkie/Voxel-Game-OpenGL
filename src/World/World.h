@@ -48,6 +48,7 @@ class World {
         // Threads
         ChunkThreads chunkBuilderThread;
         ChunkThreads chunkMesherThread;
+        ChunkThreads chunkLoaderThread;
 
         glm::ivec2 loadingChunk {0, 0}; // centre
 
@@ -71,6 +72,9 @@ class World {
         void GenerateChunk(const glm::ivec2& _chunkPos, const glm::vec3& _blockPos);
         void GenerateChunkMesh(const glm::ivec2& _chunkPos, const glm::vec3& _blockPos);
 
+        void ManageLoadedChunks(const Chunk* _currentChunk, const Chunk* _newChunk);
+        void CheckChunkLoaded(const glm::ivec2& _currentChunkPos, const glm::vec3& _newChunkPos);
+
         // ChunkData Generation functions
         static float GenerateBlockHeight(glm::vec2 _blockPos);
         static float GenerateBlockHeat(glm::vec3 _blockPos);
@@ -78,7 +82,7 @@ class World {
         static ChunkData GenerateChunkData(glm::vec2 _chunkPosition);
         Biome* GenerateBiome(BIOMEID _biomeID);
 
-
+        //
         void SetLoadingOrigin(const glm::vec3& _origin);
         void GenerateLoadedWorld();
 

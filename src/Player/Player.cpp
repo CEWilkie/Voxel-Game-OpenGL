@@ -259,10 +259,13 @@ void Player::UpdatePlayerChunk() {
     Chunk* pChunk = world->GetChunkAtPosition(position);
 
     // If players chunk is not the same as currently stored player chunk, update the world's loading origin
-    if (pChunk!= nullptr) {
+    if (pChunk != nullptr) {
         if (pChunk != playerChunk && playerChunk != nullptr) {
             world->SetLoadingOrigin(pChunk->GetPosition());
             world->GenerateLoadedWorld();
+
+            // Ensure that chunks are loaded / unloaded accordingly
+            world->ManageLoadedChunks(playerChunk, pChunk);
         }
 
         // update player chunk

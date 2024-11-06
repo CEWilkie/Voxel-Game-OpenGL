@@ -42,11 +42,13 @@ World::World() {
 
     chunkBuilderThread.StartThread();
     chunkMesherThread.StartThread();
+    chunkLoaderThread.StartThread();
 }
 
 World::~World() {
     chunkBuilderThread.EndThread();
     chunkMesherThread.EndThread();
+    chunkLoaderThread.EndThread();
 }
 
 void World::Display() const {
@@ -111,6 +113,12 @@ void World::SetSkyboxProperties(const Player& player) {
     SetSkyboxPosition(player.GetPosition());
 }
 
+
+
+/*
+ * Updates the positions of elements within the skybox when the player moves
+ */
+
 void World::SetSkyboxPosition(glm::vec3 _position) {
     glm::vec3 originFromCentre;
 
@@ -142,6 +150,11 @@ void World::SetSkyboxPosition(glm::vec3 _position) {
     moonTransformation.UpdateModelMatrix();
 }
 
+
+
+/*
+ * Continuously updates the world time and calculates the ambient light level from the time of day.
+ */
 
 void World::UpdateWorldTime(Uint64 _deltaTicks) {
     worldTicks += _deltaTicks;
@@ -182,8 +195,12 @@ void World::UpdateWorldTime(Uint64 _deltaTicks) {
     else glUniform1f(uLocation, lightLevel);
 }
 
+
+
 /*
  * WORLD GENERATION
+ * Creates chunk objects in the region around the player, adding their generation and
+ * meshing functions into the threads
  */
 
 void World::GenerateLoadedWorld() {
@@ -204,6 +221,12 @@ void World::GenerateLoadedWorld() {
     chunkMesherThread.AddActionRegion(createMesh, loadRadius);
 }
 
+
+
+/*
+ * Thread-Called function to retrieve chunk data for a given chunk index position.
+ */
+
 void World::CreateChunk(const glm::ivec2& _chunkPos, const glm::vec3& _blockPos) {
     // Chunk object already exists, dont overwrite
     glm::vec3 chunkIndex{_chunkPos.x + 1000, 0, _chunkPos.y + 1000};
@@ -217,6 +240,12 @@ void World::CreateChunk(const glm::ivec2& _chunkPos, const glm::vec3& _blockPos)
 
     worldChunks[chunkIndex.x][chunkIndex.z] = std::make_unique<Chunk>(glm::vec3{_chunkPos.x, 0, _chunkPos.y}, chunkData);
 }
+
+
+
+/*
+ * Obtains chunk data and generates a chunk (base terrain and decorative)
+ */
 
 void World::GenerateChunk(const glm::ivec2& _chunkPos, const glm::vec3& _blockPos) {
     auto st = SDL_GetTicks64();
@@ -234,7 +263,6 @@ void World::GenerateChunk(const glm::ivec2& _chunkPos, const glm::vec3& _blockPo
     std::array<Chunk*, 8> adjacentChunks{nullptr};
     for (int dir = 2; dir < numDirections; dir++) {
         adjacentChunks[dir - 2] = GetChunkAtIndex(chunkPos + allDirections[dir]);
-        if (adjacentChunks[dir - 2] == nullptr) printf("bad chunk!");
     }
 
     chunk->SetAdjacentChunks(adjacentChunks);
@@ -275,14 +303,39 @@ void World::GenerateChunkMesh(const glm::ivec2 &_chunkPos, const glm::vec3& _blo
 }
 
 
+void World::ManageLoadedChunks(const Chunk *_currentChunk, const Chunk *_newChunk) {
+    using namespace std::placeholders;
+
+    glm::vec2 oldChunkPos = {_currentChunk->GetPosition().x, _currentChunk->GetPosition().z};
+    glm::vec2 newChunkPos = {_currentChunk->GetPosition().x, _currentChunk->GetPosition().z};
+
+    // hijack the blockPos intended for precision to store a second chunkPos instead
+    ThreadAction markUnloaded{std::bind(&World::CheckChunkLoaded, this, _1, _2),
+                              oldChunkPos, _newChunk->GetPosition()};
+    chunkLoaderThread.AddActionRegion(markUnloaded, loadRadius);
+}
 
 
 
+/*
+ * Enacts on all chunks in the current loaded region and checks if they continue to
+ * be loaded in the new loaded region
+ */
 
+void World::CheckChunkLoaded(const glm::ivec2 &_currentChunkPos, const glm::vec3 &_newChunkPos) {
+    glm::vec3 chunkIndex = {_currentChunkPos.x + 1000, 0, _currentChunkPos.y + 1000};
+    Chunk* chunk = GetChunkAtIndex(chunkIndex);
 
+    int diffX = std::abs(_currentChunkPos.x - (int)_newChunkPos.x);
+    int diffZ = std::abs(_currentChunkPos.y - (int)_newChunkPos.z);
 
+    // chunk within load region, ignore
+    if (!(diffX > loadRadius || diffZ > loadRadius)) return;
 
-
+    // chunk is outside of the load radius so unload
+    chunk->MarkLoaded(false);
+    worldChunks[(int)chunkIndex.x][(int)chunkIndex.z].reset();
+}
 
 
 
