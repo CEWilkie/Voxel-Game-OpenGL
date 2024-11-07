@@ -23,7 +23,7 @@ enum class THREAD {
 };
 
 namespace WorldDataTypes {
-    typedef std::array<std::array<std::unique_ptr<Chunk>, 2000>, 2000> chunkArray;
+    typedef std::array<std::array<std::shared_ptr<Chunk>, 2000>, 2000> chunkArray;
     typedef std::array<std::unique_ptr<Biome>, worldArea> biomeMap;
 }
 
@@ -89,10 +89,10 @@ class World {
         void BindChunks() const;
 
         // Getters
-        [[nodiscard]] Chunk* GetChunkAtPosition(glm::vec3 _blockPos) const;
-        [[nodiscard]] Chunk* GetChunkAtIndex(glm::vec3 _chunkPos) const;
-        [[nodiscard]] Chunk* GetChunkLoadRelative(glm::vec3 _chunkPos) const;
-        [[nodiscard]] Chunk* GetWorldCentreChunk() const { return worldChunks[worldSize/2][worldSize/2].get(); }
+        [[nodiscard]] std::shared_ptr<Chunk> GetChunkAtPosition(glm::vec3 _blockPos) const;
+        [[nodiscard]] std::shared_ptr<Chunk> GetChunkAtIndex(glm::vec3 _chunkPos) const;
+        [[nodiscard]] std::shared_ptr<Chunk> GetChunkLoadRelative(glm::vec3 _chunkPos) const;
+        [[nodiscard]] std::shared_ptr<Chunk> GetWorldCentreChunk() const { return worldChunks[worldSize/2][worldSize/2]; }
         [[nodiscard]] Biome* GetBiome(BIOMEID _biomeID);
 
         [[nodiscard]] ChunkThreads* GetThread(THREAD _thread) {

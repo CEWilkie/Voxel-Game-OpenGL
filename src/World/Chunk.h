@@ -69,7 +69,7 @@ class Chunk {
         // Unique ChunkData and the adjacent Chunk pointers
         ChunkData chunkData;
         glm::vec3 chunkPosition {0,0,0};
-        std::array<Chunk*, 8> adjacentChunks {};
+        std::array<std::weak_ptr<Chunk>, 8> adjacentChunks {};
 
         // Private functions for getting/setting blocks which non-chunks shouldn't access
         [[nodiscard]] ChunkDataTypes::ChunkBlock GetChunkBlockAtPosition(const glm::vec3& _blockPos);
@@ -104,7 +104,7 @@ class Chunk {
         void GenerateChunk();
         void CreateTerrain();
         void CreateVegitation(glm::vec3 _blockPos);
-        void SetAdjacentChunks(const std::array<Chunk*, 8>& _chunks);
+        void SetAdjacentChunks(const std::array<std::weak_ptr<Chunk>, 8> &_chunks);
         [[nodiscard]] bool Generated() const { return generated; }
         [[nodiscard]] bool RegionGenerated() const;
 

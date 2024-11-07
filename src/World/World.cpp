@@ -30,15 +30,13 @@ World::World() {
 
     uLocation = glGetUniformLocation(window.GetShader(), "worldAmbients.minFogDistance");
     if (uLocation < 0) printf("location not found [worldAmbients.minFogDistance]\n");
-    else glUniform1f(uLocation, (loadRadius - 1) * chunkSize);
+    else glUniform1f(uLocation, (renderRadius - 1) * chunkSize);
 
     uLocation = glGetUniformLocation(window.GetShader(), "worldAmbients.maxFogDistance");
     if (uLocation < 0) printf("location not found [worldAmbients.maxFogDistance]\n");
-    else glUniform1f(uLocation, loadRadius * chunkSize);
+    else glUniform1f(uLocation, renderRadius * chunkSize);
 
     glEnable(GL_DEPTH_TEST);
-
-
 
     chunkBuilderThread.StartThread();
     chunkMesherThread.StartThread();
@@ -61,9 +59,9 @@ void World::Display() const {
 
     // Draw solid objects
     glEnable(GL_CULL_FACE);
-    for (int x = -loadRadius + 1; x < loadRadius; x++) {
-        for (int z = -loadRadius + 1; z < loadRadius + 1; z++) {
-            Chunk* chunk = GetChunkLoadRelative({x, 0, z});
+    for (int x = -renderRadius; x < renderRadius; x++) {
+        for (int z = -renderRadius; z < renderRadius; z++) {
+            auto chunk = GetChunkLoadRelative({x, 0, z});
             if (chunk != nullptr) {
                 chunk->DisplaySolid();
             }
@@ -72,9 +70,9 @@ void World::Display() const {
     glDisable(GL_CULL_FACE);
 
     // Draw transparent objects
-    for (int x = -loadRadius + 1; x < loadRadius; x++) {
-        for (int z = -loadRadius + 1; z < loadRadius + 1; z++) {
-            Chunk* chunk = GetChunkLoadRelative({x, 0, z});
+    for (int x = -renderRadius; x < renderRadius; x++) {
+        for (int z = -renderRadius; z < renderRadius; z++) {
+            auto chunk = GetChunkLoadRelative({x, 0, z});
             if (chunk != nullptr) chunk->DisplayTransparent();
         }
     }
@@ -208,13 +206,11 @@ void World::GenerateLoadedWorld() {
 
     // Ensure chunks exist for loading region (and border) area
     ThreadAction createChunkRegion{std::bind(&World::CreateChunk, this, _1, _2), loadingChunk};
-    chunkBuilderThread.AddPriorityActionRegion(createChunkRegion, loadRadius + 2);
-
-    glm::vec3 c {0,0,0};
+    chunkBuilderThread.AddPriorityActionRegion(createChunkRegion, loadRadius);
 
     // Generate the chunks within the loading region (and not border), this will be done after the chunks are created
     ThreadAction generateChunk{std::bind(&World::GenerateChunk, this, _1, _2), loadingChunk};
-    chunkBuilderThread.AddActionRegion(generateChunk, loadRadius + 1);
+    chunkBuilderThread.AddActionRegion(generateChunk, loadRadius);
 
     // Mesh the chunks within the loading region
     ThreadAction createMesh{std::bind(&World::GenerateChunkMesh, this, _1, _2), loadingChunk};
@@ -251,7 +247,7 @@ void World::GenerateChunk(const glm::ivec2& _chunkPos, const glm::vec3& _blockPo
     auto st = SDL_GetTicks64();
     glm::vec3 chunkPos{_chunkPos.x + 1000, 0, _chunkPos.y + 1000};
 
-    Chunk* chunk = GetChunkAtIndex(chunkPos);
+    auto chunk = GetChunkAtIndex(chunkPos);
     if (chunk == nullptr) {
         // if this situation occurs, probably will be multiple visible generation issues with cross-chunk structures
         CreateChunk(_chunkPos, {0,0,0});
@@ -260,7 +256,7 @@ void World::GenerateChunk(const glm::ivec2& _chunkPos, const glm::vec3& _blockPo
     }
 
     // Set the adjacent chunks
-    std::array<Chunk*, 8> adjacentChunks{nullptr};
+    std::array<std::weak_ptr<Chunk>, 8> adjacentChunks;
     for (int dir = 2; dir < numDirections; dir++) {
         adjacentChunks[dir - 2] = GetChunkAtIndex(chunkPos + allDirections[dir]);
     }
@@ -283,7 +279,7 @@ void World::GenerateChunk(const glm::ivec2& _chunkPos, const glm::vec3& _blockPo
 void World::GenerateChunkMesh(const glm::ivec2 &_chunkPos, const glm::vec3& _blockPos) {
     glm::vec3 chunkIndex = {_chunkPos.x + 1000, 0, _chunkPos.y + 1000};
 
-    Chunk* chunk = GetChunkAtIndex(chunkIndex);
+    auto chunk = GetChunkAtIndex(chunkIndex);
     if (chunk != nullptr && chunk->RegionGenerated() && chunk->NeedsMeshUpdates()) {
         auto st = SDL_GetTicks64();
         chunk->CreateChunkMeshes();
@@ -324,12 +320,12 @@ void World::ManageLoadedChunks(const Chunk *_currentChunk, const Chunk *_newChun
 
 void World::CheckChunkLoaded(const glm::ivec2 &_currentChunkPos, const glm::vec3 &_newChunkPos) {
     glm::vec3 chunkIndex = {_currentChunkPos.x + 1000, 0, _currentChunkPos.y + 1000};
-    Chunk* chunk = GetChunkAtIndex(chunkIndex);
+    auto chunk = GetChunkAtIndex(chunkIndex);
 
     int diffX = std::abs(_currentChunkPos.x - (int)_newChunkPos.x);
     int diffZ = std::abs(_currentChunkPos.y - (int)_newChunkPos.z);
 
-    // chunk within load region, ignore
+    // chunk within load region, update adjacent chunks and ignore
     if (!(diffX > loadRadius || diffZ > loadRadius)) return;
 
     // chunk is outside of the load radius so unload
@@ -455,9 +451,9 @@ void World::SetLoadingOrigin(const glm::vec3 &_origin) {
 }
 
 void World::BindChunks() const {
-    for (int x = -loadRadius + 1; x < loadRadius; x++) {
-        for (int z = -loadRadius + 1; z < loadRadius; z++) {
-            Chunk* chunk = GetChunkLoadRelative({x,0,z});
+    for (int x = -loadRadius; x < loadRadius; x++) {
+        for (int z = -loadRadius; z < loadRadius; z++) {
+            auto chunk = GetChunkLoadRelative({x,0,z});
 
             if (chunk != nullptr && chunk->UnboundMeshChanges()) {
                 chunk->BindChunkMeshes();
@@ -474,30 +470,30 @@ void World::CreateChunkAtIndex(const glm::ivec2& _chunkPos, const ChunkData& _ch
     worldChunks[_chunkPos.x][_chunkPos.y] = std::make_unique<Chunk>(pos, _chunkData);
 }
 
-Chunk* World::GetChunkAtPosition(glm::vec3 _blockPos) const {
+std::shared_ptr<Chunk> World::GetChunkAtPosition(glm::vec3 _blockPos) const {
     _blockPos /= (float)chunkSize;
     _blockPos += glm::vec3{1000,0,1000}; // centre of the worlds chunks
 
     if (_blockPos.x < 0 || _blockPos.x >= 2000) return nullptr;
     if (_blockPos.z < 0 || _blockPos.z >= 2000) return nullptr;
 
-    return worldChunks[(int)_blockPos.x][(int)_blockPos.z].get();
+    return worldChunks[(int)_blockPos.x][(int)_blockPos.z];
 }
 
-Chunk *World::GetChunkAtIndex(glm::vec3 _chunkPos) const {
+std::shared_ptr<Chunk> World::GetChunkAtIndex(glm::vec3 _chunkPos) const {
     if (_chunkPos.x < 0 || _chunkPos.x >= 2000) return nullptr;
     if (_chunkPos.z < 0 || _chunkPos.z >= 2000) return nullptr;
 
-    return worldChunks[(int)_chunkPos.x][(int)_chunkPos.z].get();
+    return worldChunks[(int)_chunkPos.x][(int)_chunkPos.z];
 }
 
-Chunk *World::GetChunkLoadRelative(glm::vec3 _chunkPos) const {
+std::shared_ptr<Chunk> World::GetChunkLoadRelative(glm::vec3 _chunkPos) const {
     _chunkPos += glm::vec3{loadingChunk.x + 1000,0,loadingChunk.y + 1000}; // centre of the loaded chunks
 
     if (_chunkPos.x < 0 || _chunkPos.x >= 2000) return nullptr;
     if (_chunkPos.z < 0 || _chunkPos.z >= 2000) return nullptr;
 
-    return worldChunks[(int)_chunkPos.x][(int)_chunkPos.z].get();
+    return worldChunks[(int)_chunkPos.x][(int)_chunkPos.z];
 }
 
 Biome* World::GetBiome(BIOMEID _biomeID) {

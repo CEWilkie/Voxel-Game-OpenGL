@@ -96,6 +96,10 @@ struct BlockType {
     friend bool operator!=(const BlockType& A, const BlockType& B) {
         return !(A == B);
     }
+
+    friend bool operator<(const BlockType& A, const BlockType& B) {
+        return A.variantID < B.variantID && A.blockID <= B.blockID;
+    }
 } __attribute__((packed));
 
 // Required for map to hash the BlockType

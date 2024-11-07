@@ -256,7 +256,7 @@ void Player::SwitchCamera(const std::uint8_t* _keyInputs) {
 
 void Player::UpdatePlayerChunk() {
     // chunk the player is in
-    Chunk* pChunk = world->GetChunkAtPosition(position);
+    Chunk* pChunk = world->GetChunkAtPosition(position).get();
 
     // If players chunk is not the same as currently stored player chunk, update the world's loading origin
     if (pChunk != nullptr) {

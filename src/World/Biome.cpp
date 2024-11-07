@@ -26,9 +26,6 @@ BlockType Biome::GetBlockType(float _hmTopLevel, float _blockY) {
 
     // For each domain, test if the given block y position is within it
 
-
-
-
     return newBlockData;
 }
 

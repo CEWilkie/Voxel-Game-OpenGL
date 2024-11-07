@@ -401,7 +401,7 @@ void Chunk::CreateVegitation(glm::vec3 _blockPos) {
  * Set the adjacent chunks in each direction to this chunk
  */
 
-void Chunk::SetAdjacentChunks(const std::array<Chunk*, 8> &_chunks) {
+void Chunk::SetAdjacentChunks(const std::array<std::weak_ptr<Chunk>, 8> &_chunks) {
     // -x, -x-z, -z, -z+x, +x, +x+z, +z, +z-x
     adjacentChunks = _chunks;
 }
@@ -414,9 +414,9 @@ void Chunk::SetAdjacentChunks(const std::array<Chunk*, 8> &_chunks) {
 
 bool Chunk::RegionGenerated() const {
     return generated &&
-    !std::any_of(adjacentChunks.begin(), adjacentChunks.end(), [](Chunk* adjacentChunk){
-        if (adjacentChunk == nullptr) return false;
-        else return !adjacentChunk->Generated();
+    !std::any_of(adjacentChunks.begin(), adjacentChunks.end(), [](const std::weak_ptr<Chunk>& adjacentChunk){
+        if (adjacentChunk.expired()) return false;
+        else return !adjacentChunk.lock()->Generated();
     });
 }
 
@@ -657,17 +657,17 @@ Chunk* Chunk::GetChunkAtPosition(glm::vec3& _blockPos, int _depth) const {
 
     // FRONT, FRONTLEFT, LEFT, BACKLEFT, BACK, BACKRIGHT, RIGHT, FRONTRIGHT
     if (_blockPos.x < 0) {
-        if (adjacentChunks[0] != nullptr) {
+        if (!adjacentChunks[0].expired()) {
             _blockPos.x += chunkSize;
-            return adjacentChunks[0]->GetChunkAtPosition(_blockPos, _depth);
+            return adjacentChunks[0].lock()->GetChunkAtPosition(_blockPos, _depth);
         }
         else
             return nullptr;
     }
     if (_blockPos.x >= chunkSize) {
-        if (adjacentChunks[4] != nullptr) {
+        if (!adjacentChunks[4].expired()) {
             _blockPos.x -= chunkSize;
-            return adjacentChunks[4]->GetChunkAtPosition(_blockPos, _depth);
+            return adjacentChunks[4].lock()->GetChunkAtPosition(_blockPos, _depth);
         }
         else
             return nullptr;
@@ -676,17 +676,17 @@ Chunk* Chunk::GetChunkAtPosition(glm::vec3& _blockPos, int _depth) const {
         return nullptr;
     }
     if (_blockPos.z < 0) {
-        if (adjacentChunks[2] != nullptr) {
+        if (!adjacentChunks[2].expired()) {
             _blockPos.z += chunkSize;
-            return adjacentChunks[2]->GetChunkAtPosition(_blockPos, _depth);
+            return adjacentChunks[2].lock()->GetChunkAtPosition(_blockPos, _depth);
         }
         else
             return nullptr;
     }
     if (_blockPos.z >= chunkSize) {
-        if (adjacentChunks[6] != nullptr) {
+        if (!adjacentChunks[6].expired()) {
             _blockPos.z -= chunkSize;
-            return adjacentChunks[6]->GetChunkAtPosition(_blockPos, _depth);
+            return adjacentChunks[6].lock()->GetChunkAtPosition(_blockPos, _depth);
         }
         else
             return nullptr;
