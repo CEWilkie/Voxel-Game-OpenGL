@@ -45,6 +45,7 @@ class World {
         ChunkThreads chunkBuilderThread = ChunkThreads("BUILDER_THREAD");
         ChunkThreads chunkMesherThread = ChunkThreads("MESHER_THREAD");
         ChunkThreads chunkLoaderThread = ChunkThreads("LOADER_THREAD");
+        ChunkThreads chunkLighterThread = ChunkThreads("LIGHTING_THREAD");
 
         glm::ivec2 loadingChunk {0, 0}; // centre
 
@@ -98,6 +99,12 @@ class World {
 
                 case THREAD::CHUNKMESHING:
                     return &chunkMesherThread;
+
+                case THREAD::CHUNKLOADING:
+                    return &chunkLoaderThread;
+
+                case THREAD::CHUNKLIGHTING:
+                    return &chunkLighterThread;
 
                 default:
                     return nullptr;
