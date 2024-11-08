@@ -13,10 +13,8 @@
 #include <glm/matrix.hpp>
 
 
-#include "../Textures/TextureData.h"
 #include "../Textures/TextureManager.h"
 #include "ModelStructs.h"
-#include "ModelTransformations.h"
 
 /*
  * For obtaining a particular block model

@@ -2,12 +2,13 @@
 // Created by cew05 on 10/07/2024.
 //
 
-#include "glm/gtc/noise.hpp"
-
 #include "World.h"
+
+#include "glm/gtc/noise.hpp"
 #include "../Blocks/CreateBlock.h"
 #include "CreateBiome.h"
 #include "../Window.h"
+#include "Chunk.h"
 
 World::World() {
     // Create skybox, sun and moon
@@ -280,6 +281,8 @@ void World::GenerateChunkMesh(const glm::ivec2 &_chunkPos, const glm::vec3& _blo
     glm::vec3 chunkIndex = {_chunkPos.x + 1000, 0, _chunkPos.y + 1000};
 
     auto chunk = GetChunkAtIndex(chunkIndex);
+
+
     if (chunk != nullptr && chunk->RegionGenerated() && chunk->NeedsMeshUpdates()) {
         auto st = SDL_GetTicks64();
         chunk->CreateChunkMeshes();

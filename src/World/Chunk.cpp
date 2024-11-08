@@ -695,3 +695,9 @@ Chunk* Chunk::GetChunkAtPosition(glm::vec3& _blockPos, int _depth) const {
     // _blockPos is within this chunk, return pointer to this chunk
     return const_cast<Chunk *>(this);
 }
+
+
+void Chunk::LockChunk(bool _locked) {
+    if (_locked) buildLoaderProtector.lock();
+    else buildLoaderProtector.unlock();
+}

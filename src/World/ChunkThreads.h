@@ -12,8 +12,10 @@
 #include <queue>
 #include <functional>
 #include <chrono>
+#include <string>
 
-#include "Chunk.h"
+#include <glm/glm.hpp>
+#include <SDL.h>
 
 /*
  * Simple struct to house a position of the chunk that the given function will be applied to.

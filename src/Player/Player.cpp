@@ -3,7 +3,9 @@
 //
 
 #include "Player.h"
+
 #include "../Window.h"
+#include "../World/World.h"
 
 Player::Player(glm::vec3 _position, glm::vec3 _facingDirection) {
     position = _position;

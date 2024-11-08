@@ -6,14 +6,12 @@
 #define UNTITLED7_CHUNK_H
 
 #include <vector>
-#include <memory>
 #include <unordered_map>
+#include <mutex>
+#include <condition_variable>
 
-#include "../Blocks/TerrainBlocks.h"
-#include "../BlockModels/ModelTransformations.h"
 #include "../BlockModels/MaterialMesh.h"
 #include "../Player/Camera.h"
-
 #include "WorldGenConsts.h"
 #include "Biome.h"
 
@@ -27,8 +25,6 @@ namespace ChunkDataTypes {
     typedef std::array<std::array<std::array<ChunkBlock, chunkSize>, chunkHeight>, chunkSize> TerrainArray;
     typedef std::array<std::array<std::array<float, chunkSize>, chunkHeight>, chunkSize> DensityArray;
     typedef std::array<float, chunkArea> DataMap;
-
-
 }
 
 /*
@@ -70,6 +66,10 @@ class Chunk {
         ChunkData chunkData;
         glm::vec3 chunkPosition {0,0,0};
         std::array<std::weak_ptr<Chunk>, 8> adjacentChunks {};
+
+        // Thread Protection
+        std::mutex buildLoaderProtector;
+        std::condition_variable buildLoadWait;
 
         // Private functions for getting/setting blocks which non-chunks shouldn't access
         [[nodiscard]] ChunkDataTypes::ChunkBlock GetChunkBlockAtPosition(const glm::vec3& _blockPos);
@@ -122,6 +122,9 @@ class Chunk {
         [[nodiscard]] Block& GetBlockFromData(const BlockType& _blockType);
         [[nodiscard]] glm::vec3 GetPosition() const { return chunkPosition; }
         [[nodiscard]] Chunk* GetChunkAtPosition(glm::vec3& _blockPos, int _depth) const;
+
+        // Chunk Thread Locking
+        void LockChunk(bool _locked);
 };
 
 

@@ -8,18 +8,14 @@
 #include <memory>
 #include <thread>
 
-#include "../BlockModels/Block.h"
 #include "../Player/Player.h"
-#include "../Textures/TextureData.h"
 
-#include "Chunk.h"
 #include "Biome.h"
+#include "Chunk.h"
 #include "ChunkThreads.h"
 
-class Player;
-
 enum class THREAD {
-        CHUNKBUILDING, CHUNKMESHING, CHUNKLIGHTING // ...
+        CHUNKBUILDING, CHUNKMESHING, CHUNKLOADING, CHUNKLIGHTING // ...
 };
 
 namespace WorldDataTypes {

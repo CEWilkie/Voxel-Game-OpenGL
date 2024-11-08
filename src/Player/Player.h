@@ -8,10 +8,8 @@
 #include <cmath>
 #include <glm/matrix.hpp>
 #include "Camera.h"
-#include "../World/World.h"
 
-class World;
-class Chunk;
+#include "../World/Chunk.h"
 
 enum class MOVEMENTMODE {
         WALKING, FLYING, // ...
