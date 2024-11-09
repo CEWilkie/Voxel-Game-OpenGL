@@ -56,7 +56,8 @@ void Chunk::DisplaySolid() {
 
     // Draw only the blocks that are solid
     for (const auto& mesh : uniqueMeshMap) {
-        if (mesh.second->GetBlock()->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 1) continue;
+        auto block = mesh.second->GetBlock();
+        if (block != nullptr && block->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 1) continue;
         mesh.second->DrawMesh(displayTransformation);
     }
 
@@ -225,9 +226,10 @@ std::vector<BLOCKFACE> Chunk::GetHiddenFaces(glm::vec3 _blockPos) {
  * Returns the FaceIDs of the visible faces of a block at a given position. Faces are considered visible unless fully
  * obscured.
  */
-std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _blockPos) {
+std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _blockPos, const std::vector<BLOCKFACE>& _checkFaces) {
     std::vector<BLOCKFACE> showingFaces {};
-    std::vector<BLOCKFACE> faces {TOP, BOTTOM, FRONT, BACK, RIGHT, LEFT};
+    std::vector<BLOCKFACE> faces;
+    faces = (_checkFaces.empty()) ? std::vector<BLOCKFACE>{TOP, BOTTOM, FRONT, BACK, RIGHT, LEFT} : _checkFaces;
     std::vector<glm::vec3> positionOffsets {
             dirTop, dirBottom, dirFront,
             dirBack, dirRight, dirLeft};
