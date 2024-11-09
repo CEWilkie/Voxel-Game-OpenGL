@@ -43,7 +43,7 @@ void Player::Display() {
 
     // Display frame of targeting block
     if (lookingAtInteractable) {
-        ChunkDataTypes::ChunkBlock targetBlock = playerChunk->GetBlockAtPosition(unobstructedRayPosition, 0);
+        ChunkDataTypes::ChunkBlock targetBlock = playerChunk->GetBlockAtPosition(unobstructedRayPosition);
         Block targetBlockPtr = playerChunk->GetBlockFromData(targetBlock.type);
 
         Transformation t;
@@ -329,7 +329,7 @@ void Player::GetMovementFriction() {
     if (playerChunk == nullptr) return;
     glm::vec3 blockPos = position - (playerChunk->GetIndex() * (float) chunkSize);
 
-    ChunkDataTypes::ChunkBlock block = playerChunk->GetBlockAtPosition(blockPos, 0);
+    ChunkDataTypes::ChunkBlock block = playerChunk->GetBlockAtPosition(blockPos);
     Block playerBlock = playerChunk->GetBlockFromData(block.type);
 
     // If player is in a liquid then reset jump time
@@ -432,7 +432,7 @@ void Player::GetUnobstructedRayPosition() {
     float accuracy = 20.0f;
 
     for (int r = 0; r < (int)accuracy; r++) {
-        ChunkDataTypes::ChunkBlock blockAtPosition = playerChunk->GetBlockAtPosition(rayPosition, 0);
+        ChunkDataTypes::ChunkBlock blockAtPosition = playerChunk->GetBlockAtPosition(rayPosition);
         Block blockPtr = playerChunk->GetBlockFromData(blockAtPosition.type);
 
         // if the block is breakable, end early
@@ -458,7 +458,7 @@ void Player::BreakBlock(glm::vec3 _rayPosition) {
     if (!lookingAtInteractable) return;
 
     // Ensure block is breakable by player
-    ChunkDataTypes::ChunkBlock blockdata = playerChunk->GetBlockAtPosition(_rayPosition, 0);
+    ChunkDataTypes::ChunkBlock blockdata = playerChunk->GetBlockAtPosition(_rayPosition);
     auto block = playerChunk->GetBlockFromData(blockdata.type);
     if (block.GetAttributeValue(BLOCKATTRIBUTE::BREAKABLE) <= 0) return;
 

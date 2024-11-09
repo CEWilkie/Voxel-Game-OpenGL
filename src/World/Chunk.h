@@ -102,8 +102,8 @@ class Chunk {
         // Chunk Block Interaction
         void BreakBlockAtPosition(glm::vec3 _blockPos);
         void PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType);
-        void SetBlockAtPosition(glm::vec3 _blockPos, int _depth, const BlockType& _blockType) const;
-        [[nodiscard]] ChunkDataTypes::ChunkBlock GetBlockAtPosition(glm::vec3 _blockPos, int _depth) const;
+        void SetBlockAtPosition(glm::vec3 _blockPos, const BlockType& _blockType) const;
+        [[nodiscard]] ChunkDataTypes::ChunkBlock GetBlockAtPosition(glm::vec3 _blockPos) const;
 
         // Chunk-Entity Collision
         [[nodiscard]] float GetTopLevelAtPosition(glm::vec3 _blockPos, float _radius) ;

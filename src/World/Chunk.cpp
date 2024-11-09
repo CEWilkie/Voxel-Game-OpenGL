@@ -107,7 +107,7 @@ void Chunk::UpdateBlockMesh(Block* _meshBlock) {
     for (int x = 0; x < chunkSize; x++) {
         for (int z = 0; z < chunkSize; z++) {
             for (int y = 0; y < chunkHeight; y++) {
-                ChunkDataTypes::ChunkBlock block = GetBlockAtPosition({x,y,z}, 0);
+                ChunkDataTypes::ChunkBlock block = GetBlockAtPosition({x,y,z});
                 Block blockPtr = GetBlockFromData(block.type);
 
                 if (block.type == _meshBlock->GetBlockType()) {
@@ -136,6 +136,10 @@ void Chunk::CreateChunkMeshes() {
             mesh.second->ResetVerticies();
         }
     }
+
+    /*
+     *
+     */
 
     for (int x = 0; x < chunkSize; ++x) {
         for (int z = 0; z < chunkSize; ++z) {
@@ -193,12 +197,12 @@ std::vector<BLOCKFACE> Chunk::GetHiddenFaces(glm::vec3 _blockPos) {
             glm::vec3{0, 1, 0}, glm::vec3{0, -1, 0}, glm::vec3{-1, 0, 0},
             glm::vec3{1,0,0}, glm::vec3{0, 0, 1}, glm::vec3{0, 0, -1}};
 
-    ChunkDataTypes::ChunkBlock checkingBlock = GetBlockAtPosition(_blockPos, 0);
+    ChunkDataTypes::ChunkBlock checkingBlock = GetBlockAtPosition(_blockPos);
     if (checkingBlock.type == BlockType{AIR, 0}) return faces; // Air block
     Block checkingPtr = GetBlockFromData(checkingBlock.type);
 
     for (int i = 0; i < faces.size(); i++) {
-        ChunkDataTypes::ChunkBlock blockAtFace = GetBlockAtPosition(_blockPos + positionOffsets[i], 0);
+        ChunkDataTypes::ChunkBlock blockAtFace = GetBlockAtPosition(_blockPos + positionOffsets[i]);
         Block facePtr = GetBlockFromData(blockAtFace.type);
 
         // transparent blocks only show when there is air
@@ -235,7 +239,7 @@ std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _blockPos, const std::ve
             dirBack, dirRight, dirLeft};
 
     // Get block being checked, if it is an air block, no faces are returned
-    ChunkDataTypes::ChunkBlock checkingBlockData = GetBlockAtPosition(_blockPos, 0);
+    ChunkDataTypes::ChunkBlock checkingBlockData = GetBlockAtPosition(_blockPos);
     Block checkingBlock = GetBlockFromData(checkingBlockData.type);
     if (checkingBlockData.type == BlockType{AIR, 0}) return {};
 
@@ -245,7 +249,7 @@ std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _blockPos, const std::ve
 
     // Check for non-transparent block on each face (or non-same transparent block for a transparent block)
     for (int i = 0; i < faces.size(); i++) {
-        ChunkDataTypes::ChunkBlock faceBlockData = GetBlockAtPosition(_blockPos + positionOffsets[i], 0);
+        ChunkDataTypes::ChunkBlock faceBlockData = GetBlockAtPosition(_blockPos + positionOffsets[i]);
         Block faceBlock = GetBlockFromData(faceBlockData.type);
 
         // obscure face always if the block there is non-transparent
@@ -366,7 +370,7 @@ void Chunk::CreateVegitation(glm::vec3 _blockPos) {
 
     float plantDensity = chunkData.plantMap[(int)_blockPos.x + (int)_blockPos.z * chunkSize];
 
-    ChunkDataTypes::ChunkBlock block = GetBlockAtPosition(_blockPos, 0);
+    ChunkDataTypes::ChunkBlock block = GetBlockAtPosition(_blockPos);
     glm::vec3 plantPos = _blockPos + dirTop;
 
     if (plantDensity > 1 && block.type.blockID == GRASS) {
@@ -374,15 +378,14 @@ void Chunk::CreateVegitation(glm::vec3 _blockPos) {
 
         int maxB = rand() % 5 + 0;
         for (int b = 0; b < maxB; b++) {
-            SetBlockAtPosition(plantPos + glm::vec3(0,b,0), 0,
-                               {WOOD, 0});
+            SetBlockAtPosition(plantPos + glm::vec3(0,b,0),{WOOD, 0});
         }
 
         plantPos.y += (float)maxB;
 
         while (structureLoader->LoadedStructure() != STRUCTURE::NONE) {
             StructBlockData blockData = structureLoader->GetStructureBlock();
-            ChunkDataTypes::ChunkBlock blockAtPosition = GetBlockAtPosition(blockData.blockPos + plantPos, 0);
+            ChunkDataTypes::ChunkBlock blockAtPosition = GetBlockAtPosition(blockData.blockPos + plantPos);
             Block loadingBlock = GetBlockFromData(blockData.blockType);
 
             // Ensure vegetation can overwrite any current blocks in that position
@@ -394,11 +397,11 @@ void Chunk::CreateVegitation(glm::vec3 _blockPos) {
                 if (generatedPriority > generatingPriority) continue;
             }
 
-            SetBlockAtPosition(blockData.blockPos + plantPos, 0, blockData.blockType);
+            SetBlockAtPosition(blockData.blockPos + plantPos, blockData.blockType);
         }
     }
     else if (plantDensity < 0.2 && block.type.blockID == GRASS) {
-        SetBlockAtPosition(plantPos, 0, {GRASSPLANT, 0});
+        SetBlockAtPosition(plantPos, {GRASSPLANT, 0});
     }
 
 
@@ -465,7 +468,7 @@ void Chunk::PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType) {
             chunkAtPosition->MarkForMeshUpdates();
 
             // mark new block's mesh and meshes of adjacent blocks for updates
-            ChunkDataTypes::ChunkBlock chunkBlock = chunkAtPosition->GetBlockAtPosition(blockPosition, 0);
+            ChunkDataTypes::ChunkBlock chunkBlock = chunkAtPosition->GetBlockAtPosition(blockPosition);
             MaterialMesh* chunkMesh = chunkAtPosition->GetMeshFromBlock(chunkBlock.type);
             if (chunkMesh != nullptr) chunkMesh->MarkOld();
         }
@@ -490,7 +493,7 @@ void Chunk::SetChunkBlockAtPosition(const glm::vec3 &_blockPos, const BlockType&
  * Obtains the chunk that the provided position is within, and then sets the block in that chunk to the specified type.
  */
 
-void Chunk::SetBlockAtPosition(glm::vec3 _blockPos, int _depth, const BlockType& _blockType) const {
+void Chunk::SetBlockAtPosition(glm::vec3 _blockPos, const BlockType& _blockType) const {
     auto blockChunk = GetChunkAtBlockPos(_blockPos);
     if (blockChunk == nullptr) return;
 
@@ -511,7 +514,7 @@ ChunkDataTypes::ChunkBlock Chunk::GetChunkBlockAtPosition(const glm::vec3& _bloc
  * Obtains the chunk that the provided position is within, and gets the block in that chunk
  */
 
-ChunkDataTypes::ChunkBlock Chunk::GetBlockAtPosition(glm::vec3 _blockPos, int _depth) const {
+ChunkDataTypes::ChunkBlock Chunk::GetBlockAtPosition(glm::vec3 _blockPos) const {
     auto blockChunk = GetChunkAtBlockPos(_blockPos);
     if (blockChunk == nullptr) return {};
 
@@ -542,7 +545,7 @@ Block& Chunk::GetBlockFromData(const BlockType& _blockType) {
  */
 
 float Chunk::GetTopLevelAtPosition(glm::vec3 _blockPos, float _radius) {
-    ChunkDataTypes::ChunkBlock playerBlock = GetBlockAtPosition(_blockPos + dirTop, 0);
+    ChunkDataTypes::ChunkBlock playerBlock = GetBlockAtPosition(_blockPos + dirTop);
     Block playerBlockPtr = GetBlockFromData(playerBlock.type);
     if (playerBlockPtr.GetAttributeValue(BLOCKATTRIBUTE::ENTITYCOLLISIONSOLID) != 0) {
         return GetTopLevelAtPosition(_blockPos + dirTop, _radius);
@@ -558,7 +561,7 @@ float Chunk::GetTopLevelAtPosition(glm::vec3 _blockPos, float _radius) {
         for (int z = int(100.0 * (_blockPos.z - _radius)); z <= int(100.0 * (_blockPos.z + _radius)); z += int(100.0 * _radius)) {
             // Convert back to float position of block relative to chunk
             glm::vec3 position{x/100.0, y, z/100.0};
-            ChunkDataTypes::ChunkBlock block = GetBlockAtPosition(position, 0);
+            ChunkDataTypes::ChunkBlock block = GetBlockAtPosition(position);
             Block blockPtr = GetBlockFromData(block.type);
 
             // If no block found / air, or if it is a liquid (ie: water) / non-solid then do not apply topLevel
@@ -588,7 +591,7 @@ float Chunk::GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, f
     // 2 blocks (to prevent stop-starting player movement if they move faster than 1 block/second)
     // also applies for air or liquid blocks
 
-    ChunkDataTypes::ChunkBlock block = GetBlockAtPosition(_blockPos + _direction, 0);
+    ChunkDataTypes::ChunkBlock block = GetBlockAtPosition(_blockPos + _direction);
     Block blockPtr = GetBlockFromData(block.type);
 
     if (block.type.blockID == AIR ||
