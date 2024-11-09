@@ -21,6 +21,8 @@ MaterialMesh::~MaterialMesh() {
 }
 
 void MaterialMesh::AddVerticies(const std::vector<Vertex>& _verticies, const glm::vec3& _position) {
+    if (_verticies.empty()) return;
+
     for (const Vertex& vertex : _verticies) {
         vertexArray.push_back({vertex.position + _position, vertex.textureCoord});
     }

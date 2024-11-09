@@ -57,7 +57,7 @@ void Chunk::DisplaySolid() {
     // Draw only the blocks that are solid
     for (const auto& mesh : uniqueMeshMap) {
         auto block = mesh.second->GetBlock();
-        if (block != nullptr && block->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 1) continue;
+        if (block != nullptr && block->GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) == 1) continue;
         mesh.second->DrawMesh(displayTransformation);
     }
 
@@ -77,7 +77,7 @@ void Chunk::DisplayTransparent() {
 
     // Draw only the blocks that are transparent
     for (const auto& mesh : uniqueMeshMap) {
-        if (mesh.second->GetBlock()->GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 0) continue;
+        if (mesh.second->GetBlock()->GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) == 0) continue;
         mesh.second->DrawMesh(displayTransformation);
     }
 
@@ -130,9 +130,7 @@ void Chunk::UpdateBlockMesh(Block* _meshBlock) {
 
 void Chunk::CreateChunkMeshes() {
     for (auto& mesh : uniqueMeshMap) {
-
         if (mesh.second->IsOld()) {
-
             mesh.second->ResetVerticies();
         }
     }
@@ -206,7 +204,7 @@ std::vector<BLOCKFACE> Chunk::GetHiddenFaces(glm::vec3 _blockPos) {
         Block facePtr = GetBlockFromData(blockAtFace.type);
 
         // transparent blocks only show when there is air
-        if (checkingPtr.GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 1) {
+        if (checkingPtr.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) == 1) {
             // Is air, face is not hidden
             if (checkingBlock.type != BlockType{AIR, 0}) {
                 continue;
@@ -214,7 +212,7 @@ std::vector<BLOCKFACE> Chunk::GetHiddenFaces(glm::vec3 _blockPos) {
         }
 
         // Normal blocks may show if the block on the face is transparent
-        else if (facePtr.GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 1) {
+        else if (facePtr.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) == 1) {
             continue;
         }
 
@@ -244,7 +242,7 @@ std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _blockPos, const std::ve
     if (checkingBlockData.type == BlockType{AIR, 0}) return {};
 
     // if the block cannot have obscured faces
-    if (checkingBlock.GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 15)
+    if (checkingBlock.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) == 15)
         return {FRONT, BACK};
 
     // Check for non-transparent block on each face (or non-same transparent block for a transparent block)
@@ -253,12 +251,12 @@ std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _blockPos, const std::ve
         Block faceBlock = GetBlockFromData(faceBlockData.type);
 
         // obscure face always if the block there is non-transparent
-        if (faceBlock.GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 0) {
+        if (faceBlock.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) == 0) {
             continue;
         }
 
         // transparency 1 blocks only show when there is air adjacent
-        if (checkingBlock.GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 1) {
+        if (checkingBlock.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) == 1) {
             // Is not air
             if (faceBlockData.type != BlockType{AIR, 0}) {
                 continue;
@@ -266,8 +264,8 @@ std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _blockPos, const std::ve
         }
 
         // transparency 2 blocks hide back, left or bottom faces which are obscured by non transparency 1 blocks
-        if (checkingBlock.GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) == 2) {
-            if (faceBlock.GetAttributeValue(BLOCKATTRIBUTE::TRANSPARENT) != 1) {
+        if (checkingBlock.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) == 2) {
+            if (faceBlock.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) != 1) {
                 if (faces[i] == BACK || faces[i] == LEFT || faces[i] == BOTTOM) continue;
             }
         }
@@ -334,8 +332,8 @@ void Chunk::CreateTerrain() {
 
                 if (terrain[x][y][z].type != BlockType{AIR, 0}) {
                     Block generatedBlock = GetBlockFromData(terrain[x][y][z].type);
-                    GLbyte generatedPriority = generatedBlock.GetAttributeValue(BLOCKATTRIBUTE::GENERATIONPRIORITY);
-                    GLbyte generatingPriority = generatingBlock.GetAttributeValue(BLOCKATTRIBUTE::GENERATIONPRIORITY);
+                    GLbyte generatedPriority = generatedBlock.GetSharedAttribute(BLOCKATTRIBUTE::GENERATIONPRIORITY);
+                    GLbyte generatingPriority = generatingBlock.GetSharedAttribute(BLOCKATTRIBUTE::GENERATIONPRIORITY);
 
                     if (generatedPriority > generatingPriority) continue;
                 }
@@ -391,8 +389,8 @@ void Chunk::CreateVegitation(glm::vec3 _blockPos) {
             // Ensure vegetation can overwrite any current blocks in that position
             if (blockAtPosition.type != BlockType{AIR, 0}) {
                 Block generatedBlock = GetBlockFromData(blockAtPosition.type);
-                GLbyte generatedPriority = generatedBlock.GetAttributeValue(BLOCKATTRIBUTE::GENERATIONPRIORITY);
-                GLbyte generatingPriority = loadingBlock.GetAttributeValue(BLOCKATTRIBUTE::GENERATIONPRIORITY);
+                GLbyte generatedPriority = generatedBlock.GetSharedAttribute(BLOCKATTRIBUTE::GENERATIONPRIORITY);
+                GLbyte generatingPriority = loadingBlock.GetSharedAttribute(BLOCKATTRIBUTE::GENERATIONPRIORITY);
 
                 if (generatedPriority > generatingPriority) continue;
             }
@@ -547,7 +545,7 @@ Block& Chunk::GetBlockFromData(const BlockType& _blockType) {
 float Chunk::GetTopLevelAtPosition(glm::vec3 _blockPos, float _radius) {
     ChunkDataTypes::ChunkBlock playerBlock = GetBlockAtPosition(_blockPos + dirTop);
     Block playerBlockPtr = GetBlockFromData(playerBlock.type);
-    if (playerBlockPtr.GetAttributeValue(BLOCKATTRIBUTE::ENTITYCOLLISIONSOLID) != 0) {
+    if (playerBlockPtr.GetSharedAttribute(BLOCKATTRIBUTE::ENTITYCOLLISIONSOLID) != 0) {
         return GetTopLevelAtPosition(_blockPos + dirTop, _radius);
     }
 
@@ -566,7 +564,7 @@ float Chunk::GetTopLevelAtPosition(glm::vec3 _blockPos, float _radius) {
 
             // If no block found / air, or if it is a liquid (ie: water) / non-solid then do not apply topLevel
             if (block.type.blockID == AIR) continue;
-            if (blockPtr.GetAttributeValue(BLOCKATTRIBUTE::ENTITYCOLLISIONSOLID) == 0) continue;
+            if (blockPtr.GetSharedAttribute(BLOCKATTRIBUTE::ENTITYCOLLISIONSOLID) == 0) continue;
 
             // blockHeight + y in chunk + chunkHeight
             float blockTL = 1.0f + y + chunkIndex.y * (float)chunkSize;
@@ -595,7 +593,7 @@ float Chunk::GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, f
     Block blockPtr = GetBlockFromData(block.type);
 
     if (block.type.blockID == AIR ||
-    blockPtr.GetAttributeValue(BLOCKATTRIBUTE::ENTITYCOLLISIONSOLID) == 0) {
+            blockPtr.GetSharedAttribute(BLOCKATTRIBUTE::ENTITYCOLLISIONSOLID) == 0) {
         if (_direction.x != 0) return floorf(_blockPos.x) + _direction.x * 2.0f;
         if (_direction.y != 0) return floorf(_blockPos.y) + _direction.y * 2.0f;
         if (_direction.z != 0) return floorf(_blockPos.z) + _direction.z * 2.0f;

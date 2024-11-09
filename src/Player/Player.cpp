@@ -334,7 +334,7 @@ void Player::GetMovementFriction() {
 
     // If player is in a liquid then reset jump time
     inLiquid = false;
-    if (playerBlock.GetAttributeValue(BLOCKATTRIBUTE::LIQUID) > 0) {
+    if (playerBlock.GetSharedAttribute(BLOCKATTRIBUTE::LIQUID) > 0) {
         canJump = true;
         inLiquid = true;
     }
@@ -436,13 +436,13 @@ void Player::GetUnobstructedRayPosition() {
         Block blockPtr = playerChunk->GetBlockFromData(blockAtPosition.type);
 
         // if the block is breakable, end early
-        if (blockPtr.GetAttributeValue(BLOCKATTRIBUTE::BREAKABLE) > 0) {
+        if (blockPtr.GetSharedAttribute(BLOCKATTRIBUTE::BREAKABLE) > 0) {
             lookingAtInteractable = true;
             break;
         }
 
         // block not breakable, however only proceed if the player can access through the block
-        if (blockPtr.GetAttributeValue(BLOCKATTRIBUTE::CANACCESSTHROUGHBLOCK) == 0) {
+        if (blockPtr.GetSharedAttribute(BLOCKATTRIBUTE::CANACCESSTHROUGHBLOCK) == 0) {
             break;
         }
 
@@ -460,7 +460,7 @@ void Player::BreakBlock(glm::vec3 _rayPosition) {
     // Ensure block is breakable by player
     ChunkDataTypes::ChunkBlock blockdata = playerChunk->GetBlockAtPosition(_rayPosition);
     auto block = playerChunk->GetBlockFromData(blockdata.type);
-    if (block.GetAttributeValue(BLOCKATTRIBUTE::BREAKABLE) <= 0) return;
+    if (block.GetSharedAttribute(BLOCKATTRIBUTE::BREAKABLE) <= 0) return;
 
     // Break block
     playerChunk->BreakBlockAtPosition(_rayPosition);

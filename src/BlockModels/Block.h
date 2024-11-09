@@ -116,8 +116,8 @@ struct std::hash<BlockType> {
  */
 
 enum class BLOCKATTRIBUTE {
-    TRANSPARENT, LIQUID, BREAKABLE, CANACCESSTHROUGHBLOCK, FACINGDIRECTION, ROTATION, GENERATIONPRIORITY, ENTITYCOLLISIONSOLID
-    // ... other block attributes
+    TRANSPARENT, LIQUID, BREAKABLE, CANACCESSTHROUGHBLOCK, FACINGDIRECTION, ROTATION, GENERATIONPRIORITY,
+    ENTITYCOLLISIONSOLID, BLOCKMODEL, // ... other block attributes
 };
 
 
@@ -132,7 +132,7 @@ struct BlockAttributes {
     GLbyte halfRightRotations = 0;
     GLbyte topFaceDirection = DIRECTION::UP;
 
-    [[nodiscard]] GLbyte GetAttributeValue(BLOCKATTRIBUTE _attribute) const;
+    [[nodiscard]] GLbyte GetIndividualAttribute(BLOCKATTRIBUTE _attribute) const;
 };
 
 
@@ -175,7 +175,7 @@ class Block {
 
         // BlockAttributes
         [[nodiscard]] BlockType GetBlockType() const { return blockData; }
-        [[nodiscard]] GLbyte GetAttributeValue(BLOCKATTRIBUTE _attribute) const;
+        [[nodiscard]] GLbyte GetSharedAttribute(BLOCKATTRIBUTE _attribute) const;
 
         // Block Face Culling
         [[nodiscard]] DIRECTION GetRandomTopFaceDirection() const;

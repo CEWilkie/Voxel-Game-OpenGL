@@ -176,7 +176,7 @@ std::vector<Vertex> BlockVAOs::GetBaseVertexArray(BLOCKMODEL _model) {
 
 
 
-GLbyte BlockAttributes::GetAttributeValue(BLOCKATTRIBUTE _attribute) const {
+GLbyte BlockAttributes::GetIndividualAttribute(BLOCKATTRIBUTE _attribute) const {
     switch (_attribute) {
         case BLOCKATTRIBUTE::FACINGDIRECTION:
             return topFaceDirection;
@@ -245,7 +245,7 @@ void Block::DisplayWireframe(const Transformation& _transformation) const {
     glLineWidth(1.0f);
 }
 
-GLbyte Block::GetAttributeValue(BLOCKATTRIBUTE _attribute) const {
+GLbyte Block::GetSharedAttribute(BLOCKATTRIBUTE _attribute) const {
     switch (_attribute) {
         case BLOCKATTRIBUTE::TRANSPARENT:
             return transparent;
@@ -264,6 +264,9 @@ GLbyte Block::GetAttributeValue(BLOCKATTRIBUTE _attribute) const {
 
         case BLOCKATTRIBUTE::ENTITYCOLLISIONSOLID:
             return entityCollisionSolid;
+
+        case BLOCKATTRIBUTE::BLOCKMODEL:
+            return (GLbyte)blockModel;
 
         default:
             return 0;
@@ -303,7 +306,7 @@ std::vector<Vertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &_faces
     std::vector<Vertex> baseVertexArray = blockVAOmanager->GetBaseVertexArray(blockModel);
     std::vector<Vertex> vertexArray {};
 
-    float angleDeg = (float)_blockAttributes.GetAttributeValue(BLOCKATTRIBUTE::ROTATION) * 45.0f;
+    float angleDeg = (float) _blockAttributes.GetIndividualAttribute(BLOCKATTRIBUTE::ROTATION) * 45.0f;
     glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f),glm::radians(angleDeg),dirTop);
 
     // For each requested face
@@ -334,8 +337,6 @@ std::vector<Vertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &_faces
             vertexArray.push_back(faceVertex);
             usedIndicies.push_back(baseIndexArray[i]);
         }
-
-        if (blockModel == PLANT && face == _faces[1]) return vertexArray;
     }
 
     return vertexArray;
