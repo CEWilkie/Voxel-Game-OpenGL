@@ -47,7 +47,7 @@ void Player::Display() {
         Block targetBlockPtr = playerChunk->GetBlockFromData(targetBlock.type);
 
         Transformation t;
-        glm::vec3 pos = glm::floor(unobstructedRayPosition) + playerChunk->GetPosition() * (float)chunkSize;
+        glm::vec3 pos = glm::floor(unobstructedRayPosition) + playerChunk->GetIndex() * (float)chunkSize;
         t.SetPosition(pos);
         t.UpdateModelMatrix();
         targetBlockPtr.DisplayWireframe(t);
@@ -258,12 +258,12 @@ void Player::SwitchCamera(const std::uint8_t* _keyInputs) {
 
 void Player::UpdatePlayerChunk() {
     // chunk the player is in
-    Chunk* pChunk = world->GetChunkAtPosition(position).get();
+    auto pChunk = world->GetChunkAtBlockPosition(position);
 
     // If players chunk is not the same as currently stored player chunk, update the world's loading origin
     if (pChunk != nullptr) {
         if (pChunk != playerChunk && playerChunk != nullptr) {
-            world->SetLoadingOrigin(pChunk->GetPosition());
+            world->SetLoadingOrigin(pChunk->GetIndex());
             world->GenerateLoadedWorld();
 
             // Ensure that chunks are loaded / unloaded accordingly
@@ -284,18 +284,18 @@ void Player::UpdateMaxPositions() {
     if (movementMode == MOVEMENTMODE::FLYING) return;
 
     // Get block position in chunk player is currently inside of
-    glm::vec3 blockPos = position - (playerChunk->GetPosition() * (float)chunkSize);
+    glm::vec3 blockPos = position - (playerChunk->GetIndex() * (float)chunkSize);
 
     // Get the highest ylevel that the player would reach first
     minY = playerChunk->GetTopLevelAtPosition({blockPos.x, blockPos.y - 1, blockPos.z}, 0.4f);
     maxY = chunkHeight;
 
     // returns position of obstructing face in the chunk
-    minX = (playerChunk->GetPosition().x * (float)chunkSize) + playerChunk->GetDistanceToBlockFace(blockPos, dirFront, radius);
-    maxX = (playerChunk->GetPosition().x * (float)chunkSize) + playerChunk->GetDistanceToBlockFace(blockPos, dirBack, radius);
+    minX = (playerChunk->GetIndex().x * (float)chunkSize) + playerChunk->GetDistanceToBlockFace(blockPos, dirFront, radius);
+    maxX = (playerChunk->GetIndex().x * (float)chunkSize) + playerChunk->GetDistanceToBlockFace(blockPos, dirBack, radius);
 
-    minZ = (playerChunk->GetPosition().z * (float)chunkSize) + playerChunk->GetDistanceToBlockFace(blockPos, dirLeft, radius);
-    maxZ = (playerChunk->GetPosition().z * (float)chunkSize) + playerChunk->GetDistanceToBlockFace(blockPos, dirRight, radius);
+    minZ = (playerChunk->GetIndex().z * (float)chunkSize) + playerChunk->GetDistanceToBlockFace(blockPos, dirLeft, radius);
+    maxZ = (playerChunk->GetIndex().z * (float)chunkSize) + playerChunk->GetDistanceToBlockFace(blockPos, dirRight, radius);
 }
 
 void Player::EnforcePositionBoundaries(float _seconds) {
@@ -327,7 +327,7 @@ void Player::EnforcePositionBoundaries(float _seconds) {
 void Player::GetMovementFriction() {
     // Get block position in chunk player is currently inside of
     if (playerChunk == nullptr) return;
-    glm::vec3 blockPos = position - (playerChunk->GetPosition() * (float) chunkSize);
+    glm::vec3 blockPos = position - (playerChunk->GetIndex() * (float) chunkSize);
 
     ChunkDataTypes::ChunkBlock block = playerChunk->GetBlockAtPosition(blockPos, 0);
     Block playerBlock = playerChunk->GetBlockFromData(block.type);
@@ -425,7 +425,7 @@ void Player::GetUnobstructedRayPosition() {
 
     // Create ray from campos using direction and max range, detect first block ray encounters that can be interacted
     // with
-    glm::vec3 rayPosition = firstPerson->GetPosition() - (playerChunk->GetPosition() * (float)chunkSize);
+    glm::vec3 rayPosition = firstPerson->GetPosition() - (playerChunk->GetIndex() * (float)chunkSize);
     rayPosition.y += 1;
 
     // higher accuracy -> more checks, smaller increments in position along the line
@@ -468,7 +468,7 @@ void Player::BreakBlock(glm::vec3 _rayPosition) {
     // Add the chunks and the region to the chunk mesher thread as priority
     ChunkThreads* mesher = world->GetThread(THREAD::CHUNKMESHING);
 
-    glm::ivec2 pos{playerChunk->GetPosition().x, playerChunk->GetPosition().z};
+    glm::ivec2 pos{playerChunk->GetIndex().x, playerChunk->GetIndex().z};
     ThreadAction action{std::bind(&World::GenerateChunkMesh, world.get(), _1, _2), pos};
     mesher->AddPriorityActionRegion(action, 1);
 }
@@ -483,7 +483,7 @@ void Player::PlaceBlock(glm::vec3 _rayPosition) {
     // Add the chunks and the region to the chunk mesher thread as priority
     ChunkThreads* mesher = world->GetThread(THREAD::CHUNKMESHING);
 
-    glm::ivec2 pos{playerChunk->GetPosition().x, playerChunk->GetPosition().z};
+    glm::ivec2 pos{playerChunk->GetIndex().x, playerChunk->GetIndex().z};
     ThreadAction action{std::bind(&World::GenerateChunkMesh, world.get(), _1, _2), pos};
     mesher->AddPriorityActionRegion(action, 1);
 }

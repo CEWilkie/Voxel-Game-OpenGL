@@ -6,7 +6,9 @@
 #define UNTITLED7_WORLD_H
 
 #include <memory>
+#include <shared_mutex>
 #include <thread>
+#include <utility>
 
 #include "../Player/Player.h"
 
@@ -18,8 +20,22 @@ enum class THREAD {
         CHUNKBUILDING, CHUNKMESHING, CHUNKLOADING, CHUNKLIGHTING // ...
 };
 
+struct LockableChunkPtr {
+    std::shared_ptr<Chunk> chunkPtr {};
+    mutable std::shared_mutex chunkLock;
+
+    LockableChunkPtr& operator=(const std::shared_ptr<Chunk>& _chunkPtr) {
+        if (_chunkPtr != nullptr) chunkPtr = _chunkPtr;
+        return *this;
+    }
+
+    std::shared_ptr<Chunk> operator->() const {
+        return chunkPtr;
+    }
+};
+
 namespace WorldDataTypes {
-    typedef std::array<std::array<std::shared_ptr<Chunk>, 2000>, 2000> chunkArray;
+    typedef std::array<std::array<LockableChunkPtr, 2000>, 2000> chunkArray;
     typedef std::array<std::unique_ptr<Biome>, worldArea> biomeMap;
 }
 
@@ -47,7 +63,9 @@ class World {
         ChunkThreads chunkLoaderThread = ChunkThreads("LOADER_THREAD");
         ChunkThreads chunkLighterThread = ChunkThreads("LIGHTING_THREAD");
 
-        glm::ivec2 loadingChunk {0, 0}; // centre
+        mutable std::shared_mutex chunkAccess;
+
+        glm::ivec2 loadingIndex {0, 0}; // centre
 
     public:
         World();
@@ -63,13 +81,13 @@ class World {
         void UpdateWorldTime(Uint64 _deltaTicks);
 
         // Thread Functions
-        void CreateChunk(const glm::ivec2& _chunkPos, const glm::vec3& _blockPos);
+        void CreateChunk(const glm::ivec2& _chunkIndex, const glm::vec3& _blockPos);
         void CreateChunkAtIndex(const glm::ivec2& _chunkPos, const ChunkData& _chunkData);
 
-        void GenerateChunk(const glm::ivec2& _chunkPos, const glm::vec3& _blockPos);
-        void GenerateChunkMesh(const glm::ivec2& _chunkPos, const glm::vec3& _blockPos);
+        void GenerateChunk(const glm::ivec2& _chunkIndex, const glm::vec3& _blockPos);
+        void GenerateChunkMesh(const glm::ivec2& _chunkIndex, const glm::vec3& _blockPos);
 
-        void ManageLoadedChunks(const Chunk* _currentChunk, const Chunk* _newChunk);
+        void ManageLoadedChunks(const std::shared_ptr<Chunk>& _currentChunk, const std::shared_ptr<Chunk>& _newChunk);
         void CheckChunkLoaded(const glm::ivec2& _currentChunkPos, const glm::vec3& _newChunkPos);
 
         // ChunkData Generation functions
@@ -85,31 +103,16 @@ class World {
 
         void BindChunks() const;
 
-        // Getters
-        [[nodiscard]] std::shared_ptr<Chunk> GetChunkAtPosition(glm::vec3 _blockPos) const;
-        [[nodiscard]] std::shared_ptr<Chunk> GetChunkAtIndex(glm::vec3 _chunkPos) const;
-        [[nodiscard]] std::shared_ptr<Chunk> GetChunkLoadRelative(glm::vec3 _chunkPos) const;
-        [[nodiscard]] std::shared_ptr<Chunk> GetWorldCentreChunk() const { return worldChunks[worldSize/2][worldSize/2]; }
+        // Chunk Retrieval and Destruction
+        [[nodiscard]] std::shared_ptr<Chunk> GetChunkAtBlockPosition(glm::vec3 _blockPos) const;
+        [[nodiscard]] std::shared_ptr<Chunk> GetChunkAtIndex(glm::vec2 _chunkIndex) const;
+        [[nodiscard]] std::shared_ptr<Chunk> GetChunkAtIndex(glm::vec3 _chunkIndex) const;
+        THREAD_ACTION_RESULT DestroyChunkAtIndex(glm::vec3 _chunkIndex);
+        THREAD_ACTION_RESULT CreateChunkAtIndex(glm::vec3 _chunkIndex, ChunkData _chunkData);
+
+
         [[nodiscard]] Biome* GetBiome(BIOMEID _biomeID);
-
-        [[nodiscard]] ChunkThreads* GetThread(THREAD _thread) {
-            switch (_thread) {
-                case THREAD::CHUNKBUILDING:
-                    return &chunkBuilderThread;
-
-                case THREAD::CHUNKMESHING:
-                    return &chunkMesherThread;
-
-                case THREAD::CHUNKLOADING:
-                    return &chunkLoaderThread;
-
-                case THREAD::CHUNKLIGHTING:
-                    return &chunkLighterThread;
-
-                default:
-                    return nullptr;
-            }
-        }
+        [[nodiscard]] ChunkThreads* GetThread(THREAD _thread);
 };
 
 inline std::unique_ptr<World> world {};

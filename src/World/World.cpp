@@ -62,10 +62,9 @@ void World::Display() const {
     glEnable(GL_CULL_FACE);
     for (int x = -renderRadius; x < renderRadius; x++) {
         for (int z = -renderRadius; z < renderRadius; z++) {
-            auto chunk = GetChunkLoadRelative({x, 0, z});
-            if (chunk != nullptr) {
-                chunk->DisplaySolid();
-            }
+            auto chunk = GetChunkAtIndex(loadingIndex + glm::ivec2{x, z});
+
+            if (chunk != nullptr) chunk->DisplaySolid();
         }
     }
     glDisable(GL_CULL_FACE);
@@ -73,7 +72,8 @@ void World::Display() const {
     // Draw transparent objects
     for (int x = -renderRadius; x < renderRadius; x++) {
         for (int z = -renderRadius; z < renderRadius; z++) {
-            auto chunk = GetChunkLoadRelative({x, 0, z});
+            auto chunk = GetChunkAtIndex(loadingIndex + glm::ivec2{x, z});
+
             if (chunk != nullptr) chunk->DisplayTransparent();
         }
     }
@@ -206,15 +206,15 @@ void World::GenerateLoadedWorld() {
     using namespace std::placeholders;
 
     // Ensure chunks exist for loading region (and border) area
-    ThreadAction createChunkRegion{std::bind(&World::CreateChunk, this, _1, _2), loadingChunk};
+    ThreadAction createChunkRegion{std::bind(&World::CreateChunk, this, _1, _2), loadingIndex};
     chunkBuilderThread.AddPriorityActionRegion(createChunkRegion, loadRadius);
 
     // Generate the chunks within the loading region (and not border), this will be done after the chunks are created
-    ThreadAction generateChunk{std::bind(&World::GenerateChunk, this, _1, _2), loadingChunk};
+    ThreadAction generateChunk{std::bind(&World::GenerateChunk, this, _1, _2), loadingIndex};
     chunkBuilderThread.AddActionRegion(generateChunk, loadRadius);
 
     // Mesh the chunks within the loading region
-    ThreadAction createMesh{std::bind(&World::GenerateChunkMesh, this, _1, _2), loadingChunk};
+    ThreadAction createMesh{std::bind(&World::GenerateChunkMesh, this, _1, _2), loadingIndex};
     chunkMesherThread.AddActionRegion(createMesh, loadRadius);
 }
 
@@ -224,18 +224,18 @@ void World::GenerateLoadedWorld() {
  * Thread-Called function to retrieve chunk data for a given chunk index position.
  */
 
-void World::CreateChunk(const glm::ivec2& _chunkPos, const glm::vec3& _blockPos) {
+void World::CreateChunk(const glm::ivec2& _chunkIndex, const glm::vec3& _blockPos) {
     // Chunk object already exists, dont overwrite
-    glm::vec3 chunkIndex{_chunkPos.x + 1000, 0, _chunkPos.y + 1000};
-    if (GetChunkAtIndex(chunkIndex) != nullptr) {
+    if (GetChunkAtIndex(_chunkIndex) != nullptr) {
         return;
     }
 
     // Get ChunkData and create the chunk
-    ChunkData chunkData = GenerateChunkData(_chunkPos);
+    ChunkData chunkData = GenerateChunkData(_chunkIndex);
     chunkData.biome = GenerateBiome(GetBiomeIDFromData(chunkData));
 
-    worldChunks[chunkIndex.x][chunkIndex.z] = std::make_unique<Chunk>(glm::vec3{_chunkPos.x, 0, _chunkPos.y}, chunkData);
+    glm::vec3 index{_chunkIndex.x, 0, _chunkIndex.y};
+    CreateChunkAtIndex(index, chunkData);
 }
 
 
@@ -244,25 +244,16 @@ void World::CreateChunk(const glm::ivec2& _chunkPos, const glm::vec3& _blockPos)
  * Obtains chunk data and generates a chunk (base terrain and decorative)
  */
 
-void World::GenerateChunk(const glm::ivec2& _chunkPos, const glm::vec3& _blockPos) {
+void World::GenerateChunk(const glm::ivec2& _chunkIndex, const glm::vec3& _blockPos) {
     auto st = SDL_GetTicks64();
-    glm::vec3 chunkPos{_chunkPos.x + 1000, 0, _chunkPos.y + 1000};
 
-    auto chunk = GetChunkAtIndex(chunkPos);
+    auto chunk = GetChunkAtIndex(_chunkIndex);
     if (chunk == nullptr) {
         // if this situation occurs, probably will be multiple visible generation issues with cross-chunk structures
-        CreateChunk(_chunkPos, {0,0,0});
-        chunk = GetChunkAtIndex(chunkPos);
+        CreateChunk(_chunkIndex, {0, 0, 0});
+        chunk = GetChunkAtIndex(_chunkIndex);
         if (chunk == nullptr) return;
     }
-
-    // Set the adjacent chunks
-    std::array<std::weak_ptr<Chunk>, 8> adjacentChunks;
-    for (int dir = 2; dir < numDirections; dir++) {
-        adjacentChunks[dir - 2] = GetChunkAtIndex(chunkPos + allDirections[dir]);
-    }
-
-    chunk->SetAdjacentChunks(adjacentChunks);
 
     // Generate the chunk's blocks
     if (!chunk->Generated()) {
@@ -277,11 +268,8 @@ void World::GenerateChunk(const glm::ivec2& _chunkPos, const glm::vec3& _blockPo
 }
 
 
-void World::GenerateChunkMesh(const glm::ivec2 &_chunkPos, const glm::vec3& _blockPos) {
-    glm::vec3 chunkIndex = {_chunkPos.x + 1000, 0, _chunkPos.y + 1000};
-
-    auto chunk = GetChunkAtIndex(chunkIndex);
-
+void World::GenerateChunkMesh(const glm::ivec2 &_chunkIndex, const glm::vec3& _blockPos) {
+    auto chunk = GetChunkAtIndex(_chunkIndex);
 
     if (chunk != nullptr && chunk->RegionGenerated() && chunk->NeedsMeshUpdates()) {
         auto st = SDL_GetTicks64();
@@ -296,21 +284,20 @@ void World::GenerateChunkMesh(const glm::ivec2 &_chunkPos, const glm::vec3& _blo
     else if (chunk == nullptr || !chunk->RegionGenerated()) {
         // Waiting on the chunk to be made / generate
         ThreadAction meshChunk{std::bind(&World::GenerateChunkMesh, this, std::placeholders::_1, std::placeholders::_2),
-                               _chunkPos};
+                               _chunkIndex};
         chunkMesherThread.AddActions({meshChunk});
     }
 }
 
 
-void World::ManageLoadedChunks(const Chunk *_currentChunk, const Chunk *_newChunk) {
+void World::ManageLoadedChunks(const std::shared_ptr<Chunk>& _currentChunk, const std::shared_ptr<Chunk>& _newChunk) {
     using namespace std::placeholders;
 
-    glm::vec2 oldChunkPos = {_currentChunk->GetPosition().x, _currentChunk->GetPosition().z};
-    glm::vec2 newChunkPos = {_currentChunk->GetPosition().x, _currentChunk->GetPosition().z};
+    glm::vec2 oldChunkPos = {_currentChunk->GetIndex().x, _currentChunk->GetIndex().z};
 
     // hijack the blockPos intended for precision to store a second chunkPos instead
     ThreadAction markUnloaded{std::bind(&World::CheckChunkLoaded, this, _1, _2),
-                              oldChunkPos, _newChunk->GetPosition()};
+                              oldChunkPos, _newChunk->GetIndex()};
     chunkLoaderThread.AddActionRegion(markUnloaded, loadRadius);
 }
 
@@ -322,7 +309,7 @@ void World::ManageLoadedChunks(const Chunk *_currentChunk, const Chunk *_newChun
  */
 
 void World::CheckChunkLoaded(const glm::ivec2 &_currentChunkPos, const glm::vec3 &_newChunkPos) {
-    glm::vec3 chunkIndex = {_currentChunkPos.x + 1000, 0, _currentChunkPos.y + 1000};
+    glm::vec3 chunkIndex = {_currentChunkPos.x, 0, _currentChunkPos.y};
     auto chunk = GetChunkAtIndex(chunkIndex);
 
     int diffX = std::abs(_currentChunkPos.x - (int)_newChunkPos.x);
@@ -332,8 +319,7 @@ void World::CheckChunkLoaded(const glm::ivec2 &_currentChunkPos, const glm::vec3
     if (!(diffX > loadRadius || diffZ > loadRadius)) return;
 
     // chunk is outside of the load radius so unload
-    chunk->MarkLoaded(false);
-    worldChunks[(int)chunkIndex.x][(int)chunkIndex.z].reset();
+    DestroyChunkAtIndex(chunkIndex);
 }
 
 
@@ -450,13 +436,13 @@ Biome* World::GenerateBiome(BIOMEID _biomeID) {
 
 
 void World::SetLoadingOrigin(const glm::vec3 &_origin) {
-    loadingChunk = {_origin.x, _origin.z};  // for centre chunk
+    loadingIndex = {_origin.x, _origin.z};  // index of player's centre chunk
 }
 
 void World::BindChunks() const {
     for (int x = -loadRadius; x < loadRadius; x++) {
         for (int z = -loadRadius; z < loadRadius; z++) {
-            auto chunk = GetChunkLoadRelative({x,0,z});
+            auto chunk = GetChunkAtIndex(loadingIndex + glm::ivec2{x, z});
 
             if (chunk != nullptr && chunk->UnboundMeshChanges()) {
                 chunk->BindChunkMeshes();
@@ -465,39 +451,74 @@ void World::BindChunks() const {
     }
 }
 
-void World::CreateChunkAtIndex(const glm::ivec2& _chunkPos, const ChunkData& _chunkData) {
-    if (_chunkPos.x < 0 || _chunkPos.x >= 2000) return;
-    if (_chunkPos.y < 0 || _chunkPos.y >= 2000) return;
 
-    glm::vec3 pos{_chunkPos.x-1000, 0, _chunkPos.y-1000};
-    worldChunks[_chunkPos.x][_chunkPos.y] = std::make_unique<Chunk>(pos, _chunkData);
+
+
+
+
+std::shared_ptr<Chunk> World::GetChunkAtBlockPosition(glm::vec3 _blockPos) const {
+    glm::vec3 index = _blockPos / (float)chunkSize;
+    return GetChunkAtIndex(index);
 }
 
-std::shared_ptr<Chunk> World::GetChunkAtPosition(glm::vec3 _blockPos) const {
-    _blockPos /= (float)chunkSize;
-    _blockPos += glm::vec3{1000,0,1000}; // centre of the worlds chunks
-
-    if (_blockPos.x < 0 || _blockPos.x >= 2000) return nullptr;
-    if (_blockPos.z < 0 || _blockPos.z >= 2000) return nullptr;
-
-    return worldChunks[(int)_blockPos.x][(int)_blockPos.z];
+std::shared_ptr<Chunk> World::GetChunkAtIndex(glm::vec2 _chunkIndex) const {
+    return GetChunkAtIndex({_chunkIndex.x, 0, _chunkIndex.y});
 }
 
-std::shared_ptr<Chunk> World::GetChunkAtIndex(glm::vec3 _chunkPos) const {
-    if (_chunkPos.x < 0 || _chunkPos.x >= 2000) return nullptr;
-    if (_chunkPos.z < 0 || _chunkPos.z >= 2000) return nullptr;
+std::shared_ptr<Chunk> World::GetChunkAtIndex(glm::vec3 _chunkIndex) const {
+    glm::vec3 index = _chunkIndex + glm::vec3{1000, 0, 1000}; // centre of the worlds chunks
 
-    return worldChunks[(int)_chunkPos.x][(int)_chunkPos.z];
+    if (index.x < 0 || index.x >= 2000) return nullptr;
+    if (index.z < 0 || index.z >= 2000) return nullptr;
+
+    // permits multiple fetch requests for chunk
+    std::shared_lock lock(worldChunks[(int)index.x][(int)index.z].chunkLock);
+    std::shared_ptr<Chunk> chunkPtr = worldChunks[(int)index.x][(int)index.z].chunkPtr;
+
+    return chunkPtr;
 }
 
-std::shared_ptr<Chunk> World::GetChunkLoadRelative(glm::vec3 _chunkPos) const {
-    _chunkPos += glm::vec3{loadingChunk.x + 1000,0,loadingChunk.y + 1000}; // centre of the loaded chunks
 
-    if (_chunkPos.x < 0 || _chunkPos.x >= 2000) return nullptr;
-    if (_chunkPos.z < 0 || _chunkPos.z >= 2000) return nullptr;
+THREAD_ACTION_RESULT World::DestroyChunkAtIndex(glm::vec3 _chunkIndex) {
+    glm::vec3 index = _chunkIndex + glm::vec3{1000, 0, 1000};
 
-    return worldChunks[(int)_chunkPos.x][(int)_chunkPos.z];
+    if (index.x < 0 || index.x >= 2000) return ThreadAction::FAIL;
+    if (index.y < 0 || index.y >= 2000) return ThreadAction::FAIL;
+
+    // only one thread may destroy the chunk, and only when no fetch requests are active
+    std::unique_lock lock(worldChunks[(int)index.x][(int)index.z].chunkLock, std::try_to_lock);
+    if (!lock.owns_lock()) {
+        // Chunk is busy right now so lock failed. Return it into the list
+        return ThreadAction::RETRY;
+    }
+
+    // owns lock, destroy chunk
+    worldChunks[(int)index.x][(int)index.z].chunkPtr.reset();
+    return ThreadAction::OK;
 }
+
+
+
+THREAD_ACTION_RESULT World::CreateChunkAtIndex(glm::vec3 _chunkIndex, ChunkData _chunkData) {
+    glm::vec2 index = {_chunkIndex.x + 1000, _chunkIndex.z + 1000};
+
+    if (index.x < 0 || index.x >= 2000) return ThreadAction::FAIL;
+    if (index.y < 0 || index.y >= 2000) return ThreadAction::FAIL;
+
+    // only one thread may create the chunk, and only when no fetch requests are active
+    std::unique_lock lock(worldChunks[(int)index.x][(int)index.y].chunkLock, std::try_to_lock);
+    if (!lock.owns_lock()) {
+        // Chunk is busy right now so lock failed. Return it into the list
+        return ThreadAction::RETRY;
+    }
+
+    // owns lock, create chunk
+    worldChunks[(int)index.x][(int)index.y] = std::make_unique<Chunk>(_chunkIndex, _chunkData);
+    return ThreadAction::OK;
+}
+
+
+
 
 Biome* World::GetBiome(BIOMEID _biomeID) {
     // Fetch biome
@@ -508,4 +529,24 @@ Biome* World::GetBiome(BIOMEID _biomeID) {
     // Biome did not exist?
     uniqueBiomes.emplace_back(CreateBiome(_biomeID));
     return uniqueBiomes.back().get();
+}
+
+
+ChunkThreads* World::GetThread(THREAD _thread) {
+    switch (_thread) {
+        case THREAD::CHUNKBUILDING:
+            return &chunkBuilderThread;
+
+        case THREAD::CHUNKMESHING:
+            return &chunkMesherThread;
+
+        case THREAD::CHUNKLOADING:
+            return &chunkLoaderThread;
+
+        case THREAD::CHUNKLIGHTING:
+            return &chunkLighterThread;
+
+        default:
+            return nullptr;
+    }
 }

@@ -11,6 +11,7 @@
 #include "../Blocks/CreateBlock.h"
 #include "../GlobalStates.h"
 #include "LoadStructure.h"
+#include "World.h"
 
 /*
  * CHUNK
@@ -25,7 +26,7 @@ Chunk::Chunk(const glm::vec3& _chunkPosition, ChunkData _chunkData) {
     cullingTransformation.UpdateModelMatrix();
 
     // Set chunk position
-    chunkPosition = _chunkPosition;
+    chunkIndex = _chunkPosition;
 
     // Create bounding box for the chunk (assume max 16x16x16 volume)
     boxBounds = std::move(GenerateBoxBounds({{glm::vec3(0,0,0)},
@@ -312,7 +313,7 @@ void Chunk::CreateTerrain() {
             auto hmTopLevel = chunkData.heightMap[x + z * chunkSize];
 
             for (int y = 0; y < chunkHeight; y++) {
-                glm::vec3 blockPos = glm::vec3(x, y, z) + (chunkPosition * (float)chunkSize);
+                glm::vec3 blockPos = glm::vec3(x, y, z) + (chunkIndex * (float)chunkSize);
                 BlockType generatingBlockData = chunkData.biome->GetBlockType(hmTopLevel, blockPos.y);
                 Block generatingBlock = GetBlockFromData(generatingBlockData);
 
@@ -334,11 +335,10 @@ void Chunk::CreateTerrain() {
                 // give block a random rotation and facing direction
                 terrain[x][y][z].attributes.topFaceDirection = generatingBlock.GetRandomTopFaceDirection();
                 terrain[x][y][z].attributes.halfRightRotations = generatingBlock.GetRandomRotation();
-
             }
 
             // Now create vegetation provided chunk contains hmToplevel
-            hmTopLevel -= chunkPosition.y * chunkSize;
+            hmTopLevel -= chunkIndex.y * chunkSize;
             if (hmTopLevel < 0 || hmTopLevel >= chunkHeight) continue;
 
             CreateVegitation({x,hmTopLevel,z});
@@ -398,26 +398,14 @@ void Chunk::CreateVegitation(glm::vec3 _blockPos) {
 }
 
 /*
- * Set the adjacent chunks in each direction to this chunk
- */
-
-void Chunk::SetAdjacentChunks(const std::array<std::weak_ptr<Chunk>, 8> &_chunks) {
-    // -x, -x-z, -z, -z+x, +x, +x+z, +z, +z-x
-    adjacentChunks = _chunks;
-}
-
-
-/*
  * Checks if any adjacent chunk, or this chunk is not generated. Returns true if all chunks (and this chunk) have
  * been generated
  */
 
 bool Chunk::RegionGenerated() const {
-    return generated &&
-    !std::any_of(adjacentChunks.begin(), adjacentChunks.end(), [](const std::weak_ptr<Chunk>& adjacentChunk){
-        if (adjacentChunk.expired()) return false;
-        else return !adjacentChunk.lock()->Generated();
-    });
+
+
+    return generated;
 }
 
 /*
@@ -436,7 +424,7 @@ void Chunk::BreakBlockAtPosition(glm::vec3 _blockPos) {
  */
 
 void Chunk::PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType) {
-    Chunk* blockChunk = GetChunkAtPosition(_blockPos, 0);
+    auto blockChunk = GetChunkAtBlockPos(_blockPos);
     if (blockChunk == nullptr) return;
 
     // directions of adjacent blocks
@@ -444,7 +432,7 @@ void Chunk::PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType) {
                                              _blockPos + dirRight, _blockPos + dirFront, _blockPos + dirBack};
 
     // Mark original block's mesh for recreation and add original block mesh's chunk to list
-    ChunkDataTypes::ChunkBlock originalBlock = blockChunk->GetBlockAtPosition(_blockPos, 0);
+    ChunkDataTypes::ChunkBlock originalBlock = blockChunk->GetChunkBlockAtPosition(_blockPos);
     MaterialMesh* blockMesh = blockChunk->GetMeshFromBlock(originalBlock.type);
     if (blockMesh != nullptr) {
         if (blockMesh->GetBlock()->GetBlockType().blockID == STONE) printf("STONE");
@@ -456,7 +444,7 @@ void Chunk::PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType) {
     blockChunk->MarkForMeshUpdates();
 
     for (auto& blockPosition : blockPositions) {
-        Chunk* chunkAtPosition = blockChunk->GetChunkAtPosition(blockPosition, 0);
+        auto chunkAtPosition = blockChunk->GetChunkAtBlockPos(blockPosition);
         if (chunkAtPosition != nullptr) {
             chunkAtPosition->MarkForMeshUpdates();
 
@@ -484,11 +472,10 @@ void Chunk::SetChunkBlockAtPosition(const glm::vec3 &_blockPos, const BlockType&
 
 /*
  * Obtains the chunk that the provided position is within, and then sets the block in that chunk to the specified type.
- * Blockpos is also updated to be relative to the correct chunk it resides within. (eg x = 16 -> x = 0 of adj chunk).
  */
 
-void Chunk::SetBlockAtPosition(glm::vec3 _blockPos, int _depth, const BlockType& _blockType) {
-    Chunk* blockChunk = GetChunkAtPosition(_blockPos, _depth);
+void Chunk::SetBlockAtPosition(glm::vec3 _blockPos, int _depth, const BlockType& _blockType) const {
+    auto blockChunk = GetChunkAtBlockPos(_blockPos);
     if (blockChunk == nullptr) return;
 
     blockChunk->SetChunkBlockAtPosition(_blockPos, _blockType);
@@ -500,16 +487,16 @@ void Chunk::SetBlockAtPosition(glm::vec3 _blockPos, int _depth, const BlockType&
  * Fetches block at position. Assumes provided position values are within 0 - 15.
  */
 
-ChunkDataTypes::ChunkBlock Chunk::GetChunkBlockAtPosition(const glm::vec3 &_blockPos) {
+ChunkDataTypes::ChunkBlock Chunk::GetChunkBlockAtPosition(const glm::vec3& _blockPos) {
     return terrain[(int)_blockPos.x][(int)_blockPos.y][(int)_blockPos.z];
 }
 
 /*
- * Obtains the chunk that the provided position is within, and then returns the block in the chunk at that position
+ * Obtains the chunk that the provided position is within, and gets the block in that chunk
  */
 
 ChunkDataTypes::ChunkBlock Chunk::GetBlockAtPosition(glm::vec3 _blockPos, int _depth) const {
-    Chunk* blockChunk = GetChunkAtPosition(_blockPos, _depth);
+    auto blockChunk = GetChunkAtBlockPos(_blockPos);
     if (blockChunk == nullptr) return {};
 
     return blockChunk->GetChunkBlockAtPosition(_blockPos);
@@ -563,7 +550,7 @@ float Chunk::GetTopLevelAtPosition(glm::vec3 _blockPos, float _radius) {
             if (blockPtr.GetAttributeValue(BLOCKATTRIBUTE::ENTITYCOLLISIONSOLID) == 0) continue;
 
             // blockHeight + y in chunk + chunkHeight
-            float blockTL = 1.0f + y + chunkPosition.y*(float)chunkSize;
+            float blockTL = 1.0f + y + chunkIndex.y * (float)chunkSize;
             if (blockTL > topLevel) topLevel = blockTL;
 
         }
@@ -651,53 +638,17 @@ float Chunk::GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, f
  * Returns a correct chunk for the _blockPos and updates _blockPos to be relative to the returned chunk
  */
 
-Chunk* Chunk::GetChunkAtPosition(glm::vec3& _blockPos, int _depth) const {
-    if (_depth > 2) return nullptr;
-    else _depth++;
+std::shared_ptr<Chunk> Chunk::GetChunkAtBlockPos(glm::vec3& _blockPos) const {
+    std::shared_ptr<Chunk> chunk = world->GetChunkAtIndex(chunkIndex);
 
-    // FRONT, FRONTLEFT, LEFT, BACKLEFT, BACK, BACKRIGHT, RIGHT, FRONTRIGHT
-    if (_blockPos.x < 0) {
-        if (!adjacentChunks[0].expired()) {
-            _blockPos.x += chunkSize;
-            return adjacentChunks[0].lock()->GetChunkAtPosition(_blockPos, _depth);
-        }
-        else
-            return nullptr;
-    }
-    if (_blockPos.x >= chunkSize) {
-        if (!adjacentChunks[4].expired()) {
-            _blockPos.x -= chunkSize;
-            return adjacentChunks[4].lock()->GetChunkAtPosition(_blockPos, _depth);
-        }
-        else
-            return nullptr;
-    }
-    if (_blockPos.y < 0 || _blockPos.y >= chunkHeight) {
-        return nullptr;
-    }
-    if (_blockPos.z < 0) {
-        if (!adjacentChunks[2].expired()) {
-            _blockPos.z += chunkSize;
-            return adjacentChunks[2].lock()->GetChunkAtPosition(_blockPos, _depth);
-        }
-        else
-            return nullptr;
-    }
-    if (_blockPos.z >= chunkSize) {
-        if (!adjacentChunks[6].expired()) {
-            _blockPos.z -= chunkSize;
-            return adjacentChunks[6].lock()->GetChunkAtPosition(_blockPos, _depth);
-        }
-        else
-            return nullptr;
+    if (_blockPos.x < 0 || _blockPos.x >= chunkSize || _blockPos.z < 0 || _blockPos.z >= chunkSize) {
+        _blockPos += chunkIndex * (float)chunkSize;
+        chunk = world->GetChunkAtBlockPosition(_blockPos);
+        if (chunk != nullptr) _blockPos -= chunk->GetIndex() * (float)chunkSize;
     }
 
-    // _blockPos is within this chunk, return pointer to this chunk
-    return const_cast<Chunk *>(this);
-}
+    if (_blockPos.y < 0 || _blockPos.y >= chunkHeight)
+        chunk = nullptr;
 
-
-void Chunk::LockChunk(bool _locked) {
-    if (_locked) buildLoaderProtector.lock();
-    else buildLoaderProtector.unlock();
+    return chunk;
 }

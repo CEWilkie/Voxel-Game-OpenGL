@@ -54,7 +54,6 @@ class Chunk {
         bool inCamera = true;
         bool needsMeshUpdates = false;
         bool unboundMeshChanges = false;
-        bool loaded = true;
 
         // Chunk Terrain and Block Data
         std::unordered_map<BlockType, std::unique_ptr<Block>> uniqueBlockMap {};
@@ -64,12 +63,7 @@ class Chunk {
 
         // Unique ChunkData and the adjacent Chunk pointers
         ChunkData chunkData;
-        glm::vec3 chunkPosition {0,0,0};
-        std::array<std::weak_ptr<Chunk>, 8> adjacentChunks {};
-
-        // Thread Protection
-        std::mutex buildLoaderProtector;
-        std::condition_variable buildLoadWait;
+        glm::vec3 chunkIndex {0, 0, 0};
 
         // Private functions for getting/setting blocks which non-chunks shouldn't access
         [[nodiscard]] ChunkDataTypes::ChunkBlock GetChunkBlockAtPosition(const glm::vec3& _blockPos);
@@ -97,21 +91,18 @@ class Chunk {
         // Chunk Culling
         void CheckCulling(const Camera& _camera);
         [[nodiscard]] bool ChunkVisible() const { return inCamera; };
-        void MarkLoaded(bool _loaded) { loaded = _loaded; };
-        [[nodiscard]] bool ChunkLoaded() const { return loaded; };
 
         // Chunk Terrain and Structures Generation
         void GenerateChunk();
         void CreateTerrain();
         void CreateVegitation(glm::vec3 _blockPos);
-        void SetAdjacentChunks(const std::array<std::weak_ptr<Chunk>, 8> &_chunks);
         [[nodiscard]] bool Generated() const { return generated; }
         [[nodiscard]] bool RegionGenerated() const;
 
         // Chunk Block Interaction
         void BreakBlockAtPosition(glm::vec3 _blockPos);
         void PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType);
-        void SetBlockAtPosition(glm::vec3 _blockPos, int _depth, const BlockType& _blockType);
+        void SetBlockAtPosition(glm::vec3 _blockPos, int _depth, const BlockType& _blockType) const;
         [[nodiscard]] ChunkDataTypes::ChunkBlock GetBlockAtPosition(glm::vec3 _blockPos, int _depth) const;
 
         // Chunk-Entity Collision
@@ -120,11 +111,8 @@ class Chunk {
 
         //
         [[nodiscard]] Block& GetBlockFromData(const BlockType& _blockType);
-        [[nodiscard]] glm::vec3 GetPosition() const { return chunkPosition; }
-        [[nodiscard]] Chunk* GetChunkAtPosition(glm::vec3& _blockPos, int _depth) const;
-
-        // Chunk Thread Locking
-        void LockChunk(bool _locked);
+        [[nodiscard]] glm::vec3 GetIndex() const { return chunkIndex; }
+        [[nodiscard]] std::shared_ptr<Chunk> GetChunkAtBlockPos(glm::vec3& _blockPos) const;
 };
 
 

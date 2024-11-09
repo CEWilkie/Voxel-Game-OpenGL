@@ -32,7 +32,7 @@ class Player {
         float maxZ {}, minZ {};
         float maxY {}, minY {};
 
-        Chunk* playerChunk {};
+        std::shared_ptr<Chunk> playerChunk {};
 
         // Movement Info
         MOVEMENTMODE movementMode = MOVEMENTMODE::WALKING;

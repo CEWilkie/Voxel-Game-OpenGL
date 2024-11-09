@@ -22,7 +22,7 @@ ChunkThreads::ChunkThreads(const std::string& _threadName) {
 ChunkThreads::~ChunkThreads() {
     // Stop the thread from running if it is currently enabled and wait for any last processes to finish
     EndThread();
-    chunkThread.join();
+    if (chunkThread.joinable()) chunkThread.join();
 }
 
 

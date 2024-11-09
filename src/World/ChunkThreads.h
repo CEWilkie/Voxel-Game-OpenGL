@@ -26,11 +26,15 @@ struct ThreadAction {
     glm::ivec2 chunkPos {0, 0};
     glm::vec3 chunkBlock {0, 0, 0};
 
+    enum {
+        OK, FAIL, RETRY, // ...
+    };
+
     // Functionality
     void DoAction() const { function(chunkPos, chunkBlock); }
 };
 
-
+typedef int THREAD_ACTION_RESULT;
 
 /*
  *
@@ -43,6 +47,10 @@ struct ActionTimer {
 };
 
 
+
+/*
+ *
+ */
 
 /*
  *
