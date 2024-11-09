@@ -36,7 +36,12 @@ Chunk::Chunk(const glm::vec3& _chunkPosition, ChunkData _chunkData) {
     chunkData = _chunkData;
 }
 
-Chunk::~Chunk() = default;
+Chunk::~Chunk() {
+    uniqueBlockMap.clear();
+    uniqueMeshMap.clear();
+
+    printf("CHUNK AT %f %f DESTROYED\n", chunkIndex.x, chunkIndex.z);
+};
 
 
 
@@ -403,9 +408,18 @@ void Chunk::CreateVegitation(glm::vec3 _blockPos) {
  */
 
 bool Chunk::RegionGenerated() const {
+    auto adjacentDirs = { dirFront, dirLeft, dirBack, dirRight };
 
+    bool adjGenerated = true;
+    for (const auto& adjDir : adjacentDirs) {
+        auto adjChunk = world->GetChunkAtIndex(chunkIndex + adjDir);
+        if (adjChunk != nullptr && !adjChunk->Generated()) {
+            adjGenerated = false;
+            break;
+        }
+    }
 
-    return generated;
+    return generated && adjGenerated;
 }
 
 /*

@@ -36,7 +36,6 @@ struct LockableChunkPtr {
 
 namespace WorldDataTypes {
     typedef std::array<std::array<LockableChunkPtr, 2000>, 2000> chunkArray;
-    typedef std::array<std::unique_ptr<Biome>, worldArea> biomeMap;
 }
 
 class World {
@@ -53,7 +52,6 @@ class World {
         // World Generation
         WorldDataTypes::chunkArray worldChunks {};
         std::vector<std::unique_ptr<Biome>> uniqueBiomes {};
-        WorldDataTypes::biomeMap biomeMap {};
 
         int displayingChunks {};
 
@@ -62,8 +60,6 @@ class World {
         ChunkThreads chunkMesherThread = ChunkThreads("MESHER_THREAD");
         ChunkThreads chunkLoaderThread = ChunkThreads("LOADER_THREAD");
         ChunkThreads chunkLighterThread = ChunkThreads("LIGHTING_THREAD");
-
-        mutable std::shared_mutex chunkAccess;
 
         glm::ivec2 loadingIndex {0, 0}; // centre
 
@@ -82,8 +78,6 @@ class World {
 
         // Thread Functions
         void CreateChunk(const glm::ivec2& _chunkIndex, const glm::vec3& _blockPos);
-        void CreateChunkAtIndex(const glm::ivec2& _chunkPos, const ChunkData& _chunkData);
-
         void GenerateChunk(const glm::ivec2& _chunkIndex, const glm::vec3& _blockPos);
         void GenerateChunkMesh(const glm::ivec2& _chunkIndex, const glm::vec3& _blockPos);
 

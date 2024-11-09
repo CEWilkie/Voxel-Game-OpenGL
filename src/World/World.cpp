@@ -215,7 +215,7 @@ void World::GenerateLoadedWorld() {
 
     // Mesh the chunks within the loading region
     ThreadAction createMesh{std::bind(&World::GenerateChunkMesh, this, _1, _2), loadingIndex};
-    chunkMesherThread.AddActionRegion(createMesh, loadRadius);
+    chunkMesherThread.AddActionRegion(createMesh, meshRadius);
 }
 
 
@@ -440,8 +440,8 @@ void World::SetLoadingOrigin(const glm::vec3 &_origin) {
 }
 
 void World::BindChunks() const {
-    for (int x = -loadRadius; x < loadRadius; x++) {
-        for (int z = -loadRadius; z < loadRadius; z++) {
+    for (int x = -meshRadius; x < meshRadius; x++) {
+        for (int z = -meshRadius; z < meshRadius; z++) {
             auto chunk = GetChunkAtIndex(loadingIndex + glm::ivec2{x, z});
 
             if (chunk != nullptr && chunk->UnboundMeshChanges()) {

@@ -45,6 +45,7 @@ TextureData::TextureData(const std::string& _texturePath) {
     }
     else {
         printf("Image potentially unsuitable, only %d colour channels.\n Ending texture assignment\n", nColours);
+        SDL_FreeSurface(surface);
         return;
     }
 
