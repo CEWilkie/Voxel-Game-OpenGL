@@ -8,45 +8,45 @@
 
 TextureManager::TextureManager() {
     // Load all texture sheets into the textureSheet map
-    TextureData* textureData;
+    std::unique_ptr<TextureData> textureData;
 
     // test textures for objects
 
-    textureData = new TextureData("../resources/testcubes16x.png");
+    textureData = std::make_unique<TextureData>("../resources/testcubes16x.png");
     if (textureData->IsTextureValid()) {
         textureData->SetTextureSheetGrid({16, 16});
-        textureSheetMap[TEXTURESHEET::TEST16] = std::make_unique<TextureData>(*textureData);
+        textureSheetMap[TEXTURESHEET::TEST16] = std::move(textureData);
     }
 
     // Font texture atlas
-    textureData = new TextureData("../resources/voxelFont16x.png");
+    textureData = std::make_unique<TextureData>("../resources/voxelFont16x.png");
     if (textureData->IsTextureValid()) {
         textureData->SetTextureSheetGrid({16, 16});
-        textureSheetMap[TEXTURESHEET::WORLD] = std::make_unique<TextureData>(*textureData);
+        textureSheetMap[TEXTURESHEET::WORLD] = std::move(textureData);
     }
 
     // skybox textures
 
-    textureData = new TextureData("../resources/skybox16x.png");
+    textureData = std::make_unique<TextureData>("../resources/skybox16x.png");
     if (textureData->IsTextureValid()) {
         textureData->SetTextureSheetGrid({16, 16});
-        textureSheetMap[TEXTURESHEET::WORLD] = std::make_unique<TextureData>(*textureData);
+        textureSheetMap[TEXTURESHEET::WORLD] = std::move(textureData);
     }
 
     // Terrain block textures
 
-    textureData = new TextureData("../resources/terrainSheet16x.png");
+    textureData = std::make_unique<TextureData>("../resources/terrainSheet16x.png");
     if (textureData->IsTextureValid()) {
         textureData->SetTextureSheetGrid({16, 16});
-        textureSheetMap[TEXTURESHEET::TERRAIN] = std::make_unique<TextureData>(*textureData);
+        textureSheetMap[TEXTURESHEET::TERRAIN] = std::move(textureData);
     }
 
     // Natural block textures
 
-    textureData = new TextureData("../resources/naturalSheet16x.png");
+    textureData = std::make_unique<TextureData>("../resources/naturalSheet16x.png");
     if (textureData->IsTextureValid()) {
         textureData->SetTextureSheetGrid({16, 16});
-        textureSheetMap[TEXTURESHEET::NATURAL] = std::make_unique<TextureData>(*textureData);
+        textureSheetMap[TEXTURESHEET::NATURAL] = std::move(textureData);
     }
 
     // ...
