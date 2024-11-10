@@ -72,8 +72,9 @@ class ChunkThreads {
         std::thread chunkThread;
 
         // action time measurements
-        ActionTimer allActions;
-        ActionTimer longActions;
+        ActionTimer lightActions;
+        ActionTimer heavyActions;
+        unsigned int allActions;
 
         // Thread Name (primarily for debugging)
         std::string threadName {"UNNAMED_THREAD"};

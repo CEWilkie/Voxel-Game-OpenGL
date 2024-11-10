@@ -24,6 +24,7 @@ World::World() {
     moonTransformation.SetScale({12.0f, 12.0f, 12.0f});
     moonTransformation.UpdateModelMatrix();
 
+    // Update shader values
     GLint uLocation;
     uLocation = glGetUniformLocation(window.GetShader(), "worldAmbients.lightingStrength");
     if (uLocation < 0) printf("location not found [worldAmbients.lightingStrength]\n");
@@ -39,6 +40,7 @@ World::World() {
 
     glEnable(GL_DEPTH_TEST);
 
+    // Start threads
     chunkBuilderThread.StartThread();
     chunkMesherThread.StartThread();
     chunkLoaderThread.StartThread();

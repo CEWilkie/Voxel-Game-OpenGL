@@ -420,7 +420,6 @@ void Chunk::PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType) {
     ChunkDataTypes::ChunkBlock originalBlock = blockChunk->GetChunkBlockAtPosition(_blockPos);
     MaterialMesh* blockMesh = blockChunk->GetMeshFromBlock(originalBlock.type);
     if (blockMesh != nullptr) {
-        if (blockMesh->GetBlock()->GetBlockType().blockID == STONE) printf("STONE");
         blockMesh->MarkOld();
     }
 

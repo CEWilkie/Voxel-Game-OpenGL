@@ -263,15 +263,14 @@ void Player::UpdatePlayerChunk() {
     // If players chunk is not the same as currently stored player chunk, update the world's loading origin
     if (pChunk != nullptr) {
         if (pChunk != playerChunk && playerChunk != nullptr) {
-            world->SetLoadingOrigin(pChunk->GetIndex());
-            world->GenerateLoadableWorldRegion();
-
             // Ensure that chunks are loaded / unloaded accordingly
             world->ManageLoadedChunks(playerChunk, pChunk);
         }
 
         // update player chunk
         playerChunk = pChunk;
+        world->SetLoadingOrigin(playerChunk->GetIndex());
+        world->GenerateLoadableWorldRegion();
     }
 }
 
@@ -470,7 +469,7 @@ void Player::BreakBlock(glm::vec3 _rayPosition) {
 
     glm::ivec2 pos{playerChunk->GetIndex().x, playerChunk->GetIndex().z};
     ThreadAction action{std::bind(&World::GenerateChunkMesh, world.get(), _1, _2), pos};
-    mesher->AddPriorityActionRegion(action, 1);
+    mesher->AddPriorityActionRegion(action, 1, true);
 }
 
 void Player::PlaceBlock(glm::vec3 _rayPosition) {
@@ -485,5 +484,5 @@ void Player::PlaceBlock(glm::vec3 _rayPosition) {
 
     glm::ivec2 pos{playerChunk->GetIndex().x, playerChunk->GetIndex().z};
     ThreadAction action{std::bind(&World::GenerateChunkMesh, world.get(), _1, _2), pos};
-    mesher->AddPriorityActionRegion(action, 1);
+    mesher->AddPriorityActionRegion(action, 1, true);
 }

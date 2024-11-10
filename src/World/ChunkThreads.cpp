@@ -88,6 +88,7 @@ void ChunkThreads::ThreadLoop() {
         queueMutex.lock();
         ThreadAction currentAction = actionQueue.front();
         actionQueue.pop_front();
+        bool lastAction = actionQueue.empty();
         queueMutex.unlock();
 
         auto st = std::chrono::high_resolution_clock::now();
@@ -95,22 +96,17 @@ void ChunkThreads::ThreadLoop() {
         auto et = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(et - st).count();
-        allActions.actionsCompleted++;
-        allActions.sumNStaken += duration;
+        allActions++;
         if (duration > 500000) {
-            longActions.actionsCompleted++;
-            longActions.sumNStaken += duration;
+            heavyActions.actionsCompleted++;
+            heavyActions.sumNStaken += duration;
+        } else {
+            lightActions.actionsCompleted++;
+            lightActions.sumNStaken += duration;
         }
 
-//        if (duration > 50'000000) { // greater than 50ms
-//            avgNStaken = sumNStaken / actionsCompleted;
-//            printf("NOITCE: LAST ACTION TOOK %llu MS\n", duration / 1000000);
-//            printf("%d ACTIONS COMPLETED, %zu REMAIN IN QUEUE | CURRENT AVERAGE MS PER ACTION %llu\n",
-//                   actionsCompleted, actionQueue.size(), avgNStaken / 1000000);
-//        }
-
         // debug statements
-        PrintThreadResults();
+        if (actionQueue.empty() || lastAction) PrintThreadResults();
     }
 
     finished = true;
@@ -201,25 +197,34 @@ void ChunkThreads::AddPriorityActionRegion(const ThreadAction& _originAction, in
  */
 
 void ChunkThreads::PrintThreadResults() {
-    if (!actionQueue.empty()) return;
+    if (allActions == 0) return;
+    if (lightActions.actionsCompleted == 0 && heavyActions.actionsCompleted == 0) return;
 
-    if (longActions.actionsCompleted > 0) {
-        longActions.avgNStaken = longActions.sumNStaken / longActions.actionsCompleted;
-        printf("<%s> SINCE LAST ACTIONS . . .", threadName.c_str());
-        printf("%d ACTIONS COMPLETED IN %llu MS | AVG MS PER ACTION %llu\n",
-               longActions.actionsCompleted, longActions.sumNStaken / 1000000, longActions.avgNStaken / 1000000);
+    // Thread Name Identifier
+    printf("<%s> SINCE LAST ACTIONS . . .\n", threadName.c_str());
 
-        longActions.actionsCompleted = 0;
-        longActions.sumNStaken = 0;
+    // Heavy actions
+    if (heavyActions.actionsCompleted > 0) {
+        heavyActions.avgNStaken = heavyActions.sumNStaken / heavyActions.actionsCompleted;
+        printf("\t%d HEAVY ACTIONS COMPLETED IN %llu MS | AVG MS PER ACTION %llu\n",
+               heavyActions.actionsCompleted, heavyActions.sumNStaken / 1000000, heavyActions.avgNStaken / 1000000);
+
+        heavyActions.actionsCompleted = 0;
+        heavyActions.sumNStaken = 0;
     }
 
-    if (allActions.actionsCompleted > 0) {
-        allActions.avgNStaken = allActions.sumNStaken / allActions.actionsCompleted;
-        printf("<%s> SINCE LAST ACTIONS . . .", threadName.c_str());
-        printf("%d ACTIONS COMPLETED IN %llu MS | AVG MS PER ACTION %llu\n",
-               allActions.actionsCompleted, allActions.sumNStaken / 1000000, allActions.avgNStaken / 1000000);
+    // Light actions
+    if (lightActions.actionsCompleted > 0) {
+        lightActions.avgNStaken = lightActions.sumNStaken / lightActions.actionsCompleted;
 
-        allActions.actionsCompleted = 0;
-        allActions.sumNStaken = 0;
+        printf("\t%d LIGHT ACTIONS COMPLETED IN %llu MU | AVG MU PER ACTION %llu\n",
+               lightActions.actionsCompleted, lightActions.sumNStaken / 1000, lightActions.avgNStaken / 1000);
+
+        lightActions.actionsCompleted = 0;
+        lightActions.sumNStaken = 0;
     }
+
+    // All actions
+
+    allActions = 0;
 }

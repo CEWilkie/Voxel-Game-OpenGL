@@ -126,8 +126,7 @@ int main(int argc, char** argv){
         if (!state[SDL_SCANCODE_ESCAPE]) escToggled = false;
     }
 
-    // now world can proceed to generate the rest of the world chunks
-    world->GenerateLoadableWorldRegion();
+    player.UpdatePlayerChunk();
 
     // Render Loop
     Uint64 deltaTicks, endTick = SDL_GetTicks64();

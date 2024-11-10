@@ -6,6 +6,7 @@
 #define UNTITLED7_WORLDGENCONSTS_H
 
 #include <SDL.h>
+#include <random>
 
 /*
  * WORLD VALUES
@@ -28,7 +29,10 @@ static const int renderRadius = meshRadius; // at maximum = meshRadius
 static const int worldSize = (1 + loadRadius*2) + 2; // + 2 for border chunks to permit structure generation at world chunk borders
 static const int worldArea = worldSize * worldSize;
 
+// WORLD SEEDED GENERATION
 static long long int worldSeed = time(nullptr);
+static std::mt19937 worldGenerationRandom(worldSeed);
+static std::mt19937 worldActionsRandom(worldSeed);
 
 /*
  * CHUNK VALUES

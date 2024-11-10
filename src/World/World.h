@@ -9,6 +9,7 @@
 #include <shared_mutex>
 #include <thread>
 #include <utility>
+#include <random>
 
 #include "../Player/Player.h"
 
@@ -52,7 +53,6 @@ class World {
         // World Generation
         WorldDataTypes::chunkArray worldChunks {};
         std::vector<std::unique_ptr<Biome>> uniqueBiomes {};
-        bool requiredRegionGenerated = false;
 
         int displayingChunks {};
 
