@@ -21,7 +21,7 @@
  */
 
 enum BLOCKMODEL {
-    FULL, PLANT, nModels
+    EMPTY, FULL, PLANT, nModels
 };
 
 /*
@@ -181,6 +181,8 @@ class Block {
         [[nodiscard]] DIRECTION GetRandomTopFaceDirection() const;
         [[nodiscard]] GLbyte GetRandomRotation() const;
         [[nodiscard]] std::vector<Vertex> GetFaceVerticies(const std::vector<BLOCKFACE>& _faces, const BlockAttributes& _blockAttributes) const;
+
+        [[nodiscard]] static bool BlockFaceVisible(const Block& _checkingBlock, const Block& _faceBlock, BLOCKFACE _face = TOP);
 };
 
 

@@ -160,6 +160,7 @@ void ChunkThreads::AddActionRegion(const ThreadAction& _originAction, int _radiu
     queueMutex.lock();
     for (int x = -_radius; x < _radius + 1; x++) {
         for (int z = -_radius; z < _radius + 1; z++) {
+            if (std::abs(x) + std::abs(z) > _radius) continue;
             actionQueue.push_back(_originAction);
             actionQueue.back().chunkPos += glm::ivec2{x,z};
         }
@@ -181,6 +182,7 @@ void ChunkThreads::AddPriorityActionRegion(const ThreadAction& _originAction, in
     queueMutex.lock();
     for (int x = -_radius; x < _radius + 1; x++) {
         for (int z = -_radius; z < _radius + 1; z++) {
+            if (std::abs(x + z) > _radius) continue;
             actionQueue.push_front(_originAction);
             actionQueue.front().chunkPos += glm::ivec2{x,z};
         }

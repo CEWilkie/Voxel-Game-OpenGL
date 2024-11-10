@@ -40,7 +40,7 @@ Chunk::~Chunk() {
     uniqueBlockMap.clear();
     uniqueMeshMap.clear();
 
-    printf("CHUNK AT %f %f DESTROYED\n", chunkIndex.x, chunkIndex.z);
+//    printf("CHUNK AT %f %f DESTROYED\n", chunkIndex.x, chunkIndex.z);
 };
 
 
@@ -111,7 +111,7 @@ void Chunk::UpdateBlockMesh(Block* _meshBlock) {
                 Block blockPtr = GetBlockFromData(block.type);
 
                 if (block.type == _meshBlock->GetBlockType()) {
-                    std::vector<Vertex> verticies = blockPtr.GetFaceVerticies(GetShowingFaces({x,y,z}), block.attributes);
+                    std::vector<Vertex> verticies = blockPtr.GetFaceVerticies(GetShowingFaces({x,y,z}, blockPtr), block.attributes);
                     blockMesh->AddVerticies(verticies, {x,y,z});
                 }
             }
@@ -135,10 +135,6 @@ void Chunk::CreateChunkMeshes() {
         }
     }
 
-    /*
-     *
-     */
-
     for (int x = 0; x < chunkSize; ++x) {
         for (int z = 0; z < chunkSize; ++z) {
             for (int y = 0; y < chunkHeight; ++y) {
@@ -150,7 +146,7 @@ void Chunk::CreateChunkMeshes() {
 
                 // Add verticies to mesh
                 Block blockPtr = GetBlockFromData(block.type);
-                std::vector<Vertex> verticies = blockPtr.GetFaceVerticies(GetShowingFaces({x,y,z}), block.attributes);
+                std::vector<Vertex> verticies = blockPtr.GetFaceVerticies(GetShowingFaces({x,y,z}, blockPtr), block.attributes);
                 blockMesh->AddVerticies(verticies, {x,y,z});
             }
         }
@@ -228,49 +224,19 @@ std::vector<BLOCKFACE> Chunk::GetHiddenFaces(glm::vec3 _blockPos) {
  * Returns the FaceIDs of the visible faces of a block at a given position. Faces are considered visible unless fully
  * obscured.
  */
-std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _blockPos, const std::vector<BLOCKFACE>& _checkFaces) {
-    std::vector<BLOCKFACE> showingFaces {};
-    std::vector<BLOCKFACE> faces;
-    faces = (_checkFaces.empty()) ? std::vector<BLOCKFACE>{TOP, BOTTOM, FRONT, BACK, RIGHT, LEFT} : _checkFaces;
+std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _blockPos, const Block& _checkingBlock) {
+    std::vector<BLOCKFACE> showingFaces {}, checkingFaces = {TOP, BOTTOM, FRONT, BACK, RIGHT, LEFT};
     std::vector<glm::vec3> positionOffsets {
             dirTop, dirBottom, dirFront,
             dirBack, dirRight, dirLeft};
 
-    // Get block being checked, if it is an air block, no faces are returned
-    ChunkDataTypes::ChunkBlock checkingBlockData = GetBlockAtPosition(_blockPos);
-    Block checkingBlock = GetBlockFromData(checkingBlockData.type);
-    if (checkingBlockData.type == BlockType{AIR, 0}) return {};
-
-    // if the block cannot have obscured faces
-    if (checkingBlock.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) == 15)
-        return {FRONT, BACK};
-
     // Check for non-transparent block on each face (or non-same transparent block for a transparent block)
-    for (int i = 0; i < faces.size(); i++) {
+    for (int i = 0; i < checkingFaces.size(); i++) {
         ChunkDataTypes::ChunkBlock faceBlockData = GetBlockAtPosition(_blockPos + positionOffsets[i]);
         Block faceBlock = GetBlockFromData(faceBlockData.type);
 
-        // obscure face always if the block there is non-transparent
-        if (faceBlock.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) == 0) {
-            continue;
-        }
-
-        // transparency 1 blocks only show when there is air adjacent
-        if (checkingBlock.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) == 1) {
-            // Is not air
-            if (faceBlockData.type != BlockType{AIR, 0}) {
-                continue;
-            }
-        }
-
-        // transparency 2 blocks hide back, left or bottom faces which are obscured by non transparency 1 blocks
-        if (checkingBlock.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) == 2) {
-            if (faceBlock.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) != 1) {
-                if (faces[i] == BACK || faces[i] == LEFT || faces[i] == BOTTOM) continue;
-            }
-        }
-
-        showingFaces.push_back(faces[i]);
+        if (Block::BlockFaceVisible(_checkingBlock, faceBlock, checkingFaces[i]))
+            showingFaces.push_back(checkingFaces[i]);
     }
 
     return showingFaces;

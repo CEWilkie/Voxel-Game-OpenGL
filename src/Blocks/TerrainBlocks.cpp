@@ -59,6 +59,7 @@ Water::Water(GLbyte _variant) {
 
 Air::Air(GLbyte _variant) {
     blockData = {BLOCKID::AIR, _variant};
+    blockModel = EMPTY;
 
     sheet = TEXTURESHEET::WORLD;
 

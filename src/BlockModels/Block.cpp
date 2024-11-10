@@ -301,6 +301,8 @@ GLbyte Block::GetRandomRotation() const {
 
 
 std::vector<Vertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &_faces, const BlockAttributes& _blockAttributes) const {
+    if (blockModel == EMPTY) return {}; // catch air blocks
+
     // Get base index and vertex arrays of the model. Create vector to store requested face verticies list in.
     std::vector<GLuint> baseIndexArray = blockVAOmanager->GetBaseIndexArray(blockModel);
     std::vector<Vertex> baseVertexArray = blockVAOmanager->GetBaseVertexArray(blockModel);
@@ -311,6 +313,8 @@ std::vector<Vertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &_faces
 
     // For each requested face
     for (auto& face : _faces) {
+        if (blockModel == PLANT && !(face == FRONT || face == BACK)) continue;
+
         std::vector<GLuint> usedIndicies {};
         for (int i = face*6; i < (face*6)+6; i++) {
             // unique verticies for each face only
@@ -340,4 +344,29 @@ std::vector<Vertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &_faces
     }
 
     return vertexArray;
+}
+
+
+bool Block::BlockFaceVisible(const Block &_checkingBlock, const Block &_faceBlock, BLOCKFACE _face) {
+
+    if (_faceBlock.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) == 0) {
+        return false;
+    }
+
+    // transparency 1 blocks only show when there is air adjacent
+    if (_checkingBlock.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) == 1) {
+        // Is not air
+        if (_faceBlock.GetBlockType() != BlockType{AIR, 0}) {
+            return false;
+        }
+    }
+
+    // transparency 2 blocks hide back, left or bottom faces which are obscured by non transparency 1 blocks
+    if (_checkingBlock.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) == 2) {
+        if (_faceBlock.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) != 1) {
+            if (_face == BACK || _face == LEFT || _face == BOTTOM) return false;
+        }
+    }
+
+    return true;
 }
