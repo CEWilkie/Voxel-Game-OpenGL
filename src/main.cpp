@@ -62,7 +62,7 @@ int main(int argc, char** argv){
     // Create world and enable chunk builder threads
     world = std::make_unique<World>();
     world->SetLoadingOrigin({0,0,0});
-    world->GenerateLoadedWorld();
+    world->GenerateRequiredWorldRegion();
 
     /*
      * PLAYER CREATION
@@ -88,7 +88,7 @@ int main(int argc, char** argv){
     bool running = true;
     bool escToggled = false;
 
-    // Whilst the world is still loading, hold the user here
+    // Whilst the world is still loading the minimum required area, hold the user here
     auto build = world->GetThread(THREAD::CHUNKBUILDING);
     auto mesh = world->GetThread(THREAD::CHUNKMESHING);
 
@@ -125,6 +125,9 @@ int main(int argc, char** argv){
         }
         if (!state[SDL_SCANCODE_ESCAPE]) escToggled = false;
     }
+
+    // now world can proceed to generate the rest of the world chunks
+    world->GenerateLoadableWorldRegion();
 
     // Render Loop
     Uint64 deltaTicks, endTick = SDL_GetTicks64();

@@ -58,6 +58,7 @@ class Chunk {
         // Chunk Terrain and Block Data
         std::unordered_map<BlockType, std::unique_ptr<Block>> uniqueBlockMap {};
         std::unordered_map<BlockType, std::unique_ptr<MaterialMesh>> uniqueMeshMap {};
+        std::mutex meshMutex;
         ChunkDataTypes::TerrainArray terrain {};
         bool generated = false;
 

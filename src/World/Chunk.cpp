@@ -54,7 +54,8 @@ void Chunk::DisplaySolid() {
 
     if (USE_WIREFRAME) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    // Draw only the blocks that are solid
+    // Draw only the blocks that are solid and prevent creation of new meshes whilst drawing
+    std::unique_lock lock(meshMutex);
     for (const auto& mesh : uniqueMeshMap) {
         auto block = mesh.second->GetBlock();
         if (block != nullptr && block->GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) == 1) continue;
@@ -243,7 +244,8 @@ std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _blockPos, const Block& 
 }
 
 MaterialMesh* Chunk::GetMeshFromBlock(const BlockType& _blockType) {
-    if (uniqueMeshMap[_blockType] == nullptr) {
+    if (uniqueMeshMap.count(_blockType) == 0) {
+        std::unique_lock lock(meshMutex);
         uniqueMeshMap[_blockType] = std::make_unique<MaterialMesh>(&GetBlockFromData(_blockType));
     }
 

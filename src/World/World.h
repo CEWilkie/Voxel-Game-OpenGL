@@ -52,6 +52,7 @@ class World {
         // World Generation
         WorldDataTypes::chunkArray worldChunks {};
         std::vector<std::unique_ptr<Biome>> uniqueBiomes {};
+        bool requiredRegionGenerated = false;
 
         int displayingChunks {};
 
@@ -93,7 +94,8 @@ class World {
 
         //
         void SetLoadingOrigin(const glm::vec3& _origin);
-        void GenerateLoadedWorld();
+        void GenerateRequiredWorldRegion();
+        void GenerateLoadableWorldRegion();
 
         void BindChunks() const;
 

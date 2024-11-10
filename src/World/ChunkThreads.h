@@ -90,8 +90,8 @@ class ChunkThreads {
         // Adding new actions to be completed in the thread
         void AddActions(const std::vector<ThreadAction>& _actions);
         void AddPriorityActions(const std::vector<ThreadAction>& _actions);
-        void AddActionRegion(const ThreadAction& _originAction, int _radius);
-        void AddPriorityActionRegion(const ThreadAction& _originAction, int _radius);
+        void AddActionRegion(const ThreadAction& _originAction, int _radius, bool _squareRegion = false);
+        void AddPriorityActionRegion(const ThreadAction& _originAction, int _radius, bool _squareRegion = false);
 
         // Debug Output
         void PrintThreadResults();

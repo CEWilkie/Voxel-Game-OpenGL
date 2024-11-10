@@ -156,11 +156,11 @@ void ChunkThreads::AddPriorityActions(const std::vector<ThreadAction>& _actions)
  * end of the queue
  */
 
-void ChunkThreads::AddActionRegion(const ThreadAction& _originAction, int _radius) {
+void ChunkThreads::AddActionRegion(const ThreadAction& _originAction, int _radius, bool _squareRegion) {
     queueMutex.lock();
     for (int x = -_radius; x < _radius + 1; x++) {
         for (int z = -_radius; z < _radius + 1; z++) {
-            if (std::abs(x) + std::abs(z) > _radius) continue;
+            if (!_squareRegion && std::abs(x) + std::abs(z) > _radius) continue;
             actionQueue.push_back(_originAction);
             actionQueue.back().chunkPos += glm::ivec2{x,z};
         }
@@ -178,11 +178,11 @@ void ChunkThreads::AddActionRegion(const ThreadAction& _originAction, int _radiu
  * front of the queue
  */
 
-void ChunkThreads::AddPriorityActionRegion(const ThreadAction& _originAction, int _radius) {
+void ChunkThreads::AddPriorityActionRegion(const ThreadAction& _originAction, int _radius, bool _squareRegion) {
     queueMutex.lock();
     for (int x = -_radius; x < _radius + 1; x++) {
         for (int z = -_radius; z < _radius + 1; z++) {
-            if (std::abs(x + z) > _radius) continue;
+            if (!_squareRegion && std::abs(x + z) > _radius) continue;
             actionQueue.push_front(_originAction);
             actionQueue.front().chunkPos += glm::ivec2{x,z};
         }

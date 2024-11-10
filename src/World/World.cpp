@@ -200,9 +200,10 @@ void World::UpdateWorldTime(Uint64 _deltaTicks) {
  * WORLD GENERATION
  * Creates chunk objects in the region around the player, adding their generation and
  * meshing functions into the threads
+ * DONE FOR IMMEDIATE AREA AROUND PLAYER AS HIGH PRIORITY
  */
 
-void World::GenerateLoadedWorld() {
+void World::GenerateRequiredWorldRegion() {
     using namespace std::placeholders;
 
     // Ensure chunks exist for loading region (and border) area
@@ -219,6 +220,29 @@ void World::GenerateLoadedWorld() {
 }
 
 
+
+/*
+ * WORLD GENERATION
+ * Creates chunk objects in the region around the player, adding their generation and
+ * meshing functions into the threads
+ * DONE FOR ENTIRE SQUARE AREA AS LOW PRIORITY ACTIONS
+ */
+
+void World::GenerateLoadableWorldRegion() {
+    using namespace std::placeholders;
+
+    // Ensure chunks exist for loading region (and border) area
+    ThreadAction createChunkRegion{std::bind(&World::CreateChunk, this, _1, _2), loadingIndex};
+    chunkBuilderThread.AddActionRegion(createChunkRegion, loadRadius, true);
+
+    // Generate the chunks within the loading region (and not border), this will be done after the chunks are created
+    ThreadAction generateChunk{std::bind(&World::GenerateChunk, this, _1, _2), loadingIndex};
+    chunkBuilderThread.AddActionRegion(generateChunk, loadRadius, true);
+
+    // Mesh the chunks within the loading region
+    ThreadAction createMesh{std::bind(&World::GenerateChunkMesh, this, _1, _2), loadingIndex};
+    chunkMesherThread.AddActionRegion(createMesh, meshRadius, true);
+}
 
 /*
  * Thread-Called function to retrieve chunk data for a given chunk index position.

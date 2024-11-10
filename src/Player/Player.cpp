@@ -264,7 +264,7 @@ void Player::UpdatePlayerChunk() {
     if (pChunk != nullptr) {
         if (pChunk != playerChunk && playerChunk != nullptr) {
             world->SetLoadingOrigin(pChunk->GetIndex());
-            world->GenerateLoadedWorld();
+            world->GenerateLoadableWorldRegion();
 
             // Ensure that chunks are loaded / unloaded accordingly
             world->ManageLoadedChunks(playerChunk, pChunk);
