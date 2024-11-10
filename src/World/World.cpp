@@ -322,7 +322,7 @@ void World::ManageLoadedChunks(const std::shared_ptr<Chunk>& _currentChunk, cons
     // hijack the blockPos intended for precision to store a second chunkPos instead
     ThreadAction markUnloaded{std::bind(&World::CheckChunkLoaded, this, _1, _2),
                               oldChunkPos, _newChunk->GetIndex()};
-    chunkLoaderThread.AddActionRegion(markUnloaded, loadRadius);
+    chunkLoaderThread.AddActionRegion(markUnloaded, loadRadius, true);
 }
 
 
