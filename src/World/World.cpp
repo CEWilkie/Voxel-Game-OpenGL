@@ -9,6 +9,7 @@
 #include "CreateBiome.h"
 #include "../Window.h"
 #include "Chunk.h"
+#include "Noise.h"
 
 World::World() {
     // Create skybox, sun and moon
@@ -233,17 +234,19 @@ void World::GenerateRequiredWorldRegion() {
 void World::GenerateLoadableWorldRegion() {
     using namespace std::placeholders;
 
+    bool loadSquare = false;
+
     // Ensure chunks exist for loading region (and border) area
     ThreadAction createChunkRegion{std::bind(&World::CreateChunk, this, _1, _2), loadingIndex};
-    chunkBuilderThread.AddActionRegion(createChunkRegion, loadRadius, true);
+    chunkBuilderThread.AddActionRegion(createChunkRegion, loadRadius, loadSquare);
 
     // Generate the chunks within the loading region (and not border), this will be done after the chunks are created
     ThreadAction generateChunk{std::bind(&World::GenerateChunk, this, _1, _2), loadingIndex};
-    chunkBuilderThread.AddActionRegion(generateChunk, loadRadius, true);
+    chunkBuilderThread.AddActionRegion(generateChunk, loadRadius, loadSquare);
 
     // Mesh the chunks within the loading region
     ThreadAction createMesh{std::bind(&World::GenerateChunkMesh, this, _1, _2), loadingIndex};
-    chunkMesherThread.AddActionRegion(createMesh, meshRadius, true);
+    chunkMesherThread.AddActionRegion(createMesh, meshRadius, loadSquare);
 }
 
 /*
@@ -324,7 +327,7 @@ void World::ManageLoadedChunks(const std::shared_ptr<Chunk>& _currentChunk, cons
     // hijack the blockPos intended for precision to store a second chunkPos instead
     ThreadAction markUnloaded{std::bind(&World::CheckChunkLoaded, this, _1, _2),
                               oldChunkPos, _newChunk->GetIndex()};
-    chunkLoaderThread.AddActionRegion(markUnloaded, loadRadius, true);
+    chunkLoaderThread.AddPriorityActionRegion(markUnloaded, loadRadius + 1, true);
 }
 
 
@@ -355,18 +358,25 @@ float World::GenerateBlockHeight(glm::vec2 _blockPos) {
 
     /*
      * PRIMARY TERRAIN LEVELS
+     * Continentiality 0 - 1:
+     *      controlls ocean-landmass generation
+     *      low continentiality results in less surface height variation
+     *      scale 256 = islands,
+     *      scale 1024 = big islands
      */
 
-    // Seabed / ContinentBed Generation
-    float continentiality = glm::simplex(glm::vec2( _blockPos.x / 2000.0, _blockPos.y / 2000.0));
-    continentiality = 1;
+    // Constructs the Base of the Terrain via continental landmass generation from seabed to landbed
+    float continentiality = ComplexNoiseLimited(_blockPos, 1024, 4, 0.5, 4,
+                                                0, 1);
 
-    // Primary Noise based around waterlevel
-    float baseHeight = glm::simplex(glm::vec2( _blockPos.x / 128.0, _blockPos.y / 128.0));
-    baseHeight *= 5;
+    // Constructs the base level of the terrain
+    height = (WATERLEVEL * continentiality) + SEAFLOORMINIMUM;
 
-    // Set the base height of the block
-    height = baseHeight * continentiality + MINBLOCKHEIGHT;
+    // Primary Noise above the continentiality height.
+    float surfaceHeightVariation = ComplexNoise(_blockPos, 128.0f, 4, 0.5, 2);
+    surfaceHeightVariation *= 5;
+
+    height += surfaceHeightVariation;
 
     // Secondary base level noise applied
     float secondHeight = glm::simplex(glm::vec2( _blockPos.x / 16.0, _blockPos.y / 16.0));
@@ -378,17 +388,14 @@ float World::GenerateBlockHeight(glm::vec2 _blockPos) {
      */
 
     // Produce noise values for mountain
-    float peakHeight = glm::simplex(glm::vec2( _blockPos.x / 128.0, _blockPos.y / 128.0));
-    peakHeight = (peakHeight + 1) / 2;
+    float peakHeight = ComplexNoiseLimited(_blockPos, 128, 4, 0.5, 2, 0, 1);
     peakHeight *= 128.0;
 
     // Determine if mountain should generate
-    float areaHeight = glm::simplex(glm::vec2( _blockPos.x / 500.0, _blockPos.y / 500.0));
-    areaHeight = (areaHeight + 1) / 2;
+    float mountainRegion = ComplexNoiseLimited(_blockPos, 500, 4, 0.5, 2, 0, 1);
 
-    float mountainFreq = 20; // increase to reduce number of mountains
-    height += peakHeight * std::pow(areaHeight, mountainFreq);
-
+    float mountainFreq = 5; // increase to reduce number of mountains
+    height += peakHeight * std::pow(mountainRegion, mountainFreq);
 
     return std::round(height);
 }

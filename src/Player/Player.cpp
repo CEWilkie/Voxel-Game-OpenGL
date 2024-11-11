@@ -91,6 +91,7 @@ void Player::HandleMovement(Uint64 _deltaTicks) {
         UpdatePlayerChunk();
     }
     UpdateMaxPositions();
+    lastPosition = position;
 
     GetUnobstructedRayPosition();
 }
@@ -230,8 +231,6 @@ void Player::WalkingMovement(const std::uint8_t* _keyInputs, float _seconds) {
         canJump = false;
     }
 
-    lastPosition = position;
-
     position = (vectorSpeed * _seconds) + lastStaticPosition;
     position.y = (vectorSpeed.y * timeSinceOnGround) + (0.5f * vectorAcceleration.y * std::pow(timeSinceOnGround, 2.0f)) + lastStaticPosition.y;
 }
@@ -263,14 +262,15 @@ void Player::UpdatePlayerChunk() {
     // If players chunk is not the same as currently stored player chunk, update the world's loading origin
     if (pChunk != nullptr) {
         if (pChunk != playerChunk && playerChunk != nullptr) {
+            world->SetLoadingOrigin(pChunk->GetIndex());
+            world->GenerateLoadableWorldRegion();
+
             // Ensure that chunks are loaded / unloaded accordingly
             world->ManageLoadedChunks(playerChunk, pChunk);
         }
 
         // update player chunk
         playerChunk = pChunk;
-        world->SetLoadingOrigin(playerChunk->GetIndex());
-        world->GenerateLoadableWorldRegion();
     }
 }
 
@@ -278,9 +278,6 @@ void Player::UpdatePlayerChunk() {
 void Player::UpdateMaxPositions() {
     // if a chunk was not obtained, dont update the previous min max values
     if (playerChunk == nullptr) return;
-
-    // if player in fly mode, ignore
-    if (movementMode == MOVEMENTMODE::FLYING) return;
 
     // Get block position in chunk player is currently inside of
     glm::vec3 blockPos = position - (playerChunk->GetIndex() * (float)chunkSize);
@@ -298,6 +295,8 @@ void Player::UpdateMaxPositions() {
 }
 
 void Player::EnforcePositionBoundaries(float _seconds) {
+    if (movementMode == MOVEMENTMODE::FLYING) return;
+
     // Check against min and max position values
     if (position.x - radius - 0.05f < minX) {
         position.x = minX + radius + 0.05f;

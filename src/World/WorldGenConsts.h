@@ -14,7 +14,7 @@
 
 // UNIVERSAL CONSTANTS FOR GENERATION
 static const int WATERLEVEL = 60;
-static const int MINBLOCKHEIGHT = WATERLEVEL;
+static const int SEAFLOORMINIMUM = 20;
 static const int MAXBLOCKHEIGHT = 128;
 
 static const int MINTEMP = -20;
@@ -23,7 +23,7 @@ static const int MAXTEMP = 40;
 
 
 // MAX SIZE OF THE WORLD AREA TO BE LOADED
-static const int loadRadius = 8; // minimum 2
+static const int loadRadius = 10; // minimum 2
 static const int meshRadius = loadRadius - 1;
 static const int renderRadius = meshRadius; // at maximum = meshRadius
 static const int worldSize = (1 + loadRadius*2) + 2; // + 2 for border chunks to permit structure generation at world chunk borders

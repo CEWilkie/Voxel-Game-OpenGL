@@ -412,6 +412,7 @@ void Chunk::PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType) {
     auto blockChunk = GetChunkAtBlockPos(_blockPos);
     if (blockChunk == nullptr) return;
 
+
     // directions of adjacent blocks
     std::array<glm::vec3, 7> blockPositions {_blockPos, _blockPos + dirTop, _blockPos + dirBottom, _blockPos + dirLeft,
                                              _blockPos + dirRight, _blockPos + dirFront, _blockPos + dirBack};
