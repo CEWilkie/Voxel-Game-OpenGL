@@ -24,7 +24,8 @@ void MaterialMesh::AddVerticies(const std::vector<Vertex>& _verticies, const glm
     if (_verticies.empty()) return;
 
     for (const Vertex& vertex : _verticies) {
-        vertexArray.push_back({vertex.position + _position, vertex.textureCoord});
+        vertexArray.push_back({_position, vertex.textureCoord,
+                               vertex.position, vertex.blockRotation});
     }
 
     oldMesh = true;
@@ -66,6 +67,14 @@ void MaterialMesh::BindMesh() {
     // Vertex TextureData attributes
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, textureCoord));
+
+    // vertex origin position
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, originVertexPosition));
+
+    // Vertex BlockRotation Values
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 2, GL_BYTE, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, blockRotation));
 
     // Bind index buffer
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);

@@ -15,6 +15,8 @@
 struct Vertex {
     glm::vec3 position {};
     glm::vec2 textureCoord {};
+    glm::vec3 originVertexPosition {};
+    glm::bvec2 blockRotation {0,0};
 };
 
 struct Plane {
