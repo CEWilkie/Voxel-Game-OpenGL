@@ -310,8 +310,8 @@ void Chunk::CreateTerrain() {
                 SetChunkBlockAtPosition({x,y,z}, generatingBlockData);
 
                 // give block a random rotation and facing direction
-                terrain[x][y][z].attributes.topFaceDirection = generatingBlock.GetRandomTopFaceDirection();
                 terrain[x][y][z].attributes.halfRightRotations = generatingBlock.GetRandomRotation();
+                terrain[x][y][z].attributes.topFaceDirection = generatingBlock.GetRandomTopFaceDirection();
             }
 
             // Now create vegetation provided chunk contains hmToplevel
