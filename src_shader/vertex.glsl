@@ -71,8 +71,8 @@ mat3 RotationMatrix(float _angleRads, vec3 _axis) {
 void main() {
     // retrieve and apply block rotation around y-axis
     float angleDeg = float(blockRotation.x) * 90.0f;
-    vec3 originVertex = originVertexPosition - vec3(0.5, 0, 0.5);
-    vec3 rotatedOriginPos = RotationMatrix(radians(angleDeg), vec3(0,1,0)) * originVertex;
+    vec3 originVertex = originVertexPosition - vec3(0.5, 0.5, 0.5);
+    vec3 rotatedOriginPos = (RotationMatrix(radians(angleDeg), vec3(0,1,0)) * originVertex) + vec3(0.5, 0.5, 0.5);
 
     // update vertex to position in chunk, then apply Projection, view and model matricies
     gl_Position = vec4(rotatedOriginPos + vertexPosition, 1.0f);
