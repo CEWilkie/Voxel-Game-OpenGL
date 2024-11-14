@@ -78,12 +78,12 @@ class World {
         void UpdateWorldTime(Uint64 _deltaTicks);
 
         // Thread Functions
-        void CreateChunk(const glm::ivec2& _chunkIndex, const glm::vec3& _blockPos);
-        void GenerateChunk(const glm::ivec2& _chunkIndex, const glm::vec3& _blockPos);
-        void GenerateChunkMesh(const glm::ivec2& _chunkIndex, const glm::vec3& _blockPos);
+        THREAD_ACTION_RESULT CreateChunk(const glm::ivec2& _chunkIndex, const glm::vec3& _blockPos);
+        THREAD_ACTION_RESULT GenerateChunk(const glm::ivec2& _chunkIndex, const glm::vec3& _blockPos);
+        THREAD_ACTION_RESULT GenerateChunkMesh(const glm::ivec2& _chunkIndex, const glm::vec3& _blockPos) const;
 
         void ManageLoadedChunks(const std::shared_ptr<Chunk>& _currentChunk, const std::shared_ptr<Chunk>& _newChunk);
-        void CheckChunkLoaded(const glm::ivec2& _currentChunkPos, const glm::vec3& _newChunkPos);
+        THREAD_ACTION_RESULT CheckChunkLoaded(const glm::ivec2& _currentChunkPos, const glm::vec3& _newChunkPos);
 
         // ChunkData Generation functions
         static float GenerateBlockHeight(glm::vec2 _blockPos);

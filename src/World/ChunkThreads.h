@@ -17,12 +17,14 @@
 #include <glm/glm.hpp>
 #include <SDL.h>
 
+typedef int THREAD_ACTION_RESULT;
+
 /*
  * Simple struct to house a position of the chunk that the given function will be applied to.
  */
 
 struct ThreadAction {
-    std::function<void(const glm::ivec2&, const glm::vec3&)> function {};
+    std::function<THREAD_ACTION_RESULT(const glm::ivec2&, const glm::vec3&)> function {};
     glm::ivec2 chunkPos {0, 0};
     glm::vec3 chunkBlock {0, 0, 0};
 
@@ -31,10 +33,9 @@ struct ThreadAction {
     };
 
     // Functionality
-    void DoAction() const { function(chunkPos, chunkBlock); }
+    [[nodiscard]] THREAD_ACTION_RESULT DoAction() const { return function(chunkPos, chunkBlock); }
 };
 
-typedef int THREAD_ACTION_RESULT;
 
 /*
  *

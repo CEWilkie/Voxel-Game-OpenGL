@@ -87,7 +87,7 @@ void World::CheckCulling(const Camera &_camera) {
     displayingChunks = 0;
 
     for (int chunkX = 0; chunkX < worldSize; chunkX++) {
-        for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {;
+        for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
             worldChunks[chunkX][chunkZ]->CheckCulling(_camera);
             if (worldChunks[chunkX][chunkZ]->ChunkVisible())
                 displayingChunks += 1;
@@ -209,17 +209,19 @@ void World::UpdateWorldTime(Uint64 _deltaTicks) {
 void World::GenerateRequiredWorldRegion() {
     using namespace std::placeholders;
 
+    bool loadSquare = false;
+
     // Ensure chunks exist for loading region (and border) area
     ThreadAction createChunkRegion{std::bind(&World::CreateChunk, this, _1, _2), loadingIndex};
-    chunkBuilderThread.AddPriorityActionRegion(createChunkRegion, loadRadius);
+    chunkBuilderThread.AddPriorityActionRegion(createChunkRegion, loadRadius, loadSquare);
 
     // Generate the chunks within the loading region (and not border), this will be done after the chunks are created
     ThreadAction generateChunk{std::bind(&World::GenerateChunk, this, _1, _2), loadingIndex};
-    chunkBuilderThread.AddActionRegion(generateChunk, loadRadius);
+    chunkBuilderThread.AddActionRegion(generateChunk, loadRadius, loadSquare);
 
     // Mesh the chunks within the loading region
     ThreadAction createMesh{std::bind(&World::GenerateChunkMesh, this, _1, _2), loadingIndex};
-    chunkMesherThread.AddActionRegion(createMesh, meshRadius);
+    chunkMesherThread.AddActionRegion(createMesh, meshRadius, loadSquare);
 }
 
 
@@ -253,10 +255,10 @@ void World::GenerateLoadableWorldRegion() {
  * Thread-Called function to retrieve chunk data for a given chunk index position.
  */
 
-void World::CreateChunk(const glm::ivec2& _chunkIndex, const glm::vec3& _blockPos) {
+THREAD_ACTION_RESULT World::CreateChunk(const glm::ivec2& _chunkIndex, const glm::vec3& _blockPos) {
     // Chunk object already exists, dont overwrite
     if (GetChunkAtIndex(_chunkIndex) != nullptr) {
-        return;
+        return ThreadAction::OK;
     }
 
     // Get ChunkData and create the chunk
@@ -265,6 +267,8 @@ void World::CreateChunk(const glm::ivec2& _chunkIndex, const glm::vec3& _blockPo
 
     glm::vec3 index{_chunkIndex.x, 0, _chunkIndex.y};
     CreateChunkAtIndex(index, chunkData);
+
+    return ThreadAction::OK;
 }
 
 
@@ -273,7 +277,7 @@ void World::CreateChunk(const glm::ivec2& _chunkIndex, const glm::vec3& _blockPo
  * Obtains chunk data and generates a chunk (base terrain and decorative)
  */
 
-void World::GenerateChunk(const glm::ivec2& _chunkIndex, const glm::vec3& _blockPos) {
+THREAD_ACTION_RESULT World::GenerateChunk(const glm::ivec2& _chunkIndex, const glm::vec3& _blockPos) {
     auto st = SDL_GetTicks64();
 
     auto chunk = GetChunkAtIndex(_chunkIndex);
@@ -281,7 +285,7 @@ void World::GenerateChunk(const glm::ivec2& _chunkIndex, const glm::vec3& _block
         // if this situation occurs, probably will be multiple visible generation issues with cross-chunk structures
         CreateChunk(_chunkIndex, {0, 0, 0});
         chunk = GetChunkAtIndex(_chunkIndex);
-        if (chunk == nullptr) return;
+        if (chunk == nullptr) return ThreadAction::FAIL;
     }
 
     // Generate the chunk's blocks
@@ -294,10 +298,12 @@ void World::GenerateChunk(const glm::ivec2& _chunkIndex, const glm::vec3& _block
         nChunksCreated++;
         chunkAvgTicksTaken = chunkSumTicksTaken / nChunksCreated;
     }
+
+    return ThreadAction::OK;
 }
 
 
-void World::GenerateChunkMesh(const glm::ivec2 &_chunkIndex, const glm::vec3& _blockPos) {
+THREAD_ACTION_RESULT World::GenerateChunkMesh(const glm::ivec2 &_chunkIndex, const glm::vec3& _blockPos) const {
     auto chunk = GetChunkAtIndex(_chunkIndex);
 
     if (chunk != nullptr && chunk->RegionGenerated() && chunk->NeedsMeshUpdates()) {
@@ -309,13 +315,15 @@ void World::GenerateChunkMesh(const glm::ivec2 &_chunkIndex, const glm::vec3& _b
         meshSumTicksTaken += et - st;
         nMeshesCreated++;
         meshAvgTicksTaken = meshSumTicksTaken / nMeshesCreated;
+
+        return ThreadAction::OK;
     }
     else if (chunk == nullptr || !chunk->RegionGenerated()) {
-        // Waiting on the chunk to be made / generate
-        ThreadAction meshChunk{std::bind(&World::GenerateChunkMesh, this, std::placeholders::_1, std::placeholders::_2),
-                               _chunkIndex};
-        chunkMesherThread.AddActions({meshChunk});
+        // TODO: can result in infinite recalling of function. apply limiter?
+        return ThreadAction::RETRY;
     }
+
+    return ThreadAction::FAIL;
 }
 
 
@@ -337,18 +345,17 @@ void World::ManageLoadedChunks(const std::shared_ptr<Chunk>& _currentChunk, cons
  * be loaded in the new loaded region
  */
 
-void World::CheckChunkLoaded(const glm::ivec2 &_currentChunkPos, const glm::vec3 &_newChunkPos) {
+THREAD_ACTION_RESULT World::CheckChunkLoaded(const glm::ivec2 &_currentChunkPos, const glm::vec3 &_newChunkPos) {
     glm::vec3 chunkIndex = {_currentChunkPos.x, 0, _currentChunkPos.y};
-    auto chunk = GetChunkAtIndex(chunkIndex);
 
     int diffX = std::abs(_currentChunkPos.x - (int)_newChunkPos.x);
     int diffZ = std::abs(_currentChunkPos.y - (int)_newChunkPos.z);
 
-    // chunk within load region, update adjacent chunks and ignore
-    if (!(diffX > loadRadius || diffZ > loadRadius)) return;
+    // chunk within load region, ignore
+    if (diffX + diffZ <= loadRadius) return ThreadAction::OK;
 
     // chunk is outside of the load radius so unload
-    DestroyChunkAtIndex(chunkIndex);
+    return DestroyChunkAtIndex(chunkIndex);
 }
 
 

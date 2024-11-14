@@ -91,8 +91,13 @@ void ChunkThreads::ThreadLoop() {
         bool lastAction = actionQueue.empty();
         queueMutex.unlock();
 
+
         auto st = std::chrono::high_resolution_clock::now();
-        currentAction.DoAction();
+        THREAD_ACTION_RESULT res = currentAction.DoAction();
+        if (res == ThreadAction::RETRY) {
+            // put the action back into queue
+            AddActions({currentAction});
+        }
         auto et = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(et - st).count();
@@ -104,6 +109,7 @@ void ChunkThreads::ThreadLoop() {
             lightActions.actionsCompleted++;
             lightActions.sumNStaken += duration;
         }
+
 
         // debug statements
         if (actionQueue.empty() || lastAction) PrintThreadResults();
