@@ -32,9 +32,8 @@ int main(int argc, char** argv){
     }
 
     // Create shaders
-    unsigned int shaderID;
-    if ((shaderID = window.CreateShaders()) == 0) return 0;
-    glUseProgram(shaderID);
+    if (window.CreateShaders() == 0) return 0;
+    window.SetShader(Window::Shader::BASEMESH);
 
     glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

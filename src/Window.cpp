@@ -29,7 +29,8 @@ Window::Window() {
 }
 
 Window::~Window() {
-    glDeleteProgram(shader);
+    glDeleteProgram(baseMeshShader);
+    glDeleteProgram(shadowShader);
     SDL_DestroyWindow(window);
 }
 
@@ -52,12 +53,20 @@ bool Window::CreateGLContext() {
 }
 
 unsigned int Window::CreateShaders() {
-    // First load shaders from filenames
+    // Load the base mesh modelling shaders
     std::string vertexShader = LoadShaderSourceFromFile("../src_shader/vertex.glsl");
     std::string fragmentShader = LoadShaderSourceFromFile("../src_shader/fragment.glsl");
 
-    shader = CreateShader(vertexShader, fragmentShader);
-    return shader;
+    baseMeshShader = CreateShader(vertexShader, fragmentShader);
+
+    // Load the shadows shaders
+    vertexShader = LoadShaderSourceFromFile("../src_shader/shadowVertex.glsl");
+    fragmentShader = LoadShaderSourceFromFile("../src_shader/shadowFragment.glsl");
+
+    shadowShader = CreateShader(vertexShader, fragmentShader);
+
+    // effectively a check for if CreateShader has failed for this shader in particular
+    return baseMeshShader;
 }
 
 void Window::SetWindowSize(int _w, int _h) {
@@ -73,6 +82,21 @@ void Window::SetWindowSize(int _w, int _h) {
     aspectRatio = float(winRect.w) / float(winRect.h);
 }
 
+
+void Window::SetShader(const Window::Shader &_shader) const {
+    switch (_shader) {
+        case BASEMESH:
+            glUseProgram(baseMeshShader);
+            break;
+
+        case SHADOW:
+            glUseProgram(shadowShader);
+            break;
+    }
+}
+
+
+
 SDL_Window* Window::WindowPtr() {
     return window;
 }
@@ -80,4 +104,17 @@ SDL_Window* Window::WindowPtr() {
 void Window::GetWindowSize(int& _w, int& _h) const {
     _w = winRect.w;
     _h = winRect.h;
+}
+
+unsigned int Window::GetShader(const Window::Shader &_shader) const {
+    switch (_shader) {
+        case BASEMESH:
+            return baseMeshShader;
+
+        case SHADOW:
+            return shadowShader;
+
+        default:
+            return baseMeshShader;
+    }
 }
