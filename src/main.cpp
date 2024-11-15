@@ -63,6 +63,8 @@ int main(int argc, char** argv){
     world->SetLoadingOrigin({0,0,0});
     world->GenerateRequiredWorldRegion();
 
+    printf("WORLD SEED %llu\n", worldSeed);
+
     /*
      * PLAYER CREATION
      */
@@ -157,8 +159,14 @@ int main(int argc, char** argv){
          */
 
         float lightLevel;
+        window.SetShader(Window::BASEMESH);
         GLint uLocation = glGetUniformLocation(window.GetShader(), "worldAmbients.lightingStrength");
         glGetUniformfv(window.GetShader(), uLocation, &lightLevel);
+
+        window.SetShader(Window::SHADOW);
+        uLocation = glGetUniformLocation(window.GetShader(), "worldAmbients.lightingStrength");
+        glGetUniformfv(window.GetShader(), uLocation, &lightLevel);
+        window.SetShader(Window::BASEMESH);
 
         glm::vec3 background = glm::vec3(179/255.0f, 199/255.0f, 242/255.0f) * lightLevel;
         glClearColor(background.r, background.g, background.b, 1.0f); //background colour

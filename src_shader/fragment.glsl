@@ -7,6 +7,7 @@ in vec4 v_vertexTextureColorOverride;
 
 // UNIFORMS
 uniform sampler2D tex0;
+uniform int uCanFog = 1;
 
 layout(std140) uniform struct WorldAmbients {
     float lightingStrength;
@@ -14,7 +15,6 @@ layout(std140) uniform struct WorldAmbients {
     float maxFogDistance;
 } worldAmbients;
 
-uniform int uCanFog = 1;
 
 // PIPE OUT
 out vec4 color;

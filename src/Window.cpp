@@ -83,14 +83,16 @@ void Window::SetWindowSize(int _w, int _h) {
 }
 
 
-void Window::SetShader(const Window::Shader &_shader) const {
+void Window::SetShader(const Window::Shader &_shader) {
     switch (_shader) {
         case BASEMESH:
             glUseProgram(baseMeshShader);
+            activeShader = baseMeshShader;
             break;
 
         case SHADOW:
             glUseProgram(shadowShader);
+            activeShader = shadowShader;
             break;
     }
 }
@@ -104,17 +106,4 @@ SDL_Window* Window::WindowPtr() {
 void Window::GetWindowSize(int& _w, int& _h) const {
     _w = winRect.w;
     _h = winRect.h;
-}
-
-unsigned int Window::GetShader(const Window::Shader &_shader) const {
-    switch (_shader) {
-        case BASEMESH:
-            return baseMeshShader;
-
-        case SHADOW:
-            return shadowShader;
-
-        default:
-            return baseMeshShader;
-    }
 }

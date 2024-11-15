@@ -27,6 +27,7 @@ class Window {
         // Shader programs
         unsigned int baseMeshShader = 0;
         unsigned int shadowShader = 0;
+        unsigned int activeShader = 0;
 
     public:
         // Setup
@@ -40,13 +41,12 @@ class Window {
 
         // Shaders
         enum Shader { BASEMESH, SHADOW};
-        void SetShader(const Window::Shader &_shader) const;
+        void SetShader(const Window::Shader &_shader);
 
         // Getters
         SDL_Window* WindowPtr();
         void GetWindowSize(int& _w, int& _h) const;
-        [[nodiscard]] unsigned int GetShader() const { return baseMeshShader; };
-        [[nodiscard]] unsigned int GetShader(const Shader& _shader) const;
+        [[nodiscard]] unsigned int GetShader() const { return activeShader; };
         [[nodiscard]] float GetAspectRatio() const { return aspectRatio; };
 };
 
