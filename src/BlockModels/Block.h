@@ -47,11 +47,11 @@ struct BlockVAOs {
     ~BlockVAOs();
 
     // VAO Creation for FullBlock
-    static std::vector<Vertex> FullblockVA();
+    static std::vector<ModelVertex> FullblockVA();
     static std::vector<GLuint> FullblockIA();
 
     // VAO Creation for PlantBlock
-    static std::vector<Vertex> PlantblockVA();
+    static std::vector<ModelVertex> PlantblockVA();
     static std::vector<GLuint> PlantblockIA();
 
     // ...
@@ -61,7 +61,7 @@ struct BlockVAOs {
 
     // Getters for unchanged IndexArrays / VertexArrays
     [[nodiscard]] static std::vector<GLuint> GetBaseIndexArray(BLOCKMODEL _model) ;
-    [[nodiscard]] static std::vector<Vertex> GetBaseVertexArray(BLOCKMODEL _model) ;
+    [[nodiscard]] static std::vector<ModelVertex> GetBaseVertexArray(BLOCKMODEL _model) ;
 };
 
 inline std::unique_ptr<BlockVAOs> blockVAOmanager {};
@@ -117,7 +117,7 @@ struct std::hash<BlockType> {
 
 enum class BLOCKATTRIBUTE {
     TRANSPARENT, LIQUID, BREAKABLE, CANACCESSTHROUGHBLOCK, FACINGDIRECTION, ROTATION, GENERATIONPRIORITY,
-    ENTITYCOLLISIONSOLID, BLOCKMODEL, // ... other block attributes
+    ENTITYCOLLISIONSOLID, BLOCKMODEL, LIGHTLEVEL // ... other block attributes
 };
 
 
@@ -131,6 +131,7 @@ enum class BLOCKATTRIBUTE {
 struct BlockAttributes {
     GLbyte halfRightRotations = 0;
     GLbyte topFaceDirection = DIRECTION::UP;
+    GLbyte lightLevel = 15;
 
     [[nodiscard]] GLbyte GetIndividualAttribute(BLOCKATTRIBUTE _attribute) const;
 };
@@ -180,7 +181,7 @@ class Block {
         // Block Face Culling
         [[nodiscard]] DIRECTION GetRandomTopFaceDirection() const;
         [[nodiscard]] GLbyte GetRandomRotation() const;
-        [[nodiscard]] std::vector<Vertex> GetFaceVerticies(const std::vector<BLOCKFACE>& _faces, const BlockAttributes& _blockAttributes) const;
+        [[nodiscard]] std::vector<UniqueVertex> GetFaceVerticies(const std::vector<BLOCKFACE>& _faces, const BlockAttributes& _blockAttributes) const;
 
         [[nodiscard]] static bool BlockFaceVisible(const Block& _checkingBlock, const Block& _faceBlock, BLOCKFACE _face = TOP);
 };

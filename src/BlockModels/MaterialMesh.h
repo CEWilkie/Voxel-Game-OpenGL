@@ -6,7 +6,10 @@
 #define UNTITLED7_MATERIALMESH_H
 
 #include <glew.h>
+
 #include "Block.h"
+#include "../Window.h"
+
 
 /*
  * Used to merge together multiple instances of a singular block type into a single mesh of verticies. Permits far
@@ -15,29 +18,32 @@
  */
 
 class MaterialMesh {
-    private:
+    protected:
         // Buffer objects
         unsigned int vertexArrayObject {};
         unsigned int vertexBufferObject {};
         unsigned int indexBufferObject {};
 
-        std::vector<Vertex> vertexArray {};
+        Block* block;
+
         int bufferVerticiesSize = 0;
         int boundFaces = 0;
 
-        Block* block;
         bool oldMesh = true;
         bool readyToBind = false;
+
+    private:
+        std::vector<UniqueVertex> vertexArray {};
 
     public:
         explicit MaterialMesh(Block* _block);
         ~MaterialMesh();
 
         // Mesh verticies setup and binding
-        void AddVerticies(const std::vector<Vertex>& _verticies, const glm::vec3& _position);
-        void ResetVerticies();
-        void BindMesh();
-        void UpdateMesh();
+        virtual void AddVerticies(const std::vector<UniqueVertex>& _verticies, const glm::vec3& _position);
+        virtual void ResetVerticies();
+        virtual void BindMesh();
+        virtual void UpdateMesh();
 
         // Mark meshes for recreation
         void MarkOld() { oldMesh = true; }
@@ -46,11 +52,13 @@ class MaterialMesh {
         [[nodiscard]] bool ReadyToBind() const { return readyToBind; }
 
         // Mesh Display
-        void DrawMesh(const Transformation& _transformation) const;
+        virtual void DrawMesh(const Transformation& _transformation) const;
 
         // Getters
         [[nodiscard]] Block* GetBlock() const { return block; }
 };
+
+
 
 
 #endif //UNTITLED7_MATERIALMESH_H

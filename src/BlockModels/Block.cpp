@@ -22,7 +22,7 @@ BlockVAOs::~BlockVAOs() {
 }
 
 
-std::vector<Vertex> BlockVAOs::FullblockVA() {
+std::vector<ModelVertex> BlockVAOs::FullblockVA() {
     // [POSITION], [TEXCOORD], both values are offsets relative to the set origin points
     return {
             // Front
@@ -75,7 +75,7 @@ std::vector<GLuint> BlockVAOs::FullblockIA() {
     };
 }
 
-std::vector<Vertex> BlockVAOs::PlantblockVA() {
+std::vector<ModelVertex> BlockVAOs::PlantblockVA() {
     return {
         // SIDE 1
             { glm::vec3(0.0f, 0.0f, 0.0f),  {0, 0} },            // TOPLEFT VERTEX
@@ -106,20 +106,20 @@ void BlockVAOs::BindBlockModels() const {
         glBindVertexArray(vertexArrayObject[model]);
 
         // Fetch model's VertexArray and IndexArray
-        std::vector<Vertex> vertexArray = GetBaseVertexArray((BLOCKMODEL)model);
+        std::vector<ModelVertex> vertexArray = GetBaseVertexArray((BLOCKMODEL)model);
         std::vector<GLuint> indexArray = GetBaseIndexArray((BLOCKMODEL)model);
 
         // Bind VertexBuffer
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject[model]);
-        glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(vertexArray.size() * sizeof(Vertex)), vertexArray.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(vertexArray.size() * sizeof(ModelVertex)), vertexArray.data(), GL_STATIC_DRAW);
 
         // Position Data Attribute
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, position));
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(struct ModelVertex), (const GLvoid*)offsetof(ModelVertex, position));
 
         // Texture Data Attribute
         glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, textureCoord));
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(struct ModelVertex), (const GLvoid*)offsetof(ModelVertex, textureCoord));
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject[model]);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(indexArray.size() * sizeof(GLuint)), indexArray.data(), GL_STATIC_DRAW);
@@ -151,8 +151,8 @@ std::vector<GLuint> BlockVAOs::GetBaseIndexArray(BLOCKMODEL _model) {
     return indexArray;
 }
 
-std::vector<Vertex> BlockVAOs::GetBaseVertexArray(BLOCKMODEL _model) {
-    std::vector<Vertex> vertexArray;
+std::vector<ModelVertex> BlockVAOs::GetBaseVertexArray(BLOCKMODEL _model) {
+    std::vector<ModelVertex> vertexArray;
     switch (_model) {
         case FULL:
             vertexArray = FullblockVA();
@@ -184,6 +184,9 @@ GLbyte BlockAttributes::GetIndividualAttribute(BLOCKATTRIBUTE _attribute) const 
         case BLOCKATTRIBUTE::ROTATION:
             return halfRightRotations;
 
+        case BLOCKATTRIBUTE::LIGHTLEVEL:
+            return lightLevel;
+
         default:
             return 0;
     }
@@ -204,6 +207,7 @@ Block::~Block() = default;
 
 void Block::Display(const Transformation& _t) const {
     if (blockData.blockID == BLOCKID::AIR && blockData.variantID == 0) return;
+    window.SetShader(Window::BASEMESH);
 
     // Bind to the model
     glBindVertexArray(blockVAOmanager->vertexArrayObject[blockModel]);
@@ -229,7 +233,6 @@ void Block::Display(const Transformation& _t) const {
 }
 
 void Block::DisplayWireframe(const Transformation& _transformation) const {
-
     // Apply black border and set to line mode
     glm::vec4 borderCol{0,0,0,255}, noCol{0,0,0,0};
     GLint uniformLocation = glGetUniformLocation(window.GetShader(), "vertexTextureColorOverride");
@@ -300,16 +303,19 @@ GLbyte Block::GetRandomRotation() const {
 }
 
 
-std::vector<Vertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &_faces, const BlockAttributes& _blockAttributes) const {
+std::vector<UniqueVertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &_faces, const BlockAttributes& _blockAttributes) const {
     if (blockModel == EMPTY) return {}; // catch air blocks
 
     // Get base index and vertex arrays of the model. Create vector to store requested face verticies list in.
     std::vector<GLuint> baseIndexArray = blockVAOmanager->GetBaseIndexArray(blockModel);
-    std::vector<Vertex> baseVertexArray = blockVAOmanager->GetBaseVertexArray(blockModel);
-    std::vector<Vertex> vertexArray {};
+    std::vector<ModelVertex> baseVertexArray = blockVAOmanager->GetBaseVertexArray(blockModel);
+    std::vector<glm::vec2> texturePositions {
+            {1,0}, {0,0}, {1, 1}, {1,1}, {0,0}, {0,1}
+    };
+    std::vector<glm::vec3> cardinalAxis { dirFront, dirBack, dirLeft, dirRight, dirTop, dirBottom};
 
-//    float angleDeg = (float) _blockAttributes.GetIndividualAttribute(BLOCKATTRIBUTE::ROTATION) * 45.0f;
-//    glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f),glm::radians(angleDeg),dirTop);
+    // Result
+    std::vector<UniqueVertex> faceVerticies {};
 
     GLbyte halfRightRotations = _blockAttributes.GetIndividualAttribute(BLOCKATTRIBUTE::ROTATION);
     GLbyte facing = _blockAttributes.GetIndividualAttribute(BLOCKATTRIBUTE::FACINGDIRECTION);
@@ -328,30 +334,25 @@ std::vector<Vertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &_faces
             })) continue;
 
             // Store Vertex and used Index
-            Vertex faceVertex = baseVertexArray[baseIndexArray[i]];
-            if (face == TOP || face == BOTTOM) faceVertex.blockRotation = {halfRightRotations, facing};
+            UniqueVertex uFaceVertex {
+                    {0,0,0},
+                    baseVertexArray[baseIndexArray[i]].position,
+                    cardinalAxis[face],
 
-//            if (face == TOP || face == BOTTOM) {
-//                faceVertex.position = rotationY * glm::vec4(faceVertex.position, 1.0f);
-//                if (angleDeg == 90.0f) {
-//                    faceVertex.position.z += 1;
-//                }
-//                else if (angleDeg == 180.0f) {
-//                    faceVertex.position.z += 1;
-//                    faceVertex.position.x += 1;
-//                }
-//                else if (angleDeg == 270.0f) {
-//                    faceVertex.position.x += 1;
-//                }
-//
-//            }
+                    texturePositions[i - (face*6)],
+                    {0,0},
+                    15
+            };
 
-            vertexArray.push_back(faceVertex);
+            if (face == TOP || face == BOTTOM)
+                uFaceVertex.blockRotation = {halfRightRotations, facing};
+
+            faceVerticies.push_back(uFaceVertex);
             usedIndicies.push_back(baseIndexArray[i]);
         }
     }
 
-    return vertexArray;
+    return faceVerticies;
 }
 
 

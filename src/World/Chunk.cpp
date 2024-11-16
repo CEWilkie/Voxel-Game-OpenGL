@@ -112,7 +112,9 @@ void Chunk::UpdateBlockMesh(Block* _meshBlock) {
                 Block blockPtr = GetBlockFromData(block.type);
 
                 if (block.type == _meshBlock->GetBlockType()) {
-                    std::vector<Vertex> verticies = blockPtr.GetFaceVerticies(GetShowingFaces({x,y,z}, blockPtr), block.attributes);
+                    std::vector<UniqueVertex> verticies = blockPtr.GetFaceVerticies(
+                            GetShowingFaces({x,y,z}, blockPtr),
+                            block.attributes);
                     blockMesh->AddVerticies(verticies, {x,y,z});
                 }
             }
@@ -147,7 +149,9 @@ void Chunk::CreateChunkMeshes() {
 
                 // Add verticies to mesh
                 Block blockPtr = GetBlockFromData(block.type);
-                std::vector<Vertex> verticies = blockPtr.GetFaceVerticies(GetShowingFaces({x,y,z}, blockPtr), block.attributes);
+                std::vector<UniqueVertex> verticies = blockPtr.GetFaceVerticies(
+                        GetShowingFaces({x,y,z}, blockPtr),
+                        block.attributes);
                 blockMesh->AddVerticies(verticies, {x,y,z});
             }
         }
@@ -384,7 +388,7 @@ bool Chunk::RegionGenerated() const {
     bool adjGenerated = true;
     for (const auto& adjDir : adjacentDirs) {
         auto adjChunk = world->GetChunkAtIndex(chunkIndex + adjDir);
-        if (adjChunk != nullptr && !adjChunk->Generated()) {
+        if (adjChunk == nullptr || !adjChunk->Generated()) {
             adjGenerated = false;
             break;
         }
@@ -568,7 +572,7 @@ float Chunk::GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, f
     }
 
     BLOCKFACE face {};
-    std::vector<Vertex> faceVerticies {};
+    std::vector<UniqueVertex> faceVerticies {};
     float minZ {0}, maxZ {0};
     float minX {0}, maxX {0};
 
@@ -580,15 +584,16 @@ float Chunk::GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, f
     // Get min and max face verticies for x and z position
     faceVerticies = blockPtr.GetFaceVerticies({face}, block.attributes);
     for (auto& vertex : faceVerticies) {
-        if (vertex.position.z + glm::ceil(_blockPos.z) + _direction.z < minZ)
-            minZ = vertex.position.z + glm::ceil(_blockPos.z) + _direction.z;
-        if (vertex.position.z + glm::floor(_blockPos.z) + _direction.z > maxZ)
-            maxZ = vertex.position.z + glm::floor(_blockPos.z) + _direction.z;
+        glm::vec3 vertexPosition = vertex.chunkPosOffset + vertex.modelVertex;
+        if (vertexPosition.z + glm::ceil(_blockPos.z) + _direction.z < minZ)
+            minZ = vertexPosition.z + glm::ceil(_blockPos.z) + _direction.z;
+        if (vertexPosition.z + glm::floor(_blockPos.z) + _direction.z > maxZ)
+            maxZ = vertexPosition.z + glm::floor(_blockPos.z) + _direction.z;
 
-        if (vertex.position.x + glm::ceil(_blockPos.x) + _direction.x < minX)
-            minX = vertex.position.x + glm::ceil(_blockPos.x) + _direction.x;
-        if (vertex.position.x + glm::ceil(_blockPos.x) + _direction.x > maxX)
-            maxX = vertex.position.x + glm::floor(_blockPos.x) + _direction.x;
+        if (vertexPosition.x + glm::ceil(_blockPos.x) + _direction.x < minX)
+            minX = vertexPosition.x + glm::ceil(_blockPos.x) + _direction.x;
+        if (vertexPosition.x + glm::ceil(_blockPos.x) + _direction.x > maxX)
+            maxX = vertexPosition.x + glm::floor(_blockPos.x) + _direction.x;
     }
 
     // Player is only blocked by the block if their position +- radius is within min and max bounds
@@ -612,6 +617,8 @@ float Chunk::GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, f
     if (_direction.x != 0) return floorf(_blockPos.x) + _direction.x * 2.0f;
     if (_direction.y != 0) return floorf(_blockPos.y) + _direction.y * 2.0f;
     if (_direction.z != 0) return floorf(_blockPos.z) + _direction.z * 2.0f;
+
+    return 20;
 }
 
 

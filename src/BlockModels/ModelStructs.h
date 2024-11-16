@@ -12,12 +12,27 @@
 
 #include "ModelTransformations.h"
 
-struct Vertex {
+struct ModelVertex {
     glm::vec3 position {};
     glm::vec2 textureCoord {};
-    glm::vec3 originVertexPosition {};
-    glm::bvec2 blockRotation {0,0};
 };
+
+struct UniqueVertex {
+    glm::vec3 chunkPosOffset {};
+    glm::vec3 modelVertex {};
+    glm::vec3 normalAxis {};
+
+    glm::vec2 textureCoord {};
+    glm::bvec2 blockRotation {};
+    GLbyte lightLevel {15};
+};
+
+struct UniqueVertexOptimised {
+    // reduce size
+};
+
+
+
 
 struct Plane {
     glm::vec3 normal {};
@@ -156,7 +171,7 @@ struct BoxBounds : public BoundingVolume {
  */
 
 // Obtain the minimum and maximum verticies from a vertex array
-inline std::pair<glm::vec3, glm::vec3> minMaxVertex(const std::vector<Vertex>& _verticies) {
+inline std::pair<glm::vec3, glm::vec3> minMaxVertex(const std::vector<ModelVertex>& _verticies) {
     auto minVertex = glm::vec3(std::numeric_limits<float>::max());
     auto maxVertex = glm::vec3(std::numeric_limits<float>::min());
     for (auto& vertex : _verticies) {
@@ -172,14 +187,14 @@ inline std::pair<glm::vec3, glm::vec3> minMaxVertex(const std::vector<Vertex>& _
     return {minVertex, maxVertex};
 }
 
-inline SphereBounds GenerateSphere(const std::vector<Vertex>& _verticies) {
+inline SphereBounds GenerateSphere(const std::vector<ModelVertex>& _verticies) {
     auto [minVertex, maxVertex] = minMaxVertex(_verticies);
     return {(maxVertex + minVertex) * 0.5f, glm::length(minVertex - maxVertex)};
 }
 
 
 
-inline std::unique_ptr<BoxBounds> GenerateBoxBounds(const std::vector<Vertex>& _verticies) {
+inline std::unique_ptr<BoxBounds> GenerateBoxBounds(const std::vector<ModelVertex>& _verticies) {
     auto [minVertex, maxVertex] = minMaxVertex(_verticies);
 
     auto centre = (maxVertex + minVertex) * 0.5f;

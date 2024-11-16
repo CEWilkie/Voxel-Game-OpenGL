@@ -4,8 +4,6 @@
 
 #include "MaterialMesh.h"
 
-#include "../Window.h"
-
 MaterialMesh::MaterialMesh(Block* _block) {
     glGenVertexArrays(1, &vertexArrayObject);
     glGenBuffers(1, &vertexBufferObject);
@@ -20,12 +18,12 @@ MaterialMesh::~MaterialMesh() {
     glDeleteVertexArrays(1, &vertexArrayObject);
 }
 
-void MaterialMesh::AddVerticies(const std::vector<Vertex>& _verticies, const glm::vec3& _position) {
+void MaterialMesh::AddVerticies(const std::vector<UniqueVertex>& _verticies, const glm::vec3& _position) {
     if (_verticies.empty()) return;
 
-    for (const Vertex& vertex : _verticies) {
-        vertexArray.push_back({_position, vertex.textureCoord,
-                               vertex.position, vertex.blockRotation});
+    for (const UniqueVertex& vertex : _verticies) {
+        vertexArray.push_back(vertex);
+        vertexArray.back().chunkPosOffset = _position;
     }
 
     oldMesh = true;
@@ -58,23 +56,17 @@ void MaterialMesh::BindMesh() {
 
     // bind vertex buffer object
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(bufferVerticiesSize * sizeof(Vertex)), nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(bufferVerticiesSize * sizeof(UniqueVertex)), nullptr, GL_DYNAMIC_DRAW);
 
-    // Vertex Position Attributes
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, position));
+    // Vertex Position, Model, FaceAxis Attributes
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(struct UniqueVertex), (const GLvoid*)offsetof(UniqueVertex, chunkPosOffset));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(struct UniqueVertex), (const GLvoid*)offsetof(UniqueVertex, modelVertex));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(struct UniqueVertex), (const GLvoid*)offsetof(UniqueVertex, normalAxis));
 
-    // Vertex TextureData attributes
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, textureCoord));
-
-    // vertex origin position
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, originVertexPosition));
-
-    // Vertex BlockRotation Values
-    glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 2, GL_BYTE, GL_FALSE, sizeof(struct Vertex), (const GLvoid*)offsetof(Vertex, blockRotation));
+    // Vertex Texture, Rotation, Light attributes
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(struct UniqueVertex), (const GLvoid*)offsetof(UniqueVertex, textureCoord));
+    glVertexAttribPointer(4, 2, GL_BYTE, GL_FALSE, sizeof(struct UniqueVertex), (const GLvoid*)offsetof(UniqueVertex, blockRotation));
+    glVertexAttribPointer(5, 1, GL_BYTE, GL_FALSE, sizeof(struct UniqueVertex), (const GLvoid*)offsetof(UniqueVertex, lightLevel));
 
     // Bind index buffer
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
@@ -92,11 +84,6 @@ void MaterialMesh::BindMesh() {
 }
 
 void MaterialMesh::UpdateMesh() {
-    // Bind face verticies to buffer
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(vertexArray.size() * sizeof(Vertex)), vertexArray.data());
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
     boundFaces = (int)vertexArray.size() / 4;
 
     // populate indexArray
@@ -110,6 +97,12 @@ void MaterialMesh::UpdateMesh() {
         indexArray.push_back(f*4 + 2);
     }
 
+    // Bind face verticies to buffer
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(vertexArray.size() * sizeof(UniqueVertex)), vertexArray.data());
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    // Bind indicies to buffer
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, GLsizeiptr(indexArray.size()*sizeof(GLuint)), indexArray.data());
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -118,25 +111,41 @@ void MaterialMesh::UpdateMesh() {
 }
 
 void MaterialMesh::DrawMesh(const Transformation& _transformation) const {
-    // Bind object
-    glBindVertexArray(vertexArrayObject);
+    window.SetShader(Window::BASEMESH);
 
     // Update uniform
     GLint modelMatrixLocation = glGetUniformLocation(window.GetShader(), "matricies.uModelMatrix");
-    if (modelMatrixLocation < 0) printf("mesh location not found [matricies.uModelMatrix]\n");
+//    if (modelMatrixLocation < 0) printf("mesh location not found [matricies.uModelMatrix]\n");
     if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &_transformation.GetModelMatrix()[0][0]);
 
     // Set texture information
-    textureManager->EnableTextureSheet(block->GetTextureSheet());
-    GLint vtcOffsetLocation = glGetUniformLocation(window.GetShader(), "uVertexTextureCoordOffset");
-    if (vtcOffsetLocation < 0) printf("sun location not found [uVertexTextureCoordOffset]\n");
-    if (vtcOffsetLocation >= 0) glUniform2fv(vtcOffsetLocation, 1, &block->GetTextureOrigin()[0]);
+    if (block != nullptr) {
+        textureManager->EnableTextureSheet(block->GetTextureSheet());
+        GLint vtcOffsetLocation = glGetUniformLocation(window.GetShader(), "uVertexTextureCoordOffset");
+        if (vtcOffsetLocation < 0) printf("mesh location not found [uVertexTextureCoordOffset]\n");
+        if (vtcOffsetLocation >= 0) glUniform2fv(vtcOffsetLocation, 1, &block->GetTextureOrigin()[0]);
+    }
 
     GLint canFogLocation = glGetUniformLocation(window.GetShader(), "uCanFog");
-    if (canFogLocation < 0) printf("block location not found [uCanFog]\n");
+//    if (canFogLocation < 0) printf("mesh location not found [uCanFog]\n");
     if (canFogLocation >= 0) glUniform1i(canFogLocation, 1);
 
-    // Draw block mesh
+    // Bind and draw block mesh
+    glBindVertexArray(vertexArrayObject);
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
+    glEnableVertexAttribArray(4);
+    glEnableVertexAttribArray(5);
+
     glDrawElements(GL_TRIANGLES, 6 * boundFaces, GL_UNSIGNED_INT, nullptr);
+
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
+    glDisableVertexAttribArray(3);
+    glDisableVertexAttribArray(4);
+    glDisableVertexAttribArray(5);
     glBindVertexArray(0);
 }

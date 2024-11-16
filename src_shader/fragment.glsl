@@ -1,7 +1,8 @@
 #version 410 core
 
 // PIPE IN
-in float v_vertexDistance;
+in float v_vertexDistanceFromCamera;
+in float v_vertexLightLevel;
 in vec2 v_vertexTextureCoord;
 in vec4 v_vertexTextureColorOverride;
 
@@ -24,11 +25,11 @@ out vec4 color;
 
 
 float FogFactor() {
-    if (v_vertexDistance <= worldAmbients.minFogDistance) return 0.0f;
-    else if (v_vertexDistance >= worldAmbients.maxFogDistance) return 1.0f;
+    if (v_vertexDistanceFromCamera <= worldAmbients.minFogDistance) return 0.0f;
+    else if (v_vertexDistanceFromCamera >= worldAmbients.maxFogDistance) return 1.0f;
 
     // match minDist -> dist -> maxDist to 0.0f -> x -> 1.0f
-    else return v_vertexDistance - worldAmbients.minFogDistance / worldAmbients.maxFogDistance - worldAmbients.minFogDistance;
+    else return v_vertexDistanceFromCamera - worldAmbients.minFogDistance / worldAmbients.maxFogDistance - worldAmbients.minFogDistance;
 }
 
 void main() {
@@ -48,7 +49,5 @@ void main() {
 
     // Apply ambient lighting
     color = vec4(vec3(color.r, color.g, color.b) * worldAmbients.lightingStrength, color.a);
-
-    // ...
-
+    color = vec4(color.rgb * v_vertexLightLevel, color.a);
 }
