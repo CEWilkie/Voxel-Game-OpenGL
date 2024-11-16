@@ -113,22 +113,24 @@ void MaterialMesh::UpdateMesh() {
 void MaterialMesh::DrawMesh(const Transformation& _transformation) const {
     window.SetShader(Window::BASEMESH);
 
-    // Update uniform
-    GLint modelMatrixLocation = glGetUniformLocation(window.GetShader(), "matricies.uModelMatrix");
-//    if (modelMatrixLocation < 0) printf("mesh location not found [matricies.uModelMatrix]\n");
-    if (modelMatrixLocation >= 0) glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &_transformation.GetModelMatrix()[0][0]);
+    GLint uniformLocation;
+
+    // Update model matrix with chunk transformation
+    uniformLocation = glGetUniformLocation(window.GetShader(), "matricies.uModelMatrix");
+    if (uniformLocation >= 0) glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, &_transformation.GetModelMatrix()[0][0]);
+
+    // Set blockModel
+    uniformLocation = glGetUniformLocation(window.GetShader(), "uBlockModel");
+    if (uniformLocation >= 0) glUniform1i(uniformLocation, block->GetSharedAttribute(BLOCKATTRIBUTE::BLOCKMODEL));
 
     // Set texture information
-    if (block != nullptr) {
-        textureManager->EnableTextureSheet(block->GetTextureSheet());
-        GLint vtcOffsetLocation = glGetUniformLocation(window.GetShader(), "uVertexTextureCoordOffset");
-        if (vtcOffsetLocation < 0) printf("mesh location not found [uVertexTextureCoordOffset]\n");
-        if (vtcOffsetLocation >= 0) glUniform2fv(vtcOffsetLocation, 1, &block->GetTextureOrigin()[0]);
-    }
+    textureManager->EnableTextureSheet(block->GetTextureSheet());
+    uniformLocation = glGetUniformLocation(window.GetShader(), "uVertexTextureCoordOffset");
+    if (uniformLocation >= 0) glUniform2fv(uniformLocation, 1, &block->GetTextureOrigin()[0]);
 
-    GLint canFogLocation = glGetUniformLocation(window.GetShader(), "uCanFog");
-//    if (canFogLocation < 0) printf("mesh location not found [uCanFog]\n");
-    if (canFogLocation >= 0) glUniform1i(canFogLocation, 1);
+    // Enable / Disable fog translucency of block
+    uniformLocation = glGetUniformLocation(window.GetShader(), "uCanFog");
+    if (uniformLocation >= 0) glUniform1i(uniformLocation, 1);
 
     // Bind and draw block mesh
     glBindVertexArray(vertexArrayObject);

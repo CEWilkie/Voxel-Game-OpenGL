@@ -30,6 +30,7 @@ layout(std140) uniform struct Matricies {
     mat4 uModelMatrix;
 } matricies;
 
+uniform int uBlockModel = 0;
 uniform vec2 uVertexTextureCoordOffset = vec2(0.0f, 0.0f);
 uniform vec4 vertexTextureColorOverride = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -135,9 +136,15 @@ mat2 RotateTexture(float _angleRads) {
 
 
 vec2 BlockFaceTextureOffset(vec3 _faceAxis) {
-    if (_faceAxis.x != 0) return vec2(_faceAxis.x + 1,0);
-    if (_faceAxis.y != 0) return vec2(0,-_faceAxis.y);
-    if (_faceAxis.z != 0) return vec2(_faceAxis.z,0);
+    if (uBlockModel == 1) { // FULL BLOCK
+        if (_faceAxis.x != 0) return vec2(_faceAxis.x + 1, 0);
+        if (_faceAxis.y != 0) return vec2(0, -_faceAxis.y);
+        if (_faceAxis.z != 0) return vec2(_faceAxis.z, 0);
+    }
+
+    else if (uBlockModel == 2) { // PLANT
+        return vec2(0,0);
+    }
 
     return vec2(0,0);
 }
