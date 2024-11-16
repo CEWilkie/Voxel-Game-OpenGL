@@ -113,14 +113,11 @@ void BlockVAOs::BindBlockModels() const {
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject[model]);
         glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(vertexArray.size() * sizeof(ModelVertex)), vertexArray.data(), GL_STATIC_DRAW);
 
-        // Position Data Attribute
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(struct ModelVertex), (const GLvoid*)offsetof(ModelVertex, position));
+        // Only uses Position and Texture Data attributes
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(struct ModelVertex), (const GLvoid*)offsetof(ModelVertex, position));
+        glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(struct ModelVertex), (const GLvoid*)offsetof(ModelVertex, textureCoord));
 
-        // Texture Data Attribute
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(struct ModelVertex), (const GLvoid*)offsetof(ModelVertex, textureCoord));
-
+        // Bind vertex indecies
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject[model]);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(indexArray.size() * sizeof(GLuint)), indexArray.data(), GL_STATIC_DRAW);
     }
@@ -228,7 +225,11 @@ void Block::Display(const Transformation& _t) const {
     if (canFogLocation >= 0) glUniform1i(canFogLocation, 0);
 
     // Draw Block
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(3);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+    glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(3);
     glBindVertexArray(0);
 }
 
