@@ -181,8 +181,11 @@ GLbyte BlockAttributes::GetIndividualAttribute(BLOCKATTRIBUTE _attribute) const 
         case BLOCKATTRIBUTE::ROTATION:
             return halfRightRotations;
 
-        case BLOCKATTRIBUTE::LIGHTLEVEL:
-            return lightLevel;
+        case BLOCKATTRIBUTE::BLOCKLIGHT:
+            return blockLight;
+
+        case BLOCKATTRIBUTE::SKYLIGHT:
+            return skyLight;
 
         default:
             return 0;
@@ -227,6 +230,7 @@ void Block::Display(const Transformation& _t) const {
     // Draw Block
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(3);
+    glVertexAttrib1f(5, 15);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
     glDisableVertexAttribArray(1);
     glDisableVertexAttribArray(3);

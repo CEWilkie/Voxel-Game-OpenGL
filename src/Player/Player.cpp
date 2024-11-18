@@ -4,7 +4,7 @@
 
 #include "Player.h"
 
-#include "../Window.h"
+#include "../Blocks/CreateBlock.h"
 #include "../World/World.h"
 
 Player::Player(glm::vec3 _position, glm::vec3 _facingDirection) {
@@ -41,7 +41,9 @@ void Player::Display() {
     // Furthest distance a ray from player can travel before hitting interactable object
     if (playerChunk == nullptr) return;
 
-    // Display frame of targeting block
+    /*
+     * Display frame of targeting block
+     */
     if (lookingAtInteractable) {
         ChunkDataTypes::ChunkBlock targetBlock = playerChunk->GetBlockAtPosition(unobstructedRayPosition);
         Block targetBlockPtr = playerChunk->GetBlockFromData(targetBlock.type);
@@ -52,6 +54,33 @@ void Player::Display() {
         t.UpdateModelMatrix();
         targetBlockPtr.DisplayWireframe(t);
     }
+
+    /*
+     * Display block in "hand"
+     */
+
+    if (blockInHand == nullptr || blockInHandType != blockInHand->GetBlockType()) {
+        blockInHand = CreateBlock(blockInHandType);
+    }
+
+    glm::mat4 rotation = glm::rotate(glm::mat4(1.0f),
+                                     -(float)glm::radians(firstPerson->GetAngle().second),
+                                     normalUp);
+
+//    rotation = glm::rotate(rotation,
+//                           (float)glm::radians(firstPerson->GetAngle().first),
+//                           glm::normalize(glm::cross({0,0,1}, normalUp)));
+
+    Transformation bih;
+    glm::vec4 rotatedOffset = rotation * glm::vec4(-0.4f, 0.2f, 0.4f, 1.0f);
+    glm::vec3 pos = position + glm::vec3(rotatedOffset);
+
+
+    bih.SetRotation({0, -firstPerson->GetAngle().second, 0});
+    bih.SetPosition(pos);
+    bih.SetScale({0.25, 0.25, 0.25});
+    bih.UpdateModelMatrix();
+    blockInHand->Display(bih);
 }
 
 void Player::HandleMovement(Uint64 _deltaTicks) {
@@ -415,6 +444,12 @@ void Player::HandlePlayerInputs(const SDL_Event &_event) {
                 break;
         }
     }
+
+    if (_event.type == SDL_MOUSEWHEEL) {
+        float scrollSensitivity = 1.0f;
+        mouseScroll += (float)_event.wheel.y * scrollSensitivity;
+        SelectHotbarItem();
+    }
 }
 
 void Player::GetUnobstructedRayPosition() {
@@ -476,7 +511,7 @@ void Player::PlaceBlock(glm::vec3 _rayPosition) {
     if (!lookingAtInteractable) return;
 
     _rayPosition -= glm::normalize(facingDirection) * (range/20.0f);
-    playerChunk->PlaceBlockAtPosition(_rayPosition, {STONE, 0});
+    playerChunk->PlaceBlockAtPosition(_rayPosition, blockInHandType);
 
     // Add the chunks and the region to the chunk mesher thread as priority
     ChunkThreads* mesher = world->GetThread(THREAD::CHUNKMESHING);
@@ -484,4 +519,17 @@ void Player::PlaceBlock(glm::vec3 _rayPosition) {
     glm::ivec2 pos{playerChunk->GetIndex().x, playerChunk->GetIndex().z};
     ThreadAction action{std::bind(&World::GenerateChunkMesh, world.get(), _1, _2), pos};
     mesher->AddPriorityActionRegion(action, 1, true);
+}
+
+
+void Player::SelectHotbarItem() {
+    if (mouseScroll < 5) blockInHandType = {STONE, 0};
+    else if (mouseScroll < 10) blockInHandType = {DIRT, 0};
+    else if (mouseScroll < 15) blockInHandType = {GRASS, 0};
+    else if (mouseScroll < 20) blockInHandType = {SAND, 0};
+    else if (mouseScroll < 25) blockInHandType = {WOOD, 0};
+    else if (mouseScroll < 30) blockInHandType = {LEAVES, 0};
+    else if (mouseScroll < 35) blockInHandType = {STONE, 0};
+    else if (mouseScroll < 40) blockInHandType = {STONE, 0};
+    else if (mouseScroll < 45) blockInHandType = {STONE, 0};
 }

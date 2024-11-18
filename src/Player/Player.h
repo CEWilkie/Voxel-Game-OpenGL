@@ -35,7 +35,7 @@ class Player {
         std::shared_ptr<Chunk> playerChunk {};
 
         // Movement Info
-        MOVEMENTMODE movementMode = MOVEMENTMODE::FLYING;
+        MOVEMENTMODE movementMode = MOVEMENTMODE::WALKING;
         glm::vec3 vectorSpeed {};
         glm::vec3 vectorAcceleration {};
         glm::vec3 moveDirection {0, 0, 0};
@@ -60,6 +60,10 @@ class Player {
         float range = 7.5f;
         glm::vec3 unobstructedRayPosition {};
         bool lookingAtInteractable = false;
+
+        std::unique_ptr<Block> blockInHand {};
+        BlockType blockInHandType {STONE, 0};
+        float mouseScroll = 0;
 
     public:
         Player(glm::vec3 _position, glm::vec3 _facingDirection);
@@ -87,6 +91,9 @@ class Player {
         void GetUnobstructedRayPosition();
         void BreakBlock(glm::vec3 _rayPosition);
         void PlaceBlock(glm::vec3 _rayPosition);
+
+        // Inventory
+        void SelectHotbarItem();
 
         // Getters
         [[nodiscard]] Camera* GetUsingCamera() const { return usingCamera; }

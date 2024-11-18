@@ -117,7 +117,7 @@ struct std::hash<BlockType> {
 
 enum class BLOCKATTRIBUTE {
     TRANSPARENT, LIQUID, BREAKABLE, CANACCESSTHROUGHBLOCK, FACINGDIRECTION, ROTATION, GENERATIONPRIORITY,
-    ENTITYCOLLISIONSOLID, BLOCKMODEL, LIGHTLEVEL // ... other block attributes
+    ENTITYCOLLISIONSOLID, BLOCKMODEL, BLOCKLIGHT, SKYLIGHT // ... other block attributes
 };
 
 
@@ -131,7 +131,8 @@ enum class BLOCKATTRIBUTE {
 struct BlockAttributes {
     GLbyte halfRightRotations = 0;
     GLbyte topFaceDirection = DIRECTION::UP;
-    GLbyte lightLevel = 15;
+    GLbyte blockLight = 0;
+    GLbyte skyLight = 15;
 
     [[nodiscard]] GLbyte GetIndividualAttribute(BLOCKATTRIBUTE _attribute) const;
 };
