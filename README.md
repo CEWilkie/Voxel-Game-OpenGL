@@ -3,7 +3,7 @@ This is my simple voxel game built using C++, OpenGL.
 
 ## Most Recent Upload
 The latest video upload of this project can be viewed by clicking the image here:
-[![most recent video](showcase/img.png)](https://youtu.be/09lNUo7P6q8?t=30)
+[![most recent video](showcase/img.png)](https://youtu.be/lJO7vVEyS-w)
 
 Clips taken to demonstrate features and the overall progress of this project are all 
 uploaded to [this channel](https://www.youtube.com/@MisterPuggsProgramming).
