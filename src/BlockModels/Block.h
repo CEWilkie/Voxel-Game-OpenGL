@@ -72,7 +72,7 @@ inline std::unique_ptr<BlockVAOs> blockVAOmanager {};
  * Base-level identification of block types. Shared between variants
  */
 
-enum BLOCKID : unsigned int {
+enum BLOCKID : GLubyte {
     TEST, GRASS, DIRT, STONE, WATER, AIR, SAND, LEAVES, WOOD, GRASSPLANT, UNBREAKABLEBLOCK,
 };
 
@@ -116,8 +116,14 @@ struct std::hash<BlockType> {
  */
 
 enum class BLOCKATTRIBUTE {
-    TRANSPARENT, LIQUID, BREAKABLE, CANACCESSTHROUGHBLOCK, FACINGDIRECTION, ROTATION, GENERATIONPRIORITY,
-    ENTITYCOLLISIONSOLID, BLOCKMODEL, BLOCKLIGHT, SKYLIGHT // ... other block attributes
+    // Shared
+    TRANSPARENT, LIQUID, BREAKABLE, CANACCESSTHROUGHBLOCK, GENERATIONPRIORITY, ENTITYCOLLISIONSOLID, BLOCKMODEL,
+    CANOCCLUDE, CANBEOCCLUDED,
+
+    // Unique
+    FACINGDIRECTION, ROTATION, BLOCKLIGHT, SKYLIGHT
+
+    // ... other block attributes
 };
 
 
@@ -156,6 +162,8 @@ class Block {
         GLbyte canInteractThroughBlock = 0;
         GLbyte generationPriority = 2;
         GLbyte entityCollisionSolid = 1;
+        GLbyte canOcclude = 1;
+        GLbyte canBeOccluded = 1;
 
         // Visual Rotations
         bool topFaceLocked = true; // can only face up

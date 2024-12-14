@@ -2,6 +2,7 @@
 
 // PIPE IN
 in float v_vertexDistanceFromCamera;
+in float v_vertexOcclusion;
 in float v_vertexLightLevel;
 in vec2 v_vertexTextureCoord;
 in vec4 v_vertexTextureColorOverride;
@@ -10,7 +11,7 @@ in vec4 v_vertexTextureColorOverride;
 uniform sampler2D tex0;
 uniform int uCanFog = 1;
 
-layout(std140) uniform struct WorldAmbients {
+uniform struct WorldAmbients {
     float lightingStrength;
     float minFogDistance;
     float maxFogDistance;
@@ -47,7 +48,9 @@ void main() {
         color.a = min(1-FogFactor(), color.a);
     }
 
-    // Apply ambient lighting
-    color = vec4(vec3(color.r, color.g, color.b) * worldAmbients.lightingStrength, color.a);
-    color = vec4(color.rgb * v_vertexLightLevel, color.a);
+    // Apply ambient occlusion
+    color = vec4(color.rgb * v_vertexOcclusion, color.a);
+
+    // Apply lighting
+    color = vec4(color.rgb * worldAmbients.lightingStrength, color.a);
 }

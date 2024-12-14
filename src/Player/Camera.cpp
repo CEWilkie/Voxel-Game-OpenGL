@@ -52,11 +52,16 @@ void Camera::SetAngle(double _angleVert, double _angleHoriz) {
 void Camera::UpdateLookatUniform() const {
     GLint uLocation;
 
+    window.SetShader(Window::BASEMESH);
     uLocation = glGetUniformLocation(window.GetShader(), "matricies.uViewMatrix");
-    if (uLocation < 0) printf("location not found [matricies.uViewMatrix]");
-    else {
-        glUniformMatrix4fv(uLocation, 1, GL_FALSE, &GetViewMatrix()[0][0]);
-    }
+    if (uLocation < 0) printf("base location not found [matricies.uViewMatrix]");
+    else glUniformMatrix4fv(uLocation, 1, GL_FALSE, &GetViewMatrix()[0][0]);
+
+    window.SetShader(Window::SHADOW);
+    uLocation = glGetUniformLocation(window.GetShader(), "matricies.uViewMatrix");
+    if (uLocation < 0) printf("shadow location not found [matricies.uViewMatrix]");
+    else glUniformMatrix4fv(uLocation, 1, GL_FALSE, &GetViewMatrix()[0][0]);
+    window.SetShader(Window::BASEMESH);
 }
 
 

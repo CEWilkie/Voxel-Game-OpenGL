@@ -12,19 +12,21 @@ layout(location = 2) in vec3 blockFaceAxis;
 // Texture and Lighting
 layout(location = 3) in vec2 vertexTextureCoord;
 layout(location = 4) in vec2 blockRotation;
-layout(location = 5) in float vertexLightLevel;
+layout(location = 5) in float vertexOcclusion;
+layout(location = 6) in float vertexLightLevel;
 
 
 //layout(location = 3) in vec2 blockRotation;
 
 // PIPE OUT
 out float v_vertexDistanceFromCamera;
+out float v_vertexOcclusion;
 out float v_vertexLightLevel;
 out vec2 v_vertexTextureCoord;
 out vec4 v_vertexTextureColorOverride;
 
 // UNIFORMS
-layout(std140) uniform struct Matricies {
+uniform struct Matricies {
     mat4 uViewMatrix;
     mat4 uProjectionMatrix;
     mat4 uModelMatrix;
@@ -78,6 +80,10 @@ void main() {
 
     // If this value's alpha is not 0, the colour is overlay onto the texture
     v_vertexTextureColorOverride = vertexTextureColorOverride;
+
+    // vertex Occlusion
+    float occlusion = (vertexOcclusion != 0) ? 0.75 : 1;
+    v_vertexOcclusion = occlusion;
 
     // Vertex Light level
     float light = vertexLightLevel / 15.0f;

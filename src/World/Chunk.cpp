@@ -147,11 +147,16 @@ void Chunk::CreateChunkMeshes() {
                 MaterialMesh* blockMesh = GetMeshFromBlock(block.type);
                 if (!blockMesh->IsOld()) continue;
 
-                // Add verticies to mesh
+                // Get Visible Verticies
                 Block blockPtr = GetBlockFromData(block.type);
                 std::vector<UniqueVertex> verticies = blockPtr.GetFaceVerticies(
                         GetShowingFaces({x,y,z}, blockPtr),
                         block.attributes);
+
+                // Calculate Occlusion
+                CalculateOcclusion(verticies, blockPtr, {x,y,z});
+
+                // Add to blockMesh
                 blockMesh->AddVerticies(verticies, {x,y,z});
             }
         }
@@ -235,6 +240,9 @@ std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _blockPos, const Block& 
             dirTop, dirBottom, dirFront,
             dirBack, dirRight, dirLeft};
 
+    if (_checkingBlock.GetSharedAttribute(BLOCKATTRIBUTE::BLOCKMODEL) == BLOCKMODEL::PLANT)
+        return {FRONT, BACK};
+
     // Check for non-transparent block on each face (or non-same transparent block for a transparent block)
     for (int i = 0; i < checkingFaces.size(); i++) {
         ChunkDataTypes::ChunkBlock faceBlockData = GetBlockAtPosition(_blockPos + positionOffsets[i]);
@@ -246,6 +254,90 @@ std::vector<BLOCKFACE> Chunk::GetShowingFaces(glm::vec3 _blockPos, const Block& 
 
     return showingFaces;
 }
+
+
+void Chunk::CalculateOcclusion(std::vector<UniqueVertex>& _verticies, Block& _block, const glm::vec3& _position) {
+    // No changes necessary
+    if (_block.GetSharedAttribute(BLOCKATTRIBUTE::CANBEOCCLUDED) == 0) return;
+
+    // Check adjacent blocks for each vertex
+    for (auto& vertex : _verticies) {
+        // Testing blocks
+        ChunkDataTypes::ChunkBlock chunkBlock;
+        Block block;
+        std::array<glm::vec3, 3> adjacentPositions {};              // sideA, sideB, corner
+        std::array<bool, 3> adjacentOccluded {false, false, false}; // sideA, sideB, corner
+
+        // which blocks are checked depends on which model vertex is in use
+
+        // FRONT BACK FACE
+        if (vertex.normalAxis.x != 0) {
+            float x = vertex.normalAxis.x;
+            if (vertex.modelVertex.y == 0 && vertex.modelVertex.z == 0)
+                adjacentPositions = {glm::vec3{x, 1, 0}, glm::vec3{x,0,-1}, glm::vec3{x, 1, -1}};
+            if (vertex.modelVertex.y == 0 && vertex.modelVertex.z == 1)
+                adjacentPositions = {glm::vec3{x, 1, 0}, glm::vec3{x,0,1},  glm::vec3{x, 1, 1}};
+            if (vertex.modelVertex.y == -1 && vertex.modelVertex.z == 0)
+                adjacentPositions = {glm::vec3{x, -1, 0}, glm::vec3{x, 0, -1}, glm::vec3{x,-1,-1}};
+            if (vertex.modelVertex.y == -1 && vertex.modelVertex.z == 1)
+                adjacentPositions = {glm::vec3{x, -1, 0}, glm::vec3{x, 0, 1}, glm::vec3{x,-1,1}};
+        }
+
+        // TOP BOTTOM FACE
+        if (vertex.normalAxis.y != 0) {
+            float y = vertex.normalAxis.y;
+            if (vertex.modelVertex.x == 0 && vertex.modelVertex.z == 0)
+                adjacentPositions = {glm::vec3{-1, y, 0}, glm::vec3{0,y,-1}, glm::vec3{-1, y, -1}};
+            if (vertex.modelVertex.x == 0 && vertex.modelVertex.z == 1)
+                adjacentPositions = {glm::vec3{-1, y, 0}, glm::vec3{0,y,1},  glm::vec3{-1, y, 1}};
+            if (vertex.modelVertex.x == 1 && vertex.modelVertex.z == 0)
+                adjacentPositions = {glm::vec3{1,y,0}, glm::vec3{0, y, -1}, glm::vec3{1,y,-1}};
+            if (vertex.modelVertex.x == 1 && vertex.modelVertex.z == 1)
+                adjacentPositions = {glm::vec3{1, y, 0}, glm::vec3{0, y, 1}, glm::vec3{1,y,1}};
+        }
+
+        // LEFT RIGHT FACE
+        if (vertex.normalAxis.z != 0) {
+            float z = vertex.normalAxis.z;
+            if (vertex.modelVertex.x == 0 && vertex.modelVertex.y == 0)
+                adjacentPositions = {glm::vec3{-1, 0, z}, glm::vec3{0,1,z}, glm::vec3{-1, 1, z}};
+            if (vertex.modelVertex.x == 1 && vertex.modelVertex.y == 0)
+                adjacentPositions = {glm::vec3{1, 0, z}, glm::vec3{0,1,z},  glm::vec3{1, 1, z}};
+            if (vertex.modelVertex.x == 0 && vertex.modelVertex.y == -1)
+                adjacentPositions = {glm::vec3{-1,0,z}, glm::vec3{0, -1, z}, glm::vec3{-1,-1,z}};
+            if (vertex.modelVertex.x == 1 && vertex.modelVertex.y == -1)
+                adjacentPositions = {glm::vec3{1, 0, z}, glm::vec3{0, -1, z}, glm::vec3{1,-1,z}};
+        }
+
+
+        // For each adjacent block
+        for (int a = 0; a < 3; a++) {
+            chunkBlock = GetBlockAtPosition(_position +adjacentPositions[a]);
+            block = GetBlockFromData(chunkBlock.type);
+
+            // mark block as occluding
+            adjacentOccluded[a] = (block.GetSharedAttribute(BLOCKATTRIBUTE::CANOCCLUDE) == 1);
+
+            // if both sides are occluding, exit early as corner does not impact
+            if (adjacentOccluded[0] && adjacentOccluded[1])
+                break;
+        }
+
+
+        // Calculate final occlusion value
+        GLbyte occlusion = 0;
+        if (adjacentOccluded[0] && adjacentOccluded[1])
+            occlusion = 3;
+        else if ((adjacentOccluded[0] ^ adjacentOccluded[1]) && !adjacentOccluded[2])
+            occlusion = 2;
+        else if (adjacentOccluded[0] ^ adjacentOccluded[1] ^ adjacentOccluded[2])
+            occlusion = 1;
+
+        vertex.occlusion = occlusion;
+    }
+}
+
+
 
 MaterialMesh* Chunk::GetMeshFromBlock(const BlockType& _blockType) {
     if (uniqueMeshMap.count(_blockType) == 0) {

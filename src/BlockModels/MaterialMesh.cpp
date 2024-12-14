@@ -66,7 +66,7 @@ void MaterialMesh::BindMesh() {
     // Vertex Texture, Rotation, Light attributes
     glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(struct UniqueVertex), (const GLvoid*)offsetof(UniqueVertex, textureCoord));
     glVertexAttribPointer(4, 2, GL_BYTE, GL_FALSE, sizeof(struct UniqueVertex), (const GLvoid*)offsetof(UniqueVertex, blockRotation));
-    glVertexAttribPointer(5, 1, GL_BYTE, GL_FALSE, sizeof(struct UniqueVertex), (const GLvoid*)offsetof(UniqueVertex, lightLevel));
+    glVertexAttribPointer(5, 1, GL_BYTE, GL_FALSE, sizeof(struct UniqueVertex), (const GLvoid*)offsetof(UniqueVertex, occlusion));
 
     // Bind index buffer
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);

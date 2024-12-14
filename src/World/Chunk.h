@@ -87,6 +87,7 @@ class Chunk {
         [[nodiscard]] bool UnboundMeshChanges() const { return unboundMeshChanges; }
         [[nodiscard]] std::vector<BLOCKFACE> GetHiddenFaces(glm::vec3 _blockPos);
         [[nodiscard]] std::vector<BLOCKFACE> GetShowingFaces(glm::vec3 _blockPos, const Block& _checkingBlock);
+        [[nodiscard]] void CalculateOcclusion(std::vector<UniqueVertex>& _verticies, Block& _block, const glm::vec3& _position);
         [[nodiscard]] MaterialMesh* GetMeshFromBlock(const BlockType& _blockType);
 
         // Chunk Culling

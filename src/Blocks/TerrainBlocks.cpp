@@ -81,6 +81,8 @@ Air::Air(GLbyte _variant) {
     canInteractThroughBlock = 1;
     generationPriority = 0;
     entityCollisionSolid = 0;
+    canBeOccluded = 0;
+    canOcclude = 0;
 }
 
 UnbreakableBlock::UnbreakableBlock(GLbyte _variant)

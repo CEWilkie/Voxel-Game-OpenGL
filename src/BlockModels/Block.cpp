@@ -230,7 +230,6 @@ void Block::Display(const Transformation& _t) const {
     // Draw Block
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(3);
-    glVertexAttrib1f(5, 15);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
     glDisableVertexAttribArray(1);
     glDisableVertexAttribArray(3);
@@ -275,6 +274,12 @@ GLbyte Block::GetSharedAttribute(BLOCKATTRIBUTE _attribute) const {
 
         case BLOCKATTRIBUTE::BLOCKMODEL:
             return (GLbyte)blockModel;
+
+        case BLOCKATTRIBUTE::CANBEOCCLUDED:
+            return canBeOccluded;
+
+        case BLOCKATTRIBUTE::CANOCCLUDE:
+            return canOcclude;
 
         default:
             return 0;
@@ -346,7 +351,6 @@ std::vector<UniqueVertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &
 
                     texturePositions[i - (face*6)],
                     {0,0},
-                    15
             };
 
             if (face == TOP || face == BOTTOM)
