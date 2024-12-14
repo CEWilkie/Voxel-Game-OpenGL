@@ -386,7 +386,7 @@ float World::GenerateBlockHeight(glm::vec2 _blockPos) {
     height += surfaceHeightVariation;
 
     // Secondary base level noise applied
-    float secondHeight = glm::simplex(glm::vec2( _blockPos.x / 16.0, _blockPos.y / 16.0));
+    float secondHeight = glm::simplex(glm::vec2( _blockPos.x / 64.0, _blockPos.y / 64.0));
     secondHeight *= 1;
     height += secondHeight;
 

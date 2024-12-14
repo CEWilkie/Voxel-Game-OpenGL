@@ -446,7 +446,7 @@ void Player::HandlePlayerInputs(const SDL_Event &_event) {
     }
 
     if (_event.type == SDL_MOUSEWHEEL) {
-        float scrollSensitivity = 1.0f;
+        float scrollSensitivity = 2.0f;
         mouseScroll += (float)_event.wheel.y * scrollSensitivity;
         SelectHotbarItem();
     }
@@ -532,4 +532,5 @@ void Player::SelectHotbarItem() {
     else if (mouseScroll < 35) blockInHandType = {STONE, 0};
     else if (mouseScroll < 40) blockInHandType = {STONE, 0};
     else if (mouseScroll < 45) blockInHandType = {STONE, 0};
+    else if (mouseScroll >= 45) mouseScroll -= 45;
 }
