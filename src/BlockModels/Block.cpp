@@ -230,6 +230,7 @@ void Block::Display(const Transformation& _t) const {
     // Draw Block
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(3);
+    glVertexAttrib1f(5, 3);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
     glDisableVertexAttribArray(1);
     glDisableVertexAttribArray(3);

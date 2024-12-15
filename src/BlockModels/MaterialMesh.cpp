@@ -89,12 +89,25 @@ void MaterialMesh::UpdateMesh() {
     // populate indexArray
     std::vector<GLuint> indexArray {};
     for (int f = 0; f < boundFaces; f++) {
-        indexArray.push_back(f*4 + 1);
-        indexArray.push_back(f*4 + 3);
-        indexArray.push_back(f*4 + 0);
-        indexArray.push_back(f*4 + 0);
-        indexArray.push_back(f*4 + 3);
-        indexArray.push_back(f*4 + 2);
+        GLbyte o0 = vertexArray[f*4 + 0].occlusion, o1 = vertexArray[f*4 + 1].occlusion;
+        GLbyte o2 = vertexArray[f*4 + 2].occlusion, o3 = vertexArray[f*4 + 3].occlusion;
+
+        if ((o1 + o2 > o0 + o3) || (o3 == 0 && (o1 + o2 == o0 + o3))) {
+            indexArray.push_back(f*4 + 3);
+            indexArray.push_back(f*4 + 2);
+            indexArray.push_back(f*4 + 1);
+            indexArray.push_back(f*4 + 1);
+            indexArray.push_back(f*4 + 2);
+            indexArray.push_back(f*4 + 0);
+        }
+        else {
+            indexArray.push_back(f * 4 + 1);
+            indexArray.push_back(f * 4 + 3);
+            indexArray.push_back(f * 4 + 0);
+            indexArray.push_back(f * 4 + 0);
+            indexArray.push_back(f * 4 + 3);
+            indexArray.push_back(f * 4 + 2);
+        }
     }
 
     // Bind face verticies to buffer

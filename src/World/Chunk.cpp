@@ -312,7 +312,7 @@ void Chunk::CalculateOcclusion(std::vector<UniqueVertex>& _verticies, Block& _bl
 
         // For each adjacent block
         for (int a = 0; a < 3; a++) {
-            chunkBlock = GetBlockAtPosition(_position +adjacentPositions[a]);
+            chunkBlock = GetBlockAtPosition(_position + adjacentPositions[a]);
             block = GetBlockFromData(chunkBlock.type);
 
             // mark block as occluding
@@ -325,13 +325,13 @@ void Chunk::CalculateOcclusion(std::vector<UniqueVertex>& _verticies, Block& _bl
 
 
         // Calculate final occlusion value
-        GLbyte occlusion = 0;
+        GLbyte occlusion = 3;
         if (adjacentOccluded[0] && adjacentOccluded[1])
-            occlusion = 3;
-        else if ((adjacentOccluded[0] ^ adjacentOccluded[1]) && !adjacentOccluded[2])
-            occlusion = 2;
-        else if (adjacentOccluded[0] ^ adjacentOccluded[1] ^ adjacentOccluded[2])
+            occlusion = 0;
+        else if ((adjacentOccluded[0] || adjacentOccluded[1]) && adjacentOccluded[2])
             occlusion = 1;
+        else if (adjacentOccluded[0] ^ adjacentOccluded[1] ^ adjacentOccluded[2])
+            occlusion = 2;
 
         vertex.occlusion = occlusion;
     }

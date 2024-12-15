@@ -82,7 +82,7 @@ void main() {
     v_vertexTextureColorOverride = vertexTextureColorOverride;
 
     // vertex Occlusion
-    float occlusion = (vertexOcclusion != 0) ? 0.75 : 1;
+    float occlusion = (vertexOcclusion != 3) ? 0.75 : 1;
     v_vertexOcclusion = occlusion;
 
     // Vertex Light level

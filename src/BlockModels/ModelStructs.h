@@ -24,7 +24,7 @@ struct UniqueVertex {
 
     glm::vec2 textureCoord {};
     glm::bvec2 blockRotation {};
-    GLbyte occlusion {0};
+    GLbyte occlusion {3};
 };
 
 struct UniqueVertexOptimised {
