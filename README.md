@@ -24,13 +24,15 @@ The features that I have currently implemented
 - Threaded block meshing chunk generation
 - Running, jumping and swimming within water
 
+## Recent Additions
+- Proper Chunk Unloading (7th November)
+- Seeded World Generation and Improvements to WorldGen (11th November)
+- Ambient Occlusion on block edges (14th December)
+
 ## ToDo
 In order of importance, the following features are due to be implemented next
 
-- Unload chunks which are outside of the player's area (prevent constant increase in memory usage)
 - Proper lighting system
-- Ambient Occlusion of block verticies
-- Seeded procedural generation (currently, the same world will always generate)
 - Variation in structure and foliage generation
 - Storing chunk data for reloading (for retaining player interactions within the chunk)
 
