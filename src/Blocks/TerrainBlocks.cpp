@@ -55,6 +55,7 @@ Water::Water(GLbyte _variant) {
     breakable = 0;
     canInteractThroughBlock = 1;
     entityCollisionSolid = 0;
+    canOcclude = 0;
 }
 
 Air::Air(GLbyte _variant) {
