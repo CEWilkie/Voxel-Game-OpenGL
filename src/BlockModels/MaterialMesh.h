@@ -27,6 +27,7 @@ class MaterialMesh {
         Block* block;
 
         int bufferVerticiesSize = 0;
+        int bufferIndiciesSize = 0;
         int boundFaces = 0;
 
         bool oldMesh = true;

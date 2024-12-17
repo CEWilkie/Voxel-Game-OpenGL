@@ -42,20 +42,22 @@ void MaterialMesh::BindMesh() {
         glGenVertexArrays(1, &vertexArrayObject);
         glGenBuffers(1, &vertexBufferObject);
         glGenBuffers(1, &indexBufferObject);
-
-        // Ensure a minimum buffer size of 300 verticies is created to prevent excessive recreation for small buffers
-        bufferVerticiesSize = std::max(300, bufferVerticiesSize);
     }
 
     // Enough space for all verticies to be bound
-    if ((int)vertexArray.size() < bufferVerticiesSize) {
+    if ((int)vertexArray.size() <= bufferVerticiesSize) {
         return UpdateMesh();
     }
 
-    // More space is required in VertexArray
+    // (else) More space is required in Buffers
 
-    // Determine new buffer size
+    // Ensure minimum buffer size
+    bufferVerticiesSize = std::max(400, bufferVerticiesSize);
+    bufferIndiciesSize = std::max(600, bufferIndiciesSize);
+
+    // Determine new buffer sizes
     bufferVerticiesSize = (int)vertexArray.size() * 2;
+    bufferIndiciesSize = (bufferVerticiesSize / 4) * 6;
 
     // bind vao
     glBindVertexArray(vertexArrayObject);
@@ -76,7 +78,7 @@ void MaterialMesh::BindMesh() {
 
     // Bind index buffer
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(bufferVerticiesSize * 1.5 * sizeof(GLuint)), nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(bufferIndiciesSize * sizeof(GLuint)), nullptr, GL_DYNAMIC_DRAW);
 
     // update bound value
     boundFaces = (int)vertexArray.size() / 4;
