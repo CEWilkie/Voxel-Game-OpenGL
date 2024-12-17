@@ -87,6 +87,7 @@ class World {
 
         // ChunkData Generation functions
         static float GenerateBlockHeight(glm::vec2 _blockPos);
+        static float GenerateBlockDensity(glm::vec3 _blockPos);
         static float GenerateBlockHeat(glm::vec3 _blockPos);
         static float GenerateBlockVegetation(glm::vec3 _blockPos, float _heat);
         static ChunkData GenerateChunkData(glm::vec2 _chunkPosition);

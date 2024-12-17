@@ -41,6 +41,15 @@ World::World() {
 
     glEnable(GL_DEPTH_TEST);
 
+    // Set Mesher Retry Check
+    chunkMesherThread.SetRetryCheckFunction([&](const glm::ivec2& _chunkIndex, const glm::vec3& _blockPos){
+        int diffX = std::abs(_chunkIndex.x - (int)loadingIndex.x);
+        int diffZ = std::abs(_chunkIndex.y - (int)loadingIndex.y);
+
+        // chunk within load region returns true, permits retry
+        return (diffX + diffZ <= loadRadius);
+    });
+
     // Start threads
     chunkBuilderThread.StartThread();
     chunkMesherThread.StartThread();
@@ -373,7 +382,7 @@ float World::GenerateBlockHeight(glm::vec2 _blockPos) {
      */
 
     // Constructs the Base of the Terrain via continental landmass generation from seabed to landbed
-    float continentiality = ComplexNoiseLimited(_blockPos, 1024, 4, 0.5, 4,
+    float continentiality = ComplexNoiseLimited(_blockPos, 1024, 2, 0.5, 4,
                                                 0, 1);
 
     // Constructs the base level of the terrain
@@ -405,6 +414,14 @@ float World::GenerateBlockHeight(glm::vec2 _blockPos) {
     height += peakHeight * std::pow(mountainRegion, mountainFreq);
 
     return std::round(height);
+}
+
+float World::GenerateBlockDensity(glm::vec3 _blockPos) {
+    float density;
+
+    density = ComplexNoise(_blockPos, 1024, 4, 0.5, 4);
+
+    return density;
 }
 
 float World::GenerateBlockHeat(glm::vec3 _blockPos) {

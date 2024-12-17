@@ -68,6 +68,16 @@ void ChunkThreads::EndThread() {
 
 
 /*
+ * Assigns function used to determine if a thread action should be returned
+ * to the queue on result "RETRY" or not
+ */
+
+void ChunkThreads::SetRetryCheckFunction(const std::function<bool(const glm::ivec2 &, const glm::vec3 &)>& _retryCheckFunction) {
+    retryCheckFunction = _retryCheckFunction;
+}
+
+
+/*
  * Function provides the constant-running of the thread in the background. However, the thread will pause running when
  * there are no more actions in the queue. Hence, the thread requires notifying of any changes in order to resume
  * operations.
@@ -95,8 +105,18 @@ void ChunkThreads::ThreadLoop() {
         auto st = std::chrono::high_resolution_clock::now();
         THREAD_ACTION_RESULT res = currentAction.DoAction();
         if (res == ThreadAction::RETRY) {
-            // put the action back into queue
-            AddActions({currentAction});
+            currentAction.attempted++;
+
+            // Permits 10 attempts before ensuring that the chunk is loaded
+            if (currentAction.attempted >= 10 && retryCheckFunction != nullptr) {
+                // if retryCheckFunction returns true, action is returned to queue to await processing again.
+                if (retryCheckFunction(currentAction.chunkPos, currentAction.chunkBlock)) AddActions({currentAction});
+                currentAction.attempted = 0;
+            }
+
+            // put the action back into queue as 10 attempts have not yet passed
+            else
+                AddActions({currentAction});
         }
         auto et = std::chrono::high_resolution_clock::now();
 

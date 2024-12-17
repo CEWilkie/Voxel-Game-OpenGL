@@ -10,21 +10,29 @@ Biome::Biome() = default;
 
 Biome::~Biome() = default;
 
-BlockType Biome::GetBlockType(float _hmTopLevel, float _blockY) {
+BlockType Biome::GetBlockType(float _hmTopLevel, float _blockDensity, float _blockY) {
     // Returns the type of block that generates at the given Y value in the biome
     BlockType newBlockData;
 
-    // Determine block type from lowest to highest
-    if (_blockY < WATERLEVEL && _blockY > _hmTopLevel) newBlockData = {WATER, 0};
-    else if (_blockY <= _hmTopLevel && _blockY > _hmTopLevel - 4 && _hmTopLevel < WATERLEVEL + 2)  newBlockData = {SAND, 0};
-    else if (_blockY > _hmTopLevel) newBlockData = {AIR, 0};
-    else if (_blockY == _hmTopLevel && _blockY >= WATERLEVEL + 120) newBlockData = {BLOCKID::STONE, 0};
-    else if (_blockY == _hmTopLevel) newBlockData = {BLOCKID::GRASS, 0};
-    else if (_blockY > _hmTopLevel - 4 && _hmTopLevel < WATERLEVEL + 120) newBlockData = {BLOCKID::DIRT, 0};
-    else if (_blockY > 0) newBlockData = {BLOCKID::STONE, 0};
-    else newBlockData = {BLOCKID::UNBREAKABLEBLOCK, 0};
+    // Density was not calculated
+    if (_blockDensity == -2) {
+        if (_blockY < WATERLEVEL && _blockY > _hmTopLevel) newBlockData = {WATER, 0};
+        else if (_blockY <= _hmTopLevel && _blockY > _hmTopLevel - 4 && _hmTopLevel < WATERLEVEL + 2)  newBlockData = {SAND, 0};
+        else if (_blockY > _hmTopLevel) newBlockData = {AIR, 0};
+        else if (_blockY == _hmTopLevel && _blockY >= WATERLEVEL + 120) newBlockData = {BLOCKID::STONE, 0};
+        else if (_blockY == _hmTopLevel) newBlockData = {BLOCKID::GRASS, 0};
+        else if (_blockY > _hmTopLevel - 4 && _hmTopLevel < WATERLEVEL + 120) newBlockData = {BLOCKID::DIRT, 0};
+        else if (_blockY > 0) newBlockData = {BLOCKID::STONE, 0};
+        else newBlockData = {BLOCKID::UNBREAKABLEBLOCK, 0};
+    }
 
-    // For each domain, test if the given block y position is within it
+    // Density used
+    else {
+        if (_blockY < WATERLEVEL && _blockDensity < 0.5) newBlockData = {WATER, 0};
+        else if (_blockDensity < 0.4) newBlockData = {AIR, 0};
+        else if (_blockDensity < 0.6) newBlockData = {DIRT, 0};
+        else newBlockData = {STONE, 0};
+    }
 
     return newBlockData;
 }

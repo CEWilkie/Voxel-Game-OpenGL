@@ -27,6 +27,7 @@ struct ThreadAction {
     std::function<THREAD_ACTION_RESULT(const glm::ivec2&, const glm::vec3&)> function {};
     glm::ivec2 chunkPos {0, 0};
     glm::vec3 chunkBlock {0, 0, 0};
+    int attempted = 0;
 
     enum {
         OK, FAIL, RETRY, // ...
@@ -71,11 +72,12 @@ class ChunkThreads {
         // Thread functionality
         void ThreadLoop();
         std::thread chunkThread;
+        std::function<bool(const glm::ivec2&, const glm::vec3&)> retryCheckFunction {};
 
         // action time measurements
         ActionTimer lightActions;
         ActionTimer heavyActions;
-        unsigned int allActions;
+        unsigned int allActions = 0;
 
         // Thread Name (primarily for debugging)
         std::string threadName {"UNNAMED_THREAD"};
@@ -88,6 +90,7 @@ class ChunkThreads {
         // Thread Management
         void StartThread();
         void EndThread();
+        void SetRetryCheckFunction(const std::function<bool(const glm::ivec2&, const glm::vec3&)>& _retryCheckFunction);
 
         // Adding new actions to be completed in the thread
         void AddActions(const std::vector<ThreadAction>& _actions);
