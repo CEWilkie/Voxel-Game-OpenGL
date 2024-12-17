@@ -49,7 +49,9 @@ void main() {
     }
 
     // Apply ambient occlusion
-    color = vec4(color.rgb * v_vertexOcclusion, color.a);
+    float occlusion = v_vertexOcclusion;
+
+    color = vec4(color.rgb * occlusion, color.a);
 
     // Apply lighting
     color = vec4(color.rgb * worldAmbients.lightingStrength, color.a);
