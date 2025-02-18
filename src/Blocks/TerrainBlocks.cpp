@@ -15,7 +15,15 @@ Stone::Stone(GLbyte _variant) {
 
     // Set the texture and texture origin
     sheet = TEXTURESHEET::TERRAIN;
-    origin = {1,1};
+    origin = {1, 1};
+}
+
+ToughStone::ToughStone(GLbyte _variant) {
+    blockData = {BLOCKID::TOUGHSTONE, _variant};
+
+    // Set the texture and texture origin
+    sheet = TEXTURESHEET::TERRAIN;
+    origin = {1, 5};
 }
 
 Dirt::Dirt(GLbyte _variant) {
@@ -91,7 +99,7 @@ UnbreakableBlock::UnbreakableBlock(GLbyte _variant)
     blockData = {BLOCKID::UNBREAKABLEBLOCK, _variant};
 
     sheet = TEXTURESHEET::TERRAIN;
-    origin = {1,1};
+    origin = {1,5};
 
     breakable = 0;
 

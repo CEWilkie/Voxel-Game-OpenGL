@@ -25,6 +25,10 @@ inline std::unique_ptr<Block> CreateBlock(BlockType _blockData) {
             newBlock = std::make_unique<Stone>(variant);
             break;
 
+        case BLOCKID::TOUGHSTONE:
+            newBlock = std::make_unique<ToughStone>(variant);
+            break;
+
         case BLOCKID::DIRT:
             newBlock = std::make_unique<Dirt>(variant);
             break;

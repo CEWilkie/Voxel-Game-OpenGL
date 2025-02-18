@@ -10,31 +10,27 @@ Biome::Biome() = default;
 
 Biome::~Biome() = default;
 
-BlockType Biome::GetBlockType(float _hmTopLevel, float _blockDensity, float _blockY) {
-    // Returns the type of block that generates at the given Y value in the biome
-    BlockType newBlockData;
+BlockType Biome::GetBlockType(float _hmTopLevel, float _blockY) {
 
-    // Density was not calculated
-    if (_blockDensity == -2) {
-        if (_blockY < WATERLEVEL && _blockY > _hmTopLevel) newBlockData = {WATER, 0};
-        else if (_blockY <= _hmTopLevel && _blockY > _hmTopLevel - 4 && _hmTopLevel < WATERLEVEL + 2)  newBlockData = {SAND, 0};
-        else if (_blockY > _hmTopLevel) newBlockData = {AIR, 0};
-        else if (_blockY == _hmTopLevel && _blockY >= WATERLEVEL + 120) newBlockData = {BLOCKID::STONE, 0};
-        else if (_blockY == _hmTopLevel) newBlockData = {BLOCKID::GRASS, 0};
-        else if (_blockY > _hmTopLevel - 4 && _hmTopLevel < WATERLEVEL + 120) newBlockData = {BLOCKID::DIRT, 0};
-        else if (_blockY > 0) newBlockData = {BLOCKID::STONE, 0};
-        else newBlockData = {BLOCKID::UNBREAKABLEBLOCK, 0};
-    }
+    /*
+     * HEIGHT-BASED TERRAIN GENERATION
+     */
 
-    // Density used
-    else {
-        if (_blockY < WATERLEVEL && _blockDensity < 0.5) newBlockData = {WATER, 0};
-        else if (_blockDensity < 0.4) newBlockData = {AIR, 0};
-        else if (_blockDensity < 0.6) newBlockData = {DIRT, 0};
-        else newBlockData = {STONE, 0};
-    }
+    // BlockType
+    BlockType newBlockType = {STONE, 0};
 
-    return newBlockData;
+    // SubSurface Terrain
+    if (_blockY == 0) newBlockType = {UNBREAKABLEBLOCK, 0};
+    else if (_blockY <= DENSITYLAYER || (_blockY < DENSITYLAYER + 5)) newBlockType = {TOUGHSTONE, 0};
+    else if (_blockY < _hmTopLevel - 4) newBlockType = {STONE, 0};
+
+    // Topsurface Terrain
+    else if (_blockY <= _hmTopLevel && _blockY < WATERLEVEL + 2) newBlockType = {SAND, 0};
+    else if (_blockY < _hmTopLevel && _hmTopLevel < WATERLEVEL + 120) newBlockType = {DIRT, 0};
+    else if (_blockY == _hmTopLevel && _hmTopLevel < WATERLEVEL + 120) newBlockType = {GRASS, 0};
+    else if (_blockY > _hmTopLevel && _blockY <= WATERLEVEL) newBlockType = {WATER, 0};
+
+    return newBlockType;
 }
 
 float Biome::GetAttribute(BIOMEATTRIB _attribute) const {

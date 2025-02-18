@@ -354,7 +354,7 @@ std::vector<UniqueVertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &
                     {0,0},
             };
 
-            if (face == TOP && blockData == BlockType{WATER, 0})
+            if (blockData == BlockType{WATER, 0} && uFaceVertex.modelVertex.y == 0)
                 uFaceVertex.modelVertex.y = -0.2;
 
             if (face == TOP || face == BOTTOM)

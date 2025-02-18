@@ -17,6 +17,12 @@ class Stone : public Block {
         explicit Stone(GLbyte _variant);
 };
 
+class ToughStone : public Block {
+    private:
+
+    public:
+        explicit ToughStone(GLbyte _variant);
+};
 
 class Dirt : public Block {
     private:

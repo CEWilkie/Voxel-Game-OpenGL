@@ -99,8 +99,8 @@ void main() {
 
 float GetVertexDistance() {
     // distance from the camera position to the vertex at gl_Position
-    vec3 campos = matricies.uViewMatrix[0].xyz;
-    return distance(campos, gl_Position.xyz);
+    vec2 campos = matricies.uViewMatrix[0].xz;
+    return distance(campos, gl_Position.xz);
 }
 
 // Takes a normalised axis of x/y/z direction and produces a matrix to

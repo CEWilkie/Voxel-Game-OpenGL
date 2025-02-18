@@ -73,7 +73,23 @@ inline std::unique_ptr<BlockVAOs> blockVAOmanager {};
  */
 
 enum BLOCKID : GLubyte {
-    TEST, GRASS, DIRT, STONE, WATER, AIR, SAND, LEAVES, WOOD, GRASSPLANT, UNBREAKABLEBLOCK,
+    // Hard Terrain
+    STONE, TOUGHSTONE, UNBREAKABLEBLOCK,
+
+    // Soft Terrain
+    GRASS, DIRT, WATER, SAND,
+
+    // Foliage
+    LEAVES, WOOD, GRASSPLANT,
+
+    // Crafted
+
+    // Other
+    AIR,
+
+    // Testing
+    TEST,
+
 };
 
 

@@ -35,7 +35,7 @@ class Biome {
         ~Biome();
 
         // Getters
-        [[nodiscard]] virtual BlockType GetBlockType(float _hmTopLevel, float _blockDensity, float _blockY);
+        [[nodiscard]] virtual BlockType GetBlockType(float _hmTopLevel, float _blockY);
         [[nodiscard]] BIOMEID GetBiomeID() const { return biomeID; }
         [[nodiscard]] float GetAttribute(BIOMEATTRIB _attribute) const;
 };
