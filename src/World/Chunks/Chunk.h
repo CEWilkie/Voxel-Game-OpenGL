@@ -10,10 +10,10 @@
 #include <mutex>
 #include <condition_variable>
 
-#include "../BlockModels/MaterialMesh.h"
-#include "../Player/Camera.h"
-#include "WorldGenConsts.h"
-#include "Biome.h"
+#include "../../BlockModels/MaterialMesh.h"
+#include "../../Player/Camera.h"
+#include "../WorldGenConsts.h"
+#include "../Biomes/Biome.h"
 
 // CHUNK TYPEDEFS
 namespace ChunkDataTypes {

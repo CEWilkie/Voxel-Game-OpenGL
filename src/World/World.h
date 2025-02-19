@@ -13,9 +13,9 @@
 
 #include "../Player/Player.h"
 
-#include "Biome.h"
-#include "Chunk.h"
-#include "ChunkThreads.h"
+#include "Biomes/Biome.h"
+#include "Chunks/Chunk.h"
+#include "Chunks/ChunkThreads.h"
 
 enum class THREAD {
         CHUNKBUILDING, CHUNKMESHING, CHUNKLOADING, CHUNKLIGHTING // ...

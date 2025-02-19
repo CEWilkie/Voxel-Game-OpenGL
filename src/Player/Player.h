@@ -9,7 +9,7 @@
 #include <glm/matrix.hpp>
 #include "Camera.h"
 
-#include "../World/Chunk.h"
+#include "../World/Chunks/Chunk.h"
 
 enum class MOVEMENTMODE {
         WALKING, FLYING, // ...
@@ -35,7 +35,10 @@ class Player {
         std::shared_ptr<Chunk> playerChunk {};
 
         // Movement Info
-        MOVEMENTMODE movementMode = MOVEMENTMODE::WALKING;
+        MOVEMENTMODE movementMode = MOVEMENTMODE::FLYING;
+        bool canStartFly = true;
+        bool jumpStarted = false;
+        float timeSinceLastJump = 0;
         glm::vec3 vectorSpeed {};
         glm::vec3 vectorAcceleration {};
         glm::vec3 moveDirection {0, 0, 0};

@@ -8,7 +8,7 @@
 #include <numeric>
 
 #include "Biome.h"
-#include "WorldGenConsts.h"
+#include "../WorldGenConsts.h"
 
 /*
  * GET BIOME ID FOR THE PROVIDED CHUNKDATA

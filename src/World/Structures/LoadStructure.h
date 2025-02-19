@@ -5,7 +5,7 @@
 #ifndef UNTITLED7_LOADSTRUCTURE_H
 #define UNTITLED7_LOADSTRUCTURE_H
 
-#include "../BlockModels/Block.h"
+#include "../../BlockModels/Block.h"
 
 #include <glm/vec3.hpp>
 #include <fstream>

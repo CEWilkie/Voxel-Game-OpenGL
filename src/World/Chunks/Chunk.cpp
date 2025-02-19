@@ -8,10 +8,10 @@
 #include <memory>
 #include <utility>
 
-#include "../Blocks/CreateBlock.h"
-#include "../GlobalStates.h"
-#include "LoadStructure.h"
-#include "World.h"
+#include "../../Blocks/CreateBlock.h"
+#include "../../GlobalStates.h"
+#include "../Structures/LoadStructure.h"
+#include "../World.h"
 
 /*
  * CHUNK

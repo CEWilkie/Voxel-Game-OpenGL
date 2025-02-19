@@ -5,10 +5,10 @@
 #ifndef UNTITLED7_BIOME_H
 #define UNTITLED7_BIOME_H
 
-#include "../BlockModels/Block.h"
+#include "../../BlockModels/Block.h"
 
-#include "WorldGenConsts.h"
-#include "LoadStructure.h"
+#include "../WorldGenConsts.h"
+#include "../Structures/LoadStructure.h"
 
 class Biome {
     public:

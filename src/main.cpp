@@ -8,7 +8,7 @@
 #include "Window.h"
 #include "Player/Player.h"
 #include "World/World.h"
-#include "World/LoadStructure.h"
+#include "World/Structures/LoadStructure.h"
 #include "Textures/TextureManager.h"
 
 #include "GlobalStates.h"

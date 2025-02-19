@@ -6,8 +6,8 @@
 
 
 #include "../Blocks/CreateBlock.h"
-#include "CreateBiome.h"
-#include "Chunk.h"
+#include "Biomes/CreateBiome.h"
+#include "Chunks/Chunk.h"
 
 #include "Noise/2DSimplexNoise.h"
 #include "Noise/3DSimplexBlockDensity.h"
