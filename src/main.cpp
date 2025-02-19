@@ -56,7 +56,6 @@ int main(int argc, char** argv){
      */
 
     // Create StructureLoader
-    structureLoader = std::make_unique<StructureLoader>();
 
     // Create world and enable chunk builder threads
     world = std::make_unique<World>();

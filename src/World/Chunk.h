@@ -23,8 +23,9 @@ namespace ChunkDataTypes {
     };
 
     typedef std::array<std::array<std::array<ChunkBlock, chunkSize>, chunkHeight>, chunkSize> TerrainArray;
-    typedef std::array<std::array<std::array<float, chunkSize>, chunkHeight>, chunkSize> DensityArray;
+    typedef std::array<std::array<float, chunkArea>, chunkHeight> DensityArray;
     typedef std::array<float, chunkArea> DataMap;
+    typedef std::array<float, chunkProfile> ProfileDataMap;
 }
 
 /*
@@ -32,9 +33,13 @@ namespace ChunkDataTypes {
  */
 
 struct ChunkData {
+    // Biome Information
     Biome* biome {};
-    ChunkDataTypes::DataMap heightMap {};
+    ChunkDataTypes::DataMap weirdMap {};
     ChunkDataTypes::DataMap heatMap {};
+
+    // Initial terrain maps
+    ChunkDataTypes::DataMap heightMap {};
     ChunkDataTypes::DataMap plantMap {};
 };
 
@@ -97,7 +102,8 @@ class Chunk {
         // Chunk Terrain and Structures Generation
         void GenerateChunk();
         void CreateTerrain();
-        void CreateVegitation(glm::vec3 _blockPos);
+        void PaintTerrain();
+        void SurfaceDecorations();
         [[nodiscard]] bool Generated() const { return generated; }
         [[nodiscard]] bool RegionGenerated() const;
 
@@ -114,6 +120,7 @@ class Chunk {
         //
         [[nodiscard]] Block& GetBlockFromData(const BlockType& _blockType);
         [[nodiscard]] glm::vec3 GetIndex() const { return chunkIndex; }
+        [[nodiscard]] glm::vec2 GetXZIndex() const { return {chunkIndex.x, chunkIndex.z}; }
         [[nodiscard]] std::shared_ptr<Chunk> GetChunkAtBlockPos(glm::vec3& _blockPos) const;
 };
 

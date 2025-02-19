@@ -28,9 +28,9 @@ Chunk::Chunk(const glm::vec3& _chunkPosition, ChunkData _chunkData) {
     // Set chunk position
     chunkIndex = _chunkPosition;
 
-    // Create bounding box for the chunk (assume max 16x16x16 volume)
+    // Create bounding box for the chunk (assume max 16x256x16 volume)
     boxBounds = std::move(GenerateBoxBounds({{glm::vec3(0,0,0)},
-                                             {glm::vec3(chunkSize,chunkSize,chunkSize)}}));
+                                             {glm::vec3(chunkSize,chunkHeight,chunkSize)}}));
 
     // Set chunkData
     chunkData = _chunkData;
@@ -355,6 +355,16 @@ MaterialMesh* Chunk::GetMeshFromBlock(const BlockType& _blockType) {
  */
 
 void Chunk::CheckCulling(const Camera& _camera) {
+//    glm::vec3 minDir = _camera.GetDirection() * _camera.GetMinMaxDistance().first;
+//    glm::vec3 maxDir = _camera.GetDirection() * _camera.GetMinMaxDistance().second;
+//
+//    float minLeft, minRight, maxLeft, maxRight;
+//
+//
+//
+//
+//
+    if (boxBounds == nullptr) return;
     inCamera = boxBounds->InFrustrum(_camera.GetCameraFrustrum(), cullingTransformation);
 }
 
@@ -365,11 +375,19 @@ void Chunk::CheckCulling(const Camera& _camera) {
  */
 
 void Chunk::GenerateChunk() {
-    // Populate the terrain array with blocks and update meshes
+    // Populate the terrain array solid/nonSolid
     CreateTerrain();
+
+    // Alter the solid blocks to introduce Terrain Blocks
+    PaintTerrain();
+
+    // Foliage and Natural Decorations
+    SurfaceDecorations();
 
     // Generate any structures that appear
 
+    // Mark chunk as ready to Generate Meshes
+    MarkForMeshUpdates();
     generated = true;
 }
 
@@ -380,19 +398,62 @@ void Chunk::GenerateChunk() {
  */
 
 void Chunk::CreateTerrain() {
+    auto st = std::chrono::high_resolution_clock::now();
+
     for (int x = 0; x < chunkSize; x++) {
         for (int z = 0; z < chunkSize; z++) {
-            // Fetch height
-            auto hmTopLevel = chunkData.heightMap[x + z * chunkSize];
+            glm::vec2 blockMapPos = glm::vec2{x,z} + (GetXZIndex() * (float)chunkSize);
 
-            for (int y = 0; y < chunkHeight; y++) {
+            // Fetch map values
+            float hmTopLevel = chunkData.heightMap[x + z * chunkSize];
+            float cavernosity = World::GenerateBlockCavernosity(blockMapPos);
+            float hollowness = World::GenerateBlockHollowness(blockMapPos); // change to hollowness
+
+            int maxY = std::max((int)hmTopLevel + 1, WATERLEVEL + 1);
+            for (int y = 0; y < maxY; y++) {
+                glm::vec3 blockPos = glm::vec3(x, y, z) + (chunkIndex * (float)chunkSize);
+                BlockType generatingBlockData;
+                Block generatingBlock;
+
+                // Utilise BlockDensity to determine Solid / Air
+                // Above TopLevel height is always air and below minimum y is always solid
+                int blockDensity = World::GenerateCaveChambers(blockPos, hmTopLevel, cavernosity, hollowness);
+                generatingBlockData = BlockType{(blockDensity < 0 ? AIR : STONE), 0};
+
+                SetChunkBlockAtPosition({x, y, z}, generatingBlockData);
+            }
+        }
+    }
+
+    auto et = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(et - st).count();
+    printf("took %lld ms\n", duration / 1000000);
+}
+
+void Chunk::PaintTerrain() {
+    for (int x = 0; x < chunkSize; x++) {
+        for (int z = 0; z < chunkSize; z++) {
+
+            // Fetch map values
+            glm::vec2 blockMapPos = glm::vec2{x, z} + (GetXZIndex() * (float) chunkSize);
+            float hmTopLevel = chunkData.heightMap[x + z * chunkSize];
+
+            int maxY = std::max((int)hmTopLevel + 1, WATERLEVEL + 1);
+            for (int y = 0; y < maxY; y++) {
+
+                // If the Block is air and below toplevel, then a cave has been generated.
+                BlockType generatedSolid = GetChunkBlockAtPosition({x,y,z}).type;
+                if (generatedSolid == BlockType{AIR, 0} && (float)y <= hmTopLevel) {
+                    continue; // next y
+                }
+
+                // Generate Block for position
                 glm::vec3 blockPos = glm::vec3(x, y, z) + (chunkIndex * (float)chunkSize);
                 BlockType generatingBlockData = chunkData.biome->GetBlockType(hmTopLevel, blockPos.y);
                 Block generatingBlock = GetBlockFromData(generatingBlockData);
 
                 // If a block has already been generated for this position and has higher gen priority than the current
-                // block attempting to generate, then ignore new gen attempt. Equivalent gen priority sees newest
-                // generation overwrite
+                // block attempting to generate, then ignore new gen attempt. Equivalent gen = newest overwrite
 
                 if (terrain[x][y][z].type != BlockType{AIR, 0}) {
                     Block generatedBlock = GetBlockFromData(terrain[x][y][z].type);
@@ -403,70 +464,80 @@ void Chunk::CreateTerrain() {
                 }
 
                 // Set block and make a new unique blockptr if required
-                SetChunkBlockAtPosition({x,y,z}, generatingBlockData);
-
-                // give block a random rotation and facing direction
-                terrain[x][y][z].attributes.halfRightRotations = generatingBlock.GetRandomRotation();
-                terrain[x][y][z].attributes.topFaceDirection = generatingBlock.GetRandomTopFaceDirection();
+                SetChunkBlockAtPosition({x, y, z}, generatingBlockData);
             }
-
-            // Now create vegetation provided chunk contains hmToplevel
-            hmTopLevel -= chunkIndex.y * chunkSize;
-            if (hmTopLevel < 0 || hmTopLevel >= chunkHeight) continue;
-
-            CreateVegitation({x,hmTopLevel,z});
         }
     }
-
-    MarkForMeshUpdates();
 }
-
 
 
 /*
  *
  */
 
-void Chunk::CreateVegitation(glm::vec3 _blockPos) {
-    if (structureLoader == nullptr) return;
+void Chunk::SurfaceDecorations() {
+    for (int x = 0; x < chunkSize; x++) {
+        for (int z = 0; z < chunkSize; z++) {
+            glm::vec3 blockPos = {x, chunkData.heightMap[x + z * chunkSize], z};
 
-    float plantDensity = chunkData.plantMap[(int)_blockPos.x + (int)_blockPos.z * chunkSize];
+            // Only plant on grass/dirt variants
+            ChunkDataTypes::ChunkBlock rootBlock = GetBlockAtPosition(blockPos);
+            if (rootBlock.type.blockID != GRASS) continue;
 
-    ChunkDataTypes::ChunkBlock block = GetBlockAtPosition(_blockPos);
-    glm::vec3 plantPos = _blockPos + dirTop;
+            // Plant Density and biome determines foliage type
+            float plantDensity = chunkData.plantMap[x + z * chunkSize];
+            Biome::FOLIAGE foliageType = chunkData.biome->GetFoliage(plantDensity);
 
-    if (plantDensity > 1 && block.type.blockID == GRASS) {
-        structureLoader->StartLoadingStructure(STRUCTURE::TEST);
+            // Small Plants
+            if (foliageType == Biome::FOLIAGE::NONE)
+                continue;
+            else if ((int)foliageType < (int)Biome::FOLIAGE::STRUCTURE_TYPE) {
+                int plantHeight = 0;
+                BlockType plantBlock = chunkData.biome->BuildFoliage(foliageType, plantDensity, &plantHeight);
 
-        int maxB = rand() % 5 + 0;
-        for (int b = 0; b < maxB; b++) {
-            SetBlockAtPosition(plantPos + glm::vec3(0,b,0),{WOOD, 0});
-        }
-
-        plantPos.y += (float)maxB;
-
-        while (structureLoader->LoadedStructure() != STRUCTURE::NONE) {
-            StructBlockData blockData = structureLoader->GetStructureBlock();
-            ChunkDataTypes::ChunkBlock blockAtPosition = GetBlockAtPosition(blockData.blockPos + plantPos);
-            Block loadingBlock = GetBlockFromData(blockData.blockType);
-
-            // Ensure vegetation can overwrite any current blocks in that position
-            if (blockAtPosition.type != BlockType{AIR, 0}) {
-                Block generatedBlock = GetBlockFromData(blockAtPosition.type);
-                GLbyte generatedPriority = generatedBlock.GetSharedAttribute(BLOCKATTRIBUTE::GENERATIONPRIORITY);
-                GLbyte generatingPriority = loadingBlock.GetSharedAttribute(BLOCKATTRIBUTE::GENERATIONPRIORITY);
-
-                if (generatedPriority > generatingPriority) continue;
+                for (int i = 1; i <= plantHeight; i++) {
+                    SetBlockAtPosition(blockPos + (dirTop * (float) i), plantBlock);
+                }
             }
 
-            SetBlockAtPosition(blockData.blockPos + plantPos, blockData.blockType);
+            // Large Plant Structure
+            else {
+                chunkData.biome->LoadStructure((Biome::STRUCTURES)foliageType);
+                glm::vec3 plantPos = blockPos + dirTop;
+
+                bool doonce = false;
+
+                bool completed = false;
+                while (!completed) {
+                    StructBlockData foliageBlock = chunkData.biome->BuildStructure(&completed, 1.0f);
+
+                    if (!doonce && !completed) {
+                        int maxB = rand() % 5;
+                        for (int b = 0; b < maxB; b++) {
+                            SetBlockAtPosition(plantPos, {WOOD, 0});
+                            plantPos += dirTop;
+                        }
+
+                        doonce = true;
+                    }
+
+                    ChunkDataTypes::ChunkBlock loadedBlockType = GetBlockAtPosition(foliageBlock.blockPos + plantPos);
+                    Block loadingBlock = GetBlockFromData(foliageBlock.blockType);
+
+                    // Ensure vegetation can overwrite any current blocks in that position before placing
+                    if (loadedBlockType.type != BlockType{AIR, 0}) {
+                        Block generatedBlock = GetBlockFromData(loadedBlockType.type);
+                        GLbyte generatedPriority = generatedBlock.GetSharedAttribute(BLOCKATTRIBUTE::GENERATIONPRIORITY);
+                        GLbyte generatingPriority = loadingBlock.GetSharedAttribute(BLOCKATTRIBUTE::GENERATIONPRIORITY);
+
+                        if (generatedPriority > generatingPriority) continue;
+                    }
+
+                    SetBlockAtPosition(foliageBlock.blockPos + plantPos, foliageBlock.blockType);
+                }
+            }
         }
     }
-    else if (plantDensity < 0.2 && block.type.blockID == GRASS) {
-        SetBlockAtPosition(plantPos, {GRASSPLANT, 0});
-    }
-
-
 }
 
 /*

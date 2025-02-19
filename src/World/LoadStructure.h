@@ -6,14 +6,10 @@
 #define UNTITLED7_LOADSTRUCTURE_H
 
 #include "../BlockModels/Block.h"
+
 #include <glm/vec3.hpp>
 #include <fstream>
-
-enum class STRUCTURE {
-        NONE, TEST, // ...
-};
-
-
+#include <filesystem>
 
 /*
  * Struct holds the block data which has been read from the structure file. BlockPos is relative to the origin of the
@@ -22,9 +18,36 @@ enum class STRUCTURE {
 
 struct StructBlockData {
     glm::vec3 blockPos {0,0,0};
-    BlockType blockType {TEST, 0};
+    BlockType blockType {AIR, 0};
 };
 
+
+/*
+ * Struct Contains data for each structure
+ */
+
+struct StructureData {
+    public:
+        typedef std::vector<StructBlockData> StructBlocks;
+
+        StructureData() = default;
+        StructureData(const std::string& _name, const StructBlocks& _structBlocks) {
+            structureName = _name;
+            structBlocks = _structBlocks;
+        }
+
+        [[nodiscard]] StructBlockData Get(int _index) const {
+            if (_index < 0 || _index >= size()) return {};
+            return structBlocks[_index];
+        }
+
+        [[nodiscard]] size_t size() const { return structBlocks.size(); }
+        [[nodiscard]] std::string Name() const { return structureName; }
+
+    private:
+        std::string structureName;
+        StructBlocks structBlocks {};
+};
 
 
 /*
@@ -33,85 +56,27 @@ struct StructBlockData {
  */
 
 class StructureLoader {
-    private:
-        STRUCTURE loadedStructure = STRUCTURE::NONE;
-        STRUCTURE lastStructure = STRUCTURE::NONE;
-
-        std::vector<StructBlockData> structBlocks {};
-        int requestedBlocks = 0;
-
     public:
-        StructureLoader() = default;
+        typedef std::vector<StructBlockData> StructBlocks;
 
-        void StartLoadingStructure(const STRUCTURE& _structure) {
-            if (loadedStructure != STRUCTURE::NONE) return;
+        StructureLoader();
+        ~StructureLoader();
 
-            requestedBlocks = 0;
+        // Retrieve Structure Blocks
+        bool validateStructureName(const std::string& _structureName) const;
+        [[nodiscard]] StructureData GetStructureData(const std::string& _structureName) const;
+        [[nodiscard]] size_t GetStructureSize(const std::string& _structureName) const;
 
-            // Load block data from csv if last structure was different
-            loadedStructure = _structure;
-            if (lastStructure != _structure) {
-                structBlocks.clear();
+        // Populate Loader
+        void LoadStructures(const std::vector<std::string>& _structureFileNames);
 
-                std::fstream structFile("../Structures/testStruct.csv");
-                if (!structFile.good()) {
-                    loadedStructure = STRUCTURE::NONE;
-                    return;
-                }
+    private:
+        bool LoadStructure(const std::string& _structureFileName);
 
-                std::string line;
-                std::getline(structFile, line); // ignore first line as header
-                while (std::getline(structFile, line)) {
-                    StructBlockData blockData;
-
-                    // XYZ POSITION
-                    size_t pos = line.find(',');
-                    blockData.blockPos.x = (float)std::stoi(line.substr(0, pos));
-                    line.erase(0, pos+1);
-
-                    pos = line.find(',');
-                    blockData.blockPos.y = (float)std::stoi(line.substr(0, pos));
-                    line.erase(0, pos+1);
-
-                    pos = line.find(',');
-                    blockData.blockPos.z = (float)std::stoi(line.substr(0, pos));
-                    line.erase(0, pos+1);
-
-                    // BLOCKID
-                    pos = line.find(',');
-                    blockData.blockType.blockID = (BLOCKID)std::stoi(line.substr(0, pos));
-                    line.erase(0, pos+1);
-
-                    // VARIANT
-                    blockData.blockType.variantID = std::stoi(line.substr(0, std::string::npos));
-
-                    // push to vector
-                    structBlocks.push_back(blockData);
-                }
-            }
-        }
-
-        void EndStructureLoad() {
-            lastStructure = loadedStructure;
-            loadedStructure = STRUCTURE::NONE;
-        }
-
-        [[nodiscard]] STRUCTURE LoadedStructure() const {
-            return loadedStructure;
-        }
-
-        [[nodiscard]] StructBlockData GetStructureBlock() {
-            if (requestedBlocks == structBlocks.size()) return {};
-
-            requestedBlocks++;
-            if (requestedBlocks == structBlocks.size()) EndStructureLoad();
-
-            return structBlocks[requestedBlocks-1];
-        }
+        // StructureData
+        const std::string structuresDirRelPath = "./../Structures";
+        std::unordered_map<std::string, StructureData> structureBlocks;
 };
-
-inline std::unique_ptr<StructureLoader> structureLoader {};
-
 
 
 #endif //UNTITLED7_LOADSTRUCTURE_H

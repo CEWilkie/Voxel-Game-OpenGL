@@ -14,13 +14,14 @@
  * GET BIOME ID FOR THE PROVIDED CHUNKDATA
  */
 
-inline BIOMEID GetBiomeIDFromData(const ChunkData& _chunkData) {
+inline Biome::ID GetBiomeIDFromData(const ChunkData& _chunkData) {
     // retrieve average values for the chunk
     auto averageHeight = std::accumulate(_chunkData.heightMap.begin(), _chunkData.heightMap.end(), 0.0f) / chunkArea;
 //    auto averageHeat = std::accumulate(_chunkData.heatMap.begin(), _chunkData.heatMap.end(), 0.0f) / chunkArea;
 
     // In order of importance : Height ...
-    BIOMEID biomeID;
+    Biome::ID biomeID;
+    using enum Biome::ID;
 
     if (averageHeight >= WATERLEVEL + 30) biomeID = MOUNTAINS;
     else if (averageHeight >= WATERLEVEL + 10) biomeID = HILLS;
@@ -40,8 +41,9 @@ inline BIOMEID GetBiomeIDFromData(const ChunkData& _chunkData) {
  * CONSTRUCT ACTUAL BIOME FROM BIOMEID
  */
 
-inline std::unique_ptr<Biome> CreateBiome(BIOMEID _biomeID) {
+inline std::unique_ptr<Biome> CreateBiome(Biome::ID _biomeID) {
     Biome* biome;
+    using enum Biome::ID;
 
     switch (_biomeID) {
         case MOUNTAINS:
