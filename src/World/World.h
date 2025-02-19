@@ -86,12 +86,14 @@ class World {
         THREAD_ACTION_RESULT CheckChunkLoaded(const glm::ivec2& _currentChunkPos, const glm::vec3& _newChunkPos);
 
         // ChunkData Generation functions
+        static float GenerateBlockCavernosity(glm::vec2 _blockPos);
+        static float GenerateBlockHollowness(glm::vec2 _blockPos);
         static float GenerateBlockHeight(glm::vec2 _blockPos);
-        static float GenerateBlockDensity(glm::vec3 _blockPos);
+        static int GenerateCaveChambers(glm::vec3 _blockPos, float _hmTopLevel, float _cavernosity, float _hollowness);
         static float GenerateBlockHeat(glm::vec3 _blockPos);
         static float GenerateBlockVegetation(glm::vec3 _blockPos, float _heat);
         static ChunkData GenerateChunkData(glm::vec2 _chunkPosition);
-        Biome* GenerateBiome(BIOMEID _biomeID);
+        Biome* GenerateBiome(Biome::ID _biomeID);
 
         //
         void SetLoadingOrigin(const glm::vec3& _origin);
@@ -108,7 +110,7 @@ class World {
         THREAD_ACTION_RESULT CreateChunkAtIndex(glm::vec3 _chunkIndex, ChunkData _chunkData);
 
 
-        [[nodiscard]] Biome* GetBiome(BIOMEID _biomeID);
+        [[nodiscard]] Biome* GetBiome(Biome::ID _biomeID);
         [[nodiscard]] ChunkThreads* GetThread(THREAD _thread);
 };
 

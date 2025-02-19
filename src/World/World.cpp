@@ -4,12 +4,13 @@
 
 #include "World.h"
 
-#include "glm/gtc/noise.hpp"
+
 #include "../Blocks/CreateBlock.h"
 #include "CreateBiome.h"
-#include "../Window.h"
 #include "Chunk.h"
-#include "Noise.h"
+
+#include "Noise/2DSimplexNoise.h"
+#include "Noise/3DSimplexBlockDensity.h"
 
 World::World() {
     // Create skybox, sun and moon
@@ -47,7 +48,7 @@ World::World() {
         int diffZ = std::abs(_chunkIndex.y - (int)loadingIndex.y);
 
         // chunk within load region returns true, permits retry
-        return (diffX + diffZ <= loadRadius);
+        return (diffX + diffZ <= meshRadius);
     });
 
     // Start threads
@@ -95,15 +96,18 @@ void World::Display() const {
 void World::CheckCulling(const Camera &_camera) {
     displayingChunks = 0;
 
-    for (int chunkX = 0; chunkX < worldSize; chunkX++) {
-        for (int chunkZ = 0; chunkZ < worldSize; chunkZ++) {
-            worldChunks[chunkX][chunkZ]->CheckCulling(_camera);
-            if (worldChunks[chunkX][chunkZ]->ChunkVisible())
-                displayingChunks += 1;
+    for (int x = -renderRadius; x < renderRadius; x++) {
+        for (int z = -renderRadius; z < renderRadius; z++) {
+            auto chunk = GetChunkAtIndex(loadingIndex + glm::ivec2{x, z});
+
+            if (chunk != nullptr) {
+                chunk->CheckCulling(_camera);
+                if (chunk->ChunkVisible()) displayingChunks += 1;
+            }
         }
     }
 
-//    printf("DISPLAYING %d / %d CHUNKS\n", displayingChunks, nChunks);
+    printf("DISPLAYING %d CHUNKS\n", displayingChunks);
 }
 
 
@@ -291,11 +295,17 @@ THREAD_ACTION_RESULT World::GenerateChunk(const glm::ivec2& _chunkIndex, const g
 
     auto chunk = GetChunkAtIndex(_chunkIndex);
     if (chunk == nullptr) {
-        // if this situation occurs, probably will be multiple visible generation issues with cross-chunk structures
         CreateChunk(_chunkIndex, {0, 0, 0});
         chunk = GetChunkAtIndex(_chunkIndex);
         if (chunk == nullptr) return ThreadAction::FAIL;
     }
+
+    // Ensure that chunk should be loaded
+    int diffX = std::abs(_chunkIndex.x - (int)loadingIndex.x);
+    int diffZ = std::abs(_chunkIndex.y - (int)loadingIndex.y);
+
+    // chunk not within load region will not proceed to generate. returns fail.
+    if (diffX + diffZ > loadRadius) return ThreadAction::FAIL;
 
     // Generate the chunk's blocks
     if (!chunk->Generated()) {
@@ -368,36 +378,64 @@ THREAD_ACTION_RESULT World::CheckChunkLoaded(const glm::ivec2 &_currentChunkPos,
 }
 
 
+float World::GenerateBlockCavernosity(glm::vec2 _blockPos) {
+    float cavernosity;
+
+    cavernosity = ComplexNoiseLimited(_blockPos, 128, 8, 0.5, 2, 0, 1);
+
+    return cavernosity;
+}
+
+float World::GenerateBlockHollowness(glm::vec2 _blockPos) {
+    float weirdness;
+
+    weirdness = ComplexNoiseLimited(_blockPos, 256, 4, 0.5, 2, 0, 1);
+
+    return weirdness;
+}
 
 float World::GenerateBlockHeight(glm::vec2 _blockPos) {
     float height;
 
     /*
      * PRIMARY TERRAIN LEVELS
-     * Continentiality 0 - 1:
+     * Continentiality 0 - 2:
      *      controlls ocean-landmass generation
-     *      low continentiality results in less surface height variation
+     *      < 1 = Oceans
+     *      1 - 2 = Landmasses, with greater values resulting in higher landmasses
      *      scale 256 = islands,
      *      scale 1024 = big islands
+     *
+     * Erosion 0 - 1:
+     *      low values results in flat landscape
+     *      high values results in bumpier landscape
+     *
+     *
      */
 
     // Constructs the Base of the Terrain via continental landmass generation from seabed to landbed
-    float continentiality = ComplexNoiseLimited(_blockPos, 1024, 2, 0.5, 4,
-                                                0, 1);
+    float continentiality = ComplexNoise(_blockPos, 1024, 2, 0.5, 4);
+    continentiality += 1;
+    continentiality = std::max(0.0f, continentiality);
 
-    // Constructs the base level of the terrain
-    height = (WATERLEVEL * continentiality) + SEAFLOORMINIMUM;
+    // Constructs the base level of the terrain ontop of the SeaFloor
+    height = ((WATERLEVEL - SEAFLOORMINIMUM) * continentiality) + SEAFLOORMINIMUM;
+
+    // Erosion (flatness) of terrain
+    float erosion = ComplexNoiseLimited(_blockPos, 1024, 1, 0.5, 4,
+                                        0, 1);
+    erosion = std::pow(erosion, 5.0f);
 
     // Primary Noise above the continentiality height.
     float surfaceHeightVariation = ComplexNoise(_blockPos, 128.0f, 4, 0.5, 2);
     surfaceHeightVariation *= 5;
 
-    height += surfaceHeightVariation;
+    height += erosion * surfaceHeightVariation;
 
     // Secondary base level noise applied
-    float secondHeight = glm::simplex(glm::vec2( _blockPos.x / 64.0, _blockPos.y / 64.0));
-    secondHeight *= 1;
-    height += secondHeight;
+//    float secondHeight = glm::simplex(glm::vec2( _blockPos.x / 64.0, _blockPos.y / 64.0));
+//    secondHeight *= 1;
+//    height += secondHeight;
 
     /*
      *  MOUNTAIN GENERATION
@@ -405,23 +443,49 @@ float World::GenerateBlockHeight(glm::vec2 _blockPos) {
 
     // Produce noise values for mountain
     float peakHeight = ComplexNoiseLimited(_blockPos, 128, 4, 0.5, 2, 0, 1);
-    peakHeight *= 128.0;
+    peakHeight *= (MAXBLOCKHEIGHT - WATERLEVEL);
 
     // Determine if mountain should generate
     float mountainRegion = ComplexNoiseLimited(_blockPos, 500, 4, 0.5, 2, 0, 1);
-
-    float mountainFreq = 5; // increase to reduce number of mountains
-    height += peakHeight * std::pow(mountainRegion, mountainFreq);
+    mountainRegion = std::pow(mountainRegion, 5.0f); // increase to reduce number of mountains
+    height += mountainRegion * peakHeight;
 
     return std::round(height);
 }
 
-float World::GenerateBlockDensity(glm::vec3 _blockPos) {
-    float density;
+int World::GenerateCaveChambers(glm::vec3 _blockPos, float _hmTopLevel, float _cavernosity, float _hollowness) {
+    float y = _blockPos.y;
+    float minCavernosity = 0.4f;
 
-    density = ComplexNoise(_blockPos, 1024, 4, 0.5, 4);
+    int solid = 1, air = -1;
 
-    return density;
+    // Predetermine if Block Density need not be calculated
+    if (y > _hmTopLevel) return air;
+    if (y > MAXBLOCKHEIGHT) return air;
+    if (y <= MINBLOCKHEIGHT) return solid;
+
+    // Caves can only generate in specific regions
+    if (_cavernosity < minCavernosity) return solid;
+
+    // Ceiling where any greater Y is Solid
+    float solidCeiling = (_hmTopLevel * _hollowness) / _cavernosity;
+    solidCeiling = std::min(solidCeiling, _hmTopLevel + 1);
+    if (y >= solidCeiling) return solid;
+
+    /*
+     * Generate Cave Chambers
+     */
+
+    float density = BlockDensity(_blockPos, 64, 8, 0.8, 2);
+    density *= _cavernosity;
+
+    // Smooth Walls
+//    printf("d c %f %f\n", density, _cavernosity);
+
+
+
+
+    return (density < -0.3) ? air : solid;
 }
 
 float World::GenerateBlockHeat(glm::vec3 _blockPos) {
@@ -461,6 +525,10 @@ ChunkData World::GenerateChunkData(glm::vec2 _chunkPosition) {
             float height = GenerateBlockHeight({bx, bz});
             chunkData.heightMap[x + z * chunkSize] = height;
 
+            // Get the weirdness of the given x z position
+            float weirdness = GenerateBlockHollowness({bx, bz});
+            chunkData.weirdMap[x + z * chunkSize] = weirdness;
+
             // Get the heat value for the block
             float heat = GenerateBlockHeat({bx,height,bz});
             chunkData.heatMap[x + z * chunkSize] = heat;
@@ -480,7 +548,7 @@ ChunkData World::GenerateChunkData(glm::vec2 _chunkPosition) {
  * Ensure that a biome of type BIOMEID has been generated for the world
  */
 
-Biome* World::GenerateBiome(BIOMEID _biomeID) {
+Biome* World::GenerateBiome(Biome::ID _biomeID) {
     // If the biome has been generated before then exit
     for (auto& uniqueBiome : uniqueBiomes) {
         if (uniqueBiome->GetBiomeID() == _biomeID) return uniqueBiome.get();
@@ -577,7 +645,7 @@ THREAD_ACTION_RESULT World::CreateChunkAtIndex(glm::vec3 _chunkIndex, ChunkData 
 
 
 
-Biome* World::GetBiome(BIOMEID _biomeID) {
+Biome* World::GetBiome(Biome::ID _biomeID) {
     // Fetch biome
     for (auto& uniqueBiome : uniqueBiomes) {
         if (uniqueBiome->GetBiomeID() == _biomeID) return uniqueBiome.get();
