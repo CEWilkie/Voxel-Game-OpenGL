@@ -114,7 +114,7 @@ struct BlockType {
     friend bool operator<(const BlockType& A, const BlockType& B) {
         return A.variantID < B.variantID && A.blockID <= B.blockID;
     }
-} __attribute__((packed));
+};
 
 // Required for map to hash the BlockType
 template <>
@@ -132,11 +132,12 @@ struct std::hash<BlockType> {
  */
 
 enum class BLOCKATTRIBUTE {
-    // Shared
+    // Shared (same across all block objects)
     TRANSPARENT, LIQUID, BREAKABLE, CANACCESSTHROUGHBLOCK, GENERATIONPRIORITY, ENTITYCOLLISIONSOLID, BLOCKMODEL,
-    CANOCCLUDE, CANBEOCCLUDED,
+    CANOCCLUDE, CANBEOCCLUDED, CANHAVESUBBLOCKPOSITION,
 
-    // Unique
+    // Unique (to each block object)
+    BLOCKOFFSET, BLOCKOFFSET_X, BLOCKOFFSET_Y, BLOCKOFFSET_Z,
     FACINGDIRECTION, ROTATION, BLOCKLIGHT, SKYLIGHT
 
     // ... other block attributes
@@ -155,6 +156,7 @@ struct BlockAttributes {
     GLbyte topFaceDirection = DIRECTION::UP;
     GLbyte blockLight = 0;
     GLbyte skyLight = 15;
+    glm::i8vec3 subBlockOffset {0,0,0};
 
     [[nodiscard]] GLbyte GetIndividualAttribute(BLOCKATTRIBUTE _attribute) const;
 };
@@ -180,6 +182,8 @@ class Block {
         GLbyte entityCollisionSolid = 1;
         GLbyte canOcclude = 1;
         GLbyte canBeOccluded = 1;
+        GLbyte canHaveSubblockPosition = 0;
+        glm::vec3 maxSubpixels {8, 8, 8};
 
         // Visual Rotations
         bool topFaceLocked = true; // can only face up
@@ -199,15 +203,17 @@ class Block {
         [[nodiscard]] glm::vec2 GetTextureOrigin() const { return origin; }
         [[nodiscard]] TEXTURESHEET GetTextureSheet() const { return sheet; }
 
-        // BlockAttributes
+        // Shared Block Attributes
         [[nodiscard]] BlockType GetBlockType() const { return blockData; }
         [[nodiscard]] GLbyte GetSharedAttribute(BLOCKATTRIBUTE _attribute) const;
 
-        // Block Face Culling
+        // Unique Block Attributes
         [[nodiscard]] DIRECTION GetRandomTopFaceDirection() const;
         [[nodiscard]] GLbyte GetRandomRotation() const;
-        [[nodiscard]] std::vector<UniqueVertex> GetFaceVerticies(const std::vector<BLOCKFACE>& _faces, const BlockAttributes& _blockAttributes) const;
+        [[nodiscard]] glm::i8vec3 GetRandomSubOffset(const glm::vec3& _blockPosition) const;
 
+        // Block Face Culling
+        [[nodiscard]] std::vector<UniqueVertex> GetFaceVerticies(const std::vector<BLOCKFACE>& _faces, const BlockAttributes& _blockAttributes) const;
         [[nodiscard]] static bool BlockFaceVisible(const Block& _checkingBlock, const Block& _faceBlock, BLOCKFACE _face = TOP);
 };
 

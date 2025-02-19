@@ -465,6 +465,13 @@ void Chunk::PaintTerrain() {
 
                 // Set block and make a new unique blockptr if required
                 SetChunkBlockAtPosition({x, y, z}, generatingBlockData);
+
+                // Generate Unique Block Data
+                BlockAttributes blockAttributes;
+                blockAttributes.halfRightRotations = generatingBlock.GetRandomRotation();
+                blockAttributes.topFaceDirection = generatingBlock.GetRandomTopFaceDirection();
+                blockAttributes.subBlockOffset = generatingBlock.GetRandomSubOffset(blockPos);
+                SetChunkBlockAttributesAtPosition({x,y,z}, blockAttributes);
             }
         }
     }
@@ -493,10 +500,17 @@ void Chunk::SurfaceDecorations() {
                 continue;
             else if ((int)foliageType < (int)Biome::FOLIAGE::STRUCTURE_TYPE) {
                 int plantHeight = 0;
-                BlockType plantBlock = chunkData.biome->BuildFoliage(foliageType, plantDensity, &plantHeight);
+                BlockType plantBlockType = chunkData.biome->BuildFoliage(foliageType, plantDensity, &plantHeight);
+                Block plantBlock = GetBlockFromData(plantBlockType);
+
+                glm::i8vec3 subOffset = plantBlock.GetRandomSubOffset(blockPos);
 
                 for (int i = 1; i <= plantHeight; i++) {
-                    SetBlockAtPosition(blockPos + (dirTop * (float) i), plantBlock);
+                    SetBlockAtPosition(blockPos + (dirTop * (float) i), plantBlockType);
+
+                    BlockAttributes blockAttributes;
+                    blockAttributes.subBlockOffset = subOffset;
+                    SetBlockAttributesAtPosition(blockPos + (dirTop * (float) i), blockAttributes);
                 }
             }
 
@@ -534,6 +548,10 @@ void Chunk::SurfaceDecorations() {
                     }
 
                     SetBlockAtPosition(foliageBlock.blockPos + plantPos, foliageBlock.blockType);
+
+                    BlockAttributes blockAttributes;
+                    blockAttributes.subBlockOffset = loadingBlock.GetRandomSubOffset(foliageBlock.blockPos + plantPos);
+                    SetBlockAttributesAtPosition(foliageBlock.blockPos + plantPos, blockAttributes);
                 }
             }
         }
@@ -643,6 +661,16 @@ ChunkDataTypes::ChunkBlock Chunk::GetChunkBlockAtPosition(const glm::vec3& _bloc
     return terrain[(int)_blockPos.x][(int)_blockPos.y][(int)_blockPos.z];
 }
 
+
+BlockAttributes Chunk::GetChunkBlockAttributesAtPosition(const glm::vec3 &_blockPos) {
+    return terrain[(int)_blockPos.x][(int)_blockPos.y][(int)_blockPos.z].attributes;
+}
+
+void Chunk::SetChunkBlockAttributesAtPosition(const glm::vec3 &_blockPos, const BlockAttributes &_attributes) {
+    terrain[(int)_blockPos.x][(int)_blockPos.y][(int)_blockPos.z].attributes = _attributes;
+}
+
+
 /*
  * Obtains the chunk that the provided position is within, and gets the block in that chunk
  */
@@ -655,8 +683,19 @@ ChunkDataTypes::ChunkBlock Chunk::GetBlockAtPosition(glm::vec3 _blockPos) const 
 }
 
 
+void Chunk::SetBlockAttributesAtPosition(glm::vec3 _blockPos, const BlockAttributes& _attributes) const {
+    auto blockChunk = GetChunkAtBlockPos(_blockPos);
+    if (blockChunk == nullptr) return;
 
+    blockChunk->SetChunkBlockAttributesAtPosition(_blockPos, _attributes);
+}
 
+BlockAttributes Chunk::GetBlockAttributesAtPosition(glm::vec3 _blockPos) const {
+    auto blockChunk = GetChunkAtBlockPos(_blockPos);
+    if (blockChunk == nullptr) return {};
+
+    return blockChunk->GetChunkBlockAttributesAtPosition(_blockPos);
+}
 
 /*
  * Returns a pointer to a unique block instance in the chunk. If the provided data does not correlate to a unique block
@@ -747,7 +786,7 @@ float Chunk::GetDistanceToBlockFace(glm::vec3 _blockPos, glm::vec3 _direction, f
     // Get min and max face verticies for x and z position
     faceVerticies = blockPtr.GetFaceVerticies({face}, block.attributes);
     for (auto& vertex : faceVerticies) {
-        glm::vec3 vertexPosition = vertex.chunkPosOffset + vertex.modelVertex;
+        glm::vec3 vertexPosition = vertex.worldPosition + vertex.modelVertex;
         if (vertexPosition.z + glm::ceil(_blockPos.z) + _direction.z < minZ)
             minZ = vertexPosition.z + glm::ceil(_blockPos.z) + _direction.z;
         if (vertexPosition.z + glm::floor(_blockPos.z) + _direction.z > maxZ)

@@ -18,7 +18,10 @@ struct ModelVertex {
 };
 
 struct UniqueVertex {
-    glm::vec3 chunkPosOffset {};
+    // Positioning
+    glm::vec3 worldPosition {};
+    glm::i8vec3 blockOffset {0,0,0};
+
     glm::vec3 modelVertex {};
     glm::vec3 normalAxis {};
 
@@ -28,7 +31,18 @@ struct UniqueVertex {
 };
 
 struct UniqueVertexOptimised {
-    // reduce size
+    // Offset from chunk 0,0,0 max scale of 1/16 of a block
+    // Original Model Position in 1/16 subblock measurements (from 0 to 1)
+    glm::vec3 chunkPosOffset {};
+    glm::i8vec3 modelVertex {};
+
+    // Normal to vertex for block rotations
+    glm::i8vec3 normalAxis {};
+    glm::i8vec3 blockRotation {};
+
+    // Block Mesh Texture info
+    glm::i8vec3 textureCoord {};
+    GLbyte occlusion {3};
 };
 
 

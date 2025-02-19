@@ -74,6 +74,8 @@ class Chunk {
         // Private functions for getting/setting blocks which non-chunks shouldn't access
         [[nodiscard]] ChunkDataTypes::ChunkBlock GetChunkBlockAtPosition(const glm::vec3& _blockPos);
         void SetChunkBlockAtPosition(const glm::vec3& _blockPos, const BlockType& _blockType);
+        [[nodiscard]] BlockAttributes GetChunkBlockAttributesAtPosition(const glm::vec3& _blockPos);
+        void SetChunkBlockAttributesAtPosition(const glm::vec3& _blockPos, const BlockAttributes& _attributes);
 
     public:
         Chunk(const glm::vec3& _chunkPosition, ChunkData _chunkData);
@@ -92,8 +94,8 @@ class Chunk {
         [[nodiscard]] bool UnboundMeshChanges() const { return unboundMeshChanges; }
         [[nodiscard]] std::vector<BLOCKFACE> GetHiddenFaces(glm::vec3 _blockPos);
         [[nodiscard]] std::vector<BLOCKFACE> GetShowingFaces(glm::vec3 _blockPos, const Block& _checkingBlock);
-        [[nodiscard]] void CalculateOcclusion(std::vector<UniqueVertex>& _verticies, Block& _block, const glm::vec3& _position);
         [[nodiscard]] MaterialMesh* GetMeshFromBlock(const BlockType& _blockType);
+        void CalculateOcclusion(std::vector<UniqueVertex>& _verticies, Block& _block, const glm::vec3& _position);
 
         // Chunk Culling
         void CheckCulling(const Camera& _camera);
@@ -112,6 +114,8 @@ class Chunk {
         void PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType);
         void SetBlockAtPosition(glm::vec3 _blockPos, const BlockType& _blockType) const;
         [[nodiscard]] ChunkDataTypes::ChunkBlock GetBlockAtPosition(glm::vec3 _blockPos) const;
+        void SetBlockAttributesAtPosition(glm::vec3 _blockPos, const BlockAttributes& _attributes) const;
+        [[nodiscard]] BlockAttributes GetBlockAttributesAtPosition(glm::vec3 _blockPos) const;
 
         // Chunk-Entity Collision
         [[nodiscard]] float GetTopLevelAtPosition(glm::vec3 _blockPos, float _radius) ;

@@ -5,8 +5,7 @@
 #include "Block.h"
 
 #include "../Window.h"
-#include <SDL.h>
-#include <SDL_image.h>
+#include <glm/gtc/noise.hpp>
 
 BlockVAOs::BlockVAOs() {
     // Generate objectIDs
@@ -115,7 +114,7 @@ void BlockVAOs::BindBlockModels() const {
 
         // Only uses Position and Texture Data attributes
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(struct ModelVertex), (const GLvoid*)offsetof(ModelVertex, position));
-        glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(struct ModelVertex), (const GLvoid*)offsetof(ModelVertex, textureCoord));
+        glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, sizeof(struct ModelVertex), (const GLvoid*)offsetof(ModelVertex, textureCoord));
 
         // Bind vertex indecies
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject[model]);
@@ -187,6 +186,11 @@ GLbyte BlockAttributes::GetIndividualAttribute(BLOCKATTRIBUTE _attribute) const 
         case BLOCKATTRIBUTE::SKYLIGHT:
             return skyLight;
 
+        case BLOCKATTRIBUTE::BLOCKOFFSET_X:
+        case BLOCKATTRIBUTE::BLOCKOFFSET_Y:
+        case BLOCKATTRIBUTE::BLOCKOFFSET_Z:
+            return subBlockOffset[(int)_attribute - (int)BLOCKATTRIBUTE::BLOCKOFFSET_X];
+
         default:
             return 0;
     }
@@ -229,11 +233,12 @@ void Block::Display(const Transformation& _t) const {
 
     // Draw Block
     glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(3);
-    glVertexAttrib1f(5, 3);
+    glEnableVertexAttribArray(4);
+    glVertexAttrib3f(2, 0,0,0);
+    glVertexAttrib1f(6, 3);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
     glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(3);
+    glDisableVertexAttribArray(4);
     glBindVertexArray(0);
 }
 
@@ -282,6 +287,9 @@ GLbyte Block::GetSharedAttribute(BLOCKATTRIBUTE _attribute) const {
         case BLOCKATTRIBUTE::CANOCCLUDE:
             return canOcclude;
 
+        case BLOCKATTRIBUTE::CANHAVESUBBLOCKPOSITION:
+            return canHaveSubblockPosition;
+
         default:
             return 0;
     }
@@ -311,6 +319,17 @@ DIRECTION Block::GetRandomTopFaceDirection() const {
 GLbyte Block::GetRandomRotation() const {
     if (rotationLocked) return 0;
     return GLbyte((rand() % 4 + 0) * 2);
+}
+
+
+glm::i8vec3 Block::GetRandomSubOffset(const glm::vec3& _blockPosition) const {
+    if (canHaveSubblockPosition == 0) return {0,0,0};
+
+    // Get offset between 0 and 1
+    float ratio = (glm::simplex(glm::vec2{_blockPosition.x, _blockPosition.z}) + 1) / 2.0f;
+
+    // Shift to between 0 and max for each axis
+    return glm::i8vec3{GLbyte(ratio*maxSubpixels.x),-GLbyte(ratio*maxSubpixels.y),GLbyte(ratio*maxSubpixels.z)};
 }
 
 
@@ -347,6 +366,7 @@ std::vector<UniqueVertex> Block::GetFaceVerticies(const std::vector<BLOCKFACE> &
             // Store Vertex and used Index
             UniqueVertex uFaceVertex {
                     {0,0,0},
+                    _blockAttributes.subBlockOffset,
                     baseVertexArray[baseIndexArray[i]].position,
                     cardinalAxis[face],
 

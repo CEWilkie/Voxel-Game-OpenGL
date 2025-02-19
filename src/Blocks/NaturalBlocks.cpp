@@ -43,4 +43,5 @@ GrassPlant::GrassPlant(GLbyte _variant) {
     entityCollisionSolid = 0;
     canBeOccluded = 0;
     canOcclude = 0;
+    canHaveSubblockPosition = 1;
 }

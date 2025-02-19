@@ -5,15 +5,16 @@
  */
 
 // Positioning
-layout(location = 0) in vec3 vertexOffsetInChunk;
+layout(location = 0) in vec3 vertexPosition;
 layout(location = 1) in vec3 vertexInModel;
-layout(location = 2) in vec3 blockFaceAxis;
+layout(location = 2) in vec3 vertexSubblockPosition;
+layout(location = 3) in vec3 blockFaceAxis;
 
 // Texture and Lighting
-layout(location = 3) in vec2 vertexTextureCoord;
-layout(location = 4) in vec2 blockRotation;
-layout(location = 5) in float vertexOcclusion;
-layout(location = 6) in float vertexLightLevel;
+layout(location = 4) in vec2 vertexTextureCoord;
+layout(location = 5) in vec2 blockRotation;
+layout(location = 6) in float vertexOcclusion;
+layout(location = 7) in float vertexLightLevel;
 
 
 //layout(location = 3) in vec2 blockRotation;
@@ -42,8 +43,13 @@ mat2 RotateTexture(float _angleRads);
 vec2 BlockFaceTextureOffset(vec3 _faceAxis);
 
 void main() {
-    // update vertex to position in chunk, then apply Projection, view and model matricies
-    gl_Position = vec4(vertexInModel + vertexOffsetInChunk, 1.0f);
+    // Combine modelVertex + vertexWorldPos, and subBlock position
+    gl_Position = vec4(vertexInModel + vertexPosition, 1.0f);
+    gl_Position.x += vertexSubblockPosition.x / 16.0f;
+    gl_Position.y += vertexSubblockPosition.y / 16.0f;
+    gl_Position.z += vertexSubblockPosition.z / 16.0f;
+
+    // then apply Projection, view and model matricies
     gl_Position = matricies.uProjectionMatrix * matricies.uViewMatrix * matricies.uModelMatrix * gl_Position;
 
 
