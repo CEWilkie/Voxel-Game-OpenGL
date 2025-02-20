@@ -3,7 +3,7 @@ This is my simple voxel game built using C++, OpenGL.
 
 ## Most Recent Upload
 The latest video upload of this project can be viewed by clicking the image here:
-[![most recent video](showcase/img.png)](https://youtu.be/lJO7vVEyS-w)
+[![most recent video](showcase/CavesFieldsAmbient.png)](https://www.youtube.com/watch?v=6eie47oquMg)
 
 Clips taken to demonstrate features and the overall progress of this project are all 
 uploaded to [this channel](https://www.youtube.com/@MisterPuggsProgramming).
@@ -25,9 +25,10 @@ The features that I have currently implemented
 - Running, jumping and swimming within water
 
 ## Recent Additions
-- Proper Chunk Unloading (7th November)
-- Seeded World Generation and Improvements to WorldGen (11th November)
 - Ambient Occlusion on block edges (14th December)
+- Cave Chambers Generation (20th Feb)
+- Grass Offset Positions (20th Feb)
+- Biome Specific Foliage Generation (20th Feb)
 
 ## ToDo
 In order of importance, the following features are due to be implemented next
