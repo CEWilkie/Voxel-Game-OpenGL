@@ -455,8 +455,9 @@ void Chunk::PaintTerrain() {
                 // If a block has already been generated for this position and has higher gen priority than the current
                 // block attempting to generate, then ignore new gen attempt. Equivalent gen = newest overwrite
 
-                if (terrain[x][y][z].type != BlockType{AIR, 0}) {
-                    Block generatedBlock = GetBlockFromData(terrain[x][y][z].type);
+                BlockType generatedType = GetChunkBlockAtPosition({x,y,z}).type;
+                if (generatedType != BlockType{AIR, 0}) {
+                    Block generatedBlock = GetBlockFromData(generatedType);
                     GLbyte generatedPriority = generatedBlock.GetSharedAttribute(BLOCKATTRIBUTE::GENERATIONPRIORITY);
                     GLbyte generatingPriority = generatingBlock.GetSharedAttribute(BLOCKATTRIBUTE::GENERATIONPRIORITY);
 
@@ -635,8 +636,8 @@ void Chunk::PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType) {
 
 void Chunk::SetChunkBlockAtPosition(const glm::vec3 &_blockPos, const BlockType& _blockType) {
     // Set block and clear attributes
-    terrain[(int)_blockPos.x][(int)_blockPos.y][(int)_blockPos.z].type = _blockType;
-    terrain[(int)_blockPos.x][(int)_blockPos.y][(int)_blockPos.z].attributes = {};
+    std::unique_lock lockGuard(terrainLayers[(int)_blockPos.y].layerLock);
+    terrainLayers[(int)_blockPos.y].blockLayer[(int)_blockPos.x + (int)_blockPos.z * chunkSize] = {_blockType, {}};
 
     if (uniqueBlockMap[_blockType] == nullptr) {
         uniqueBlockMap[_blockType] = CreateBlock(_blockType);
@@ -661,16 +662,19 @@ void Chunk::SetBlockAtPosition(glm::vec3 _blockPos, const BlockType& _blockType)
  */
 
 ChunkDataTypes::ChunkBlock Chunk::GetChunkBlockAtPosition(const glm::vec3& _blockPos) {
-    return terrain[(int)_blockPos.x][(int)_blockPos.y][(int)_blockPos.z];
+    std::unique_lock lockGuard(terrainLayers[(int)_blockPos.y].layerLock);
+    return terrainLayers[(int)_blockPos.y].blockLayer[(int)_blockPos.x + (int)_blockPos.z * chunkSize];
 }
 
 
 BlockAttributes Chunk::GetChunkBlockAttributesAtPosition(const glm::vec3 &_blockPos) {
-    return terrain[(int)_blockPos.x][(int)_blockPos.y][(int)_blockPos.z].attributes;
+    std::unique_lock lockGuard(terrainLayers[(int)_blockPos.y].layerLock);
+    return terrainLayers[(int)_blockPos.y].blockLayer[(int)_blockPos.x + (int)_blockPos.z * chunkSize].attributes;
 }
 
 void Chunk::SetChunkBlockAttributesAtPosition(const glm::vec3 &_blockPos, const BlockAttributes &_attributes) {
-    terrain[(int)_blockPos.x][(int)_blockPos.y][(int)_blockPos.z].attributes = _attributes;
+    std::unique_lock lockGuard(terrainLayers[(int)_blockPos.y].layerLock);
+    terrainLayers[(int)_blockPos.y].blockLayer[(int)_blockPos.x + (int)_blockPos.z * chunkSize].attributes = _attributes;
 }
 
 

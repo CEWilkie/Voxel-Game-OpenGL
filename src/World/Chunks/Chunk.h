@@ -22,7 +22,12 @@ namespace ChunkDataTypes {
         BlockAttributes attributes;
     };
 
-    typedef std::array<std::array<std::array<ChunkBlock, chunkSize>, chunkHeight>, chunkSize> TerrainArray;
+    struct LockableTerrainLayer {
+        std::array<ChunkBlock, chunkArea> blockLayer;
+        std::mutex layerLock;
+    };
+
+    typedef std::array<LockableTerrainLayer, chunkHeight> TerrainArray;
     typedef std::array<float, chunkArea> DataMap;
     typedef std::array<GLbyte, chunkArea> ByteMap;
 }
@@ -62,7 +67,7 @@ class Chunk {
         std::unordered_map<BlockType, std::unique_ptr<MaterialMesh>> uniqueMeshMap {};
         std::mutex meshMutex;
         std::mutex terrainMutex;
-        ChunkDataTypes::TerrainArray terrain {};
+        ChunkDataTypes::TerrainArray terrainLayers {};
         bool generated = false;
 
         // Unique ChunkData and the adjacent Chunk pointers
@@ -74,8 +79,6 @@ class Chunk {
         void SetChunkBlockAtPosition(const glm::vec3& _blockPos, const BlockType& _blockType);
         [[nodiscard]] BlockAttributes GetChunkBlockAttributesAtPosition(const glm::vec3& _blockPos);
         void SetChunkBlockAttributesAtPosition(const glm::vec3& _blockPos, const BlockAttributes& _attributes);
-
-        [[nodiscard]] GLbyte GetChunkTreeAtPosition(const glm::vec3& _blockPos) const;
 
     public:
         Chunk(const glm::vec3& _chunkPosition, ChunkData _chunkData);
