@@ -58,7 +58,7 @@ void Chunk::DisplaySolid() {
     std::unique_lock lock(meshMutex);
     for (const auto& mesh : uniqueMeshMap) {
         auto block = mesh.second->GetBlock();
-        if (block != nullptr && block->GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) == 1) continue;
+        if (block != nullptr && block->GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) > 0) continue;
         mesh.second->DrawMesh(displayTransformation);
     }
 
@@ -210,7 +210,7 @@ std::vector<BLOCKFACE> Chunk::GetHiddenFaces(glm::vec3 _blockPos) {
         Block facePtr = GetBlockFromData(blockAtFace.type);
 
         // transparent blocks only show when there is air
-        if (checkingPtr.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) == 1) {
+        if (checkingPtr.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) > 0) {
             // Is air, face is not hidden
             if (checkingBlock.type != BlockType{AIR, 0}) {
                 continue;
@@ -218,7 +218,7 @@ std::vector<BLOCKFACE> Chunk::GetHiddenFaces(glm::vec3 _blockPos) {
         }
 
         // Normal blocks may show if the block on the face is transparent
-        else if (facePtr.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) == 1) {
+        else if (facePtr.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) > 0) {
             continue;
         }
 
@@ -478,6 +478,8 @@ void Chunk::PaintTerrain() {
 }
 
 
+
+
 /*
  *
  */
@@ -520,7 +522,6 @@ void Chunk::SurfaceDecorations() {
                 glm::vec3 plantPos = blockPos + dirTop;
 
                 bool doonce = false;
-
                 bool completed = false;
                 while (!completed) {
                     StructBlockData foliageBlock = chunkData.biome->BuildStructure(&completed, 1.0f);
@@ -633,7 +634,9 @@ void Chunk::PlaceBlockAtPosition(glm::vec3 _blockPos, BlockType _blockType) {
  */
 
 void Chunk::SetChunkBlockAtPosition(const glm::vec3 &_blockPos, const BlockType& _blockType) {
+    // Set block and clear attributes
     terrain[(int)_blockPos.x][(int)_blockPos.y][(int)_blockPos.z].type = _blockType;
+    terrain[(int)_blockPos.x][(int)_blockPos.y][(int)_blockPos.z].attributes = {};
 
     if (uniqueBlockMap[_blockType] == nullptr) {
         uniqueBlockMap[_blockType] = CreateBlock(_blockType);

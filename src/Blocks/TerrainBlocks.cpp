@@ -58,7 +58,8 @@ Water::Water(GLbyte _variant) {
     origin = {10,2};
 
     // Set attributes
-    transparent = 1;
+    transparent = 13;
+    obscuresSelf = 1;
     liquid = 1;
     breakable = 0;
     canInteractThroughBlock = 1;
@@ -85,7 +86,7 @@ Air::Air(GLbyte _variant) {
         origin = {7,1};
     }
 
-    transparent = 1;
+    transparent = 15;
     breakable = 0;
     canInteractThroughBlock = 1;
     generationPriority = 0;

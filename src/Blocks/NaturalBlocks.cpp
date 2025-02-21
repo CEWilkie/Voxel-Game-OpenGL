@@ -10,7 +10,7 @@ Leaves::Leaves(GLbyte _variant) {
 
     if (_variant == 0) {
         origin = {4,2};
-        transparent = 2;
+        transparent = 15;
     }
     if (_variant == 1) {
         origin = {1, 1};

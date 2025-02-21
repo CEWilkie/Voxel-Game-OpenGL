@@ -133,7 +133,7 @@ struct std::hash<BlockType> {
 
 enum class BLOCKATTRIBUTE {
     // Shared (same across all block objects)
-    TRANSPARENT, LIQUID, BREAKABLE, CANACCESSTHROUGHBLOCK, GENERATIONPRIORITY, ENTITYCOLLISIONSOLID, BLOCKMODEL,
+    TRANSPARENT, OBSCURES_SELF, LIQUID, BREAKABLE, CANACCESSTHROUGHBLOCK, GENERATIONPRIORITY, ENTITYCOLLISIONSOLID, BLOCKMODEL,
     CANOCCLUDE, CANBEOCCLUDED, CANHAVESUBBLOCKPOSITION,
 
     // Unique (to each block object)
@@ -175,6 +175,7 @@ class Block {
 
         // Block Data Attributes
         GLbyte transparent = 0;
+        GLbyte obscuresSelf = 0;
         GLbyte liquid = 0;
         GLbyte breakable = 1;
         GLbyte canInteractThroughBlock = 0;

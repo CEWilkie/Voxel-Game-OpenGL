@@ -395,18 +395,11 @@ bool Block::BlockFaceVisible(const Block &_checkingBlock, const Block &_faceBloc
         return false;
     }
 
-    // transparency 1 blocks only show when there is air adjacent
-    if (_checkingBlock.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) == 1) {
-        // Is not air
-        if (_faceBlock.GetBlockType() != BlockType{AIR, 0}) {
-            return false;
-        }
-    }
-
-    // transparency 2 blocks hide back, left or bottom faces which are obscured by non transparency 1 blocks
-    if (_checkingBlock.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) == 2) {
-        if (_faceBlock.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) != 1) {
-            if (_face == BACK || _face == LEFT || _face == BOTTOM) return false;
+    // transparency blocks hide back, left or bottom faces which are adjacent to same transparent block type
+    // unless it obscures itself for any face
+    if (_checkingBlock.GetSharedAttribute(BLOCKATTRIBUTE::TRANSPARENT) > 0) {
+        if (_faceBlock.blockData == _checkingBlock.blockData) {
+            if (_faceBlock.obscuresSelf == 1 || _face == BACK || _face == LEFT || _face == BOTTOM) return false;
         }
     }
 

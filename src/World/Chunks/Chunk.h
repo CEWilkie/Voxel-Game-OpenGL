@@ -23,9 +23,8 @@ namespace ChunkDataTypes {
     };
 
     typedef std::array<std::array<std::array<ChunkBlock, chunkSize>, chunkHeight>, chunkSize> TerrainArray;
-    typedef std::array<std::array<float, chunkArea>, chunkHeight> DensityArray;
     typedef std::array<float, chunkArea> DataMap;
-    typedef std::array<float, chunkProfile> ProfileDataMap;
+    typedef std::array<GLbyte, chunkArea> ByteMap;
 }
 
 /*
@@ -35,8 +34,6 @@ namespace ChunkDataTypes {
 struct ChunkData {
     // Biome Information
     Biome* biome {};
-    ChunkDataTypes::DataMap weirdMap {};
-    ChunkDataTypes::DataMap heatMap {};
 
     // Initial terrain maps
     ChunkDataTypes::DataMap heightMap {};
@@ -64,6 +61,7 @@ class Chunk {
         std::unordered_map<BlockType, std::unique_ptr<Block>> uniqueBlockMap {};
         std::unordered_map<BlockType, std::unique_ptr<MaterialMesh>> uniqueMeshMap {};
         std::mutex meshMutex;
+        std::mutex terrainMutex;
         ChunkDataTypes::TerrainArray terrain {};
         bool generated = false;
 
@@ -77,6 +75,8 @@ class Chunk {
         [[nodiscard]] BlockAttributes GetChunkBlockAttributesAtPosition(const glm::vec3& _blockPos);
         void SetChunkBlockAttributesAtPosition(const glm::vec3& _blockPos, const BlockAttributes& _attributes);
 
+        [[nodiscard]] GLbyte GetChunkTreeAtPosition(const glm::vec3& _blockPos) const;
+
     public:
         Chunk(const glm::vec3& _chunkPosition, ChunkData _chunkData);
         ~Chunk();
@@ -88,14 +88,18 @@ class Chunk {
         // Chunk Block Meshes Creation / Updating
         void UpdateBlockMesh(Block* _meshBlock);
         void CreateChunkMeshes();
+        void CalculateOcclusion(std::vector<UniqueVertex>& _verticies, Block& _block, const glm::vec3& _position);
+        [[nodiscard]] std::vector<BLOCKFACE> GetHiddenFaces(glm::vec3 _blockPos);
+        [[nodiscard]] std::vector<BLOCKFACE> GetShowingFaces(glm::vec3 _blockPos, const Block& _checkingBlock);
+        [[nodiscard]] MaterialMesh* GetMeshFromBlock(const BlockType& _blockType);
+
+        // Mesh Processing Signals + Mesh Binding
         void MarkForMeshUpdates();
         void BindChunkMeshes();
         [[nodiscard]] bool NeedsMeshUpdates() const { return needsMeshUpdates; }
         [[nodiscard]] bool UnboundMeshChanges() const { return unboundMeshChanges; }
-        [[nodiscard]] std::vector<BLOCKFACE> GetHiddenFaces(glm::vec3 _blockPos);
-        [[nodiscard]] std::vector<BLOCKFACE> GetShowingFaces(glm::vec3 _blockPos, const Block& _checkingBlock);
-        [[nodiscard]] MaterialMesh* GetMeshFromBlock(const BlockType& _blockType);
-        void CalculateOcclusion(std::vector<UniqueVertex>& _verticies, Block& _block, const glm::vec3& _position);
+
+        // Block Lighting
 
         // Chunk Culling
         void CheckCulling(const Camera& _camera);
